@@ -1,4 +1,4 @@
-package TUDITPM.kafka;
+package TUDITPM.Kafka;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

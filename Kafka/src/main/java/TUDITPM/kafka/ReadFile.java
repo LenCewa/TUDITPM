@@ -1,4 +1,4 @@
-package TUDITPM.kafka;
+package TUDITPM.Kafka;
 
 import java.io.IOException;
 import java.nio.file.Files;
