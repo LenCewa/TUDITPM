@@ -1,4 +1,4 @@
-package TUDITPM.kafkaTUDITPM;
+package TUDITPM.kafka;
 
 import java.util.Arrays;
 import java.util.Properties;

@@ -1,6 +1,5 @@
-package TUDITPM.kafkaTUDITPM;
+package TUDITPM.kafka;
 
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.kafka.clients.producer.KafkaProducer;

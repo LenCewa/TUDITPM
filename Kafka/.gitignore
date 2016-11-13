@@ -1,1 +1,4 @@
-# In dieser Datei werden alle Pfade hinterlegt die nicht auf dem Repository gespeichert werden, wie bspw. log files oder generierte Dateien
+/target/
+/.project
+/.classpath
+/.settings
