@@ -6,6 +6,10 @@ import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.bson.Document;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class ConsumerTwitter4j {
 
@@ -25,8 +29,19 @@ public class ConsumerTwitter4j {
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
 			for (ConsumerRecord<String, String> record : records) {
-				System.out.println("Partition: " + record.partition() + " Offset: " + record.offset() + " Value: "
-						+ record.value() + " ThreadID: " + Thread.currentThread().getId());
+				String JSONstring = record.value();
+				JSONParser objParser = new JSONParser();
+				JSONObject jObj = null;
+				try {
+					jObj = (JSONObject) objParser.parse(JSONstring);
+					String username = jObj.get("username").toString();
+					String text = jObj.get("text").toString();
+					MongoDBConsumer.writetoDb(new Document("username", username)
+							.append("text", text));
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 

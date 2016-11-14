@@ -35,7 +35,7 @@ public class SearchTweets {
 			result = twitter.search(query);
 		} catch (TwitterException e) {
 			e.printStackTrace();
-			System.err.println("Error, Couldnt fech Twitter posts");
+			System.err.println("Error, Couldnt fetch Twitter posts");
 		}
 
 		List<Status> tweets = null;

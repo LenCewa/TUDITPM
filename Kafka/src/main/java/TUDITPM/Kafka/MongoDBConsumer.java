@@ -15,9 +15,4 @@ public class MongoDBConsumer {
 		table.insertOne(obj);
 	}
 
-	public static void main(String args[]) {
-		Document trump = new Document("vorname", "Hillary").append("name", "Clinton");
-
-		writetoDb(trump);
-	}
 }
