@@ -1,6 +1,5 @@
 package TUDITPM.Kafka;
 
-
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -8,7 +7,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import com.google.common.collect.Lists;
@@ -27,51 +25,64 @@ public class TwitterKafkaProducer {
 
 	private static final String topic = "twitter";
 
-	public static void run(String consumerKey, String consumerSecret,
-			String token, String secret) throws InterruptedException {
+	public static void run(String consumerKey, String consumerSecret, String token, String secret)
+			throws InterruptedException {
 
 		Properties props = new Properties();
-	    props.put("bootstrap.servers", "localhost:9092");
-	    props.put("acks", "all");
-	    props.put("retries", 0);
-	    props.put("batch.size", 16384);
-	    props.put("linger.ms", 1);
-	    props.put("buffer.memory", 33554432);
-	    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-	    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-	    Producer<String, String> producer = null;
+		props.put("bootstrap.servers", "localhost:9092");
+		props.put("acks", "all");
+		props.put("retries", 0);
+		props.put("batch.size", 16384);
+		props.put("linger.ms", 1);
+		props.put("buffer.memory", 33554432);
+		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		Producer<String, String> producer = null;
 
-	    
-	    Authentication auth = new OAuth1(consumerKey, consumerSecret, token,
-				secret);
-	    
-	    /** Set up your blocking queues: Be sure to size these properly based on expected TPS of your stream */
-	    BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
-	    BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(1000);
+		Authentication auth = new OAuth1(consumerKey, consumerSecret, token, secret);
 
-	    /** Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth) */
-	    Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
-	    StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
-	    // Optional: set up some followings and track terms
-	    List<Long> followings = Lists.newArrayList(798176734965276673L);
-	    List<String> terms = Lists.newArrayList("trump");
-	    hosebirdEndpoint.followings(followings);
-	    //hosebirdEndpoint.trackTerms(terms);
-	    
-	    ClientBuilder builder = new ClientBuilder()
-	    		  .name("Hosebird-Client-01")                              // optional: mainly for the logs
-	    		  .hosts(hosebirdHosts)
-	    		  .authentication(auth)
-	    		  .endpoint(hosebirdEndpoint)
-	    		  .processor(new StringDelimitedProcessor(msgQueue))
-	    		  .eventMessageQueue(eventQueue);                          // optional: use this if you want to process client events
+		/**
+		 * Set up your blocking queues: Be sure to size these properly based on
+		 * expected TPS of your stream
+		 */
+		BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
+		BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(1000);
 
-	    		Client hosebirdClient = builder.build();
-	    		// Attempts to establish a connection.
-	    		hosebirdClient.connect();
-	    		
-	    		//producer
-	    		producer = new KafkaProducer<>(props);
+		/**
+		 * Declare the host you want to connect to, the endpoint, and
+		 * authentication (basic auth or oauth)
+		 */
+		Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
+		StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
+		// Optional: set up some followings and track terms
+		List<Long> followings = Lists.newArrayList(798176734965276673L);
+		List<String> terms = Lists.newArrayList("trump");
+		hosebirdEndpoint.followings(followings);
+		// hosebirdEndpoint.trackTerms(terms);
+
+		ClientBuilder builder = new ClientBuilder().name("Hosebird-Client-01") // optional:
+																				// mainly
+																				// for
+																				// the
+																				// logs
+				.hosts(hosebirdHosts).authentication(auth).endpoint(hosebirdEndpoint)
+				.processor(new StringDelimitedProcessor(msgQueue)).eventMessageQueue(eventQueue); // optional:
+																									// use
+																									// this
+																									// if
+																									// you
+																									// want
+																									// to
+																									// process
+																									// client
+																									// events
+
+		Client hosebirdClient = builder.build();
+		// Attempts to establish a connection.
+		hosebirdClient.connect();
+
+		// producer
+		producer = new KafkaProducer<>(props);
 
 		// Do whatever needs to be done with messages
 		for (int msgRead = 0; msgRead < 1000; msgRead++) {
@@ -91,10 +102,11 @@ public class TwitterKafkaProducer {
 
 	public static void main(String[] args) {
 		try {
-			TwitterKafkaProducer.run("59CTodxzVORljR7sSyCEKIvwD", "AvksbDOKhyNLPbxLWlpbgs0oi4nKes2KlAdzr2ysgKCJIYfQW8", "798176734965276673-3itftrppVUnMKcZsYQIR912LCcvm1rF", "jnO0Q5oLUwgNqqtUlRNfwtjzORpcLBWcReqIXSB4LzLdC");
+			TwitterKafkaProducer.run("59CTodxzVORljR7sSyCEKIvwD", "AvksbDOKhyNLPbxLWlpbgs0oi4nKes2KlAdzr2ysgKCJIYfQW8",
+					"798176734965276673-3itftrppVUnMKcZsYQIR912LCcvm1rF",
+					"jnO0Q5oLUwgNqqtUlRNfwtjzORpcLBWcReqIXSB4LzLdC");
 		} catch (InterruptedException e) {
 			System.out.println(e);
 		}
 	}
 }
-
