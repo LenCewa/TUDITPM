@@ -23,6 +23,24 @@
     </dependency>
     
     <dependency>
+		<groupId>com.twitter</groupId>
+		<artifactId>hbc-core</artifactId> <!-- or hbc-twitter4j -->
+		<version>2.2.0</version> <!-- or whatever the latest version is -->
+	</dependency>
+    
+    <dependency>
+    	<groupId>com.googlecode.json-simple</groupId>
+    	<artifactId>json-simple</artifactId>
+    	<version>1.1</version>
+	</dependency>
+    
+     <dependency>
+     	<groupId>org.twitter4j</groupId>
+        <artifactId>twitter4j-core</artifactId>
+        <version>[4.0,)</version>
+      </dependency>
+    
+    <dependency>
     	<groupId>org.apache.kafka</groupId>
     	<artifactId>kafka-clients</artifactId>
     	<version>0.10.0.1</version>
