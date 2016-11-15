@@ -1,5 +1,6 @@
 package TUDITPM.Kafka;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -7,11 +8,8 @@ import java.util.Scanner;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.json.JSONObject;
 
-import twitter4j.Status;
-
-public class ProducerTwitter4j {
+public class ProducerTwitterStreamingAPI {
 
 	public static void main(String[] args) {
 
@@ -29,20 +27,29 @@ public class ProducerTwitter4j {
 		try {
 			producer = new KafkaProducer<>(props);
 			Scanner sc = new Scanner(System.in);
-			SearchTweetsTwitter4j st = new SearchTweetsTwitter4j();
+			
+			String line = null;
 			while (true) {
+				ArrayList<String> keywords = new ArrayList<>();
 				System.out.println("Type Keyword to search Tweets");
-				String searchKeyword = sc.nextLine();
-				List<Status> tweets = st.searchTweets(searchKeyword);
-
-				for (Status tweet : tweets) {
-					JSONObject obj = new JSONObject();
-					obj.put("username", tweet.getUser().getScreenName());
-					obj.put("text", tweet.getText());
-					String json = obj.toString();
-					System.out.println(json);
-					producer.send(new ProducerRecord<String, String>("twitter", json));
+				keywords.add(sc.nextLine());
+				SearchTweetsStreamingAPI st = new SearchTweetsStreamingAPI();
+				
+				System.out.println("Another Keyword? (y or Anything to stop)");
+				while((line = sc.nextLine().toLowerCase()).equals("y")){
+					System.out.println("Type next keyword");
+					keywords.add(sc.nextLine());
+					System.out.println("Another Keyword? (y or Anything to stop)");
+				}	
+				System.out.println("starting search...");
+				st.setKeywords(keywords.toArray(new String[keywords.size()]));
+				
+				List<String> tweets = st.searchTweets();
+				for (String tweet : tweets) {
+					producer.send(new ProducerRecord<String, String>("twitter", tweet));
+					System.out.println(tweet);
 				}
+				System.out.println("finished");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -7,9 +7,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.Document;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ConsumerTwitter4j {
+public class ConsumerTwitterStreamingAPI {
 
 	public static void main(String[] args) {
 		Properties props = new Properties();
@@ -24,20 +25,33 @@ public class ConsumerTwitter4j {
 
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
-	
+		
 		while(true){
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
+			int missedTweets = 0;
 			for (ConsumerRecord<String, String> record : records) {
 				
+				try{
 				//decode JSON String
 				JSONObject jObj = new JSONObject(record.value());
-				String username = jObj.getString("username");
 				String text = jObj.getString("text");
 				
+				JSONObject user = jObj.getJSONObject("user");
+				String name = user.getString("name");
+				String username = user.getString("screen_name");
+				String location = (!user.get("location").toString().equals("null")) ? user.getString("location") : "";
+				
 				//Write to DB
-				MongoDBConsumer.writetoDb(new Document("username", username)
+				MongoDBConsumer.writetoDb(new Document("name", name)
+						.append("username", username)
+						.append("location", location)
 						.append("text", text));
+				}catch(JSONException e){
+					missedTweets++;
+				}
 			}
+			if(missedTweets > 0)
+				System.out.println(missedTweets + " Tweets missed");
 		}
 	}
 
