@@ -33,6 +33,7 @@ public class ConsumerTwitterStreamingAPI {
 			int missedTweets = 0;
 			for (ConsumerRecord<String, String> record : records) {
 				
+				System.out.println(record.value());
 				try{
 				//decode JSON String
 				JSONObject jObj = new JSONObject(record.value());
