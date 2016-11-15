@@ -26,6 +26,8 @@ public class ConsumerTwitterStreamingAPI {
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
 		
+		MongoDBWriter mongo = new MongoDBWriter("localhost", 27017, "dbtest", "testcollection");
+		
 		while(true){
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
 			int missedTweets = 0;
@@ -42,7 +44,7 @@ public class ConsumerTwitterStreamingAPI {
 				String location = (!user.get("location").toString().equals("null")) ? user.getString("location") : "";
 				
 				//Write to DB
-				MongoDBConsumer.writetoDb(new Document("name", name)
+				mongo.writetoDb(new Document("name", name)
 						.append("username", username)
 						.append("location", location)
 						.append("text", text));

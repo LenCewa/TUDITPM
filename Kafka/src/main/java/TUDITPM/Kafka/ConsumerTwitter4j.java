@@ -24,6 +24,8 @@ public class ConsumerTwitter4j {
 
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
+		
+		MongoDBWriter mongo = new MongoDBWriter("localhost", 27017, "dbtest", "testcollection");
 	
 		while(true){
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
@@ -35,7 +37,7 @@ public class ConsumerTwitter4j {
 				String text = jObj.getString("text");
 				
 				//Write to DB
-				MongoDBConsumer.writetoDb(new Document("username", username)
+				mongo.writetoDb(new Document("username", username)
 						.append("text", text));
 			}
 		}
