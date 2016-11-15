@@ -23,8 +23,8 @@ public class MongoDBWriter {
 	}
 	
 	public void writetoDb(Document obj) {
-		MongoDatabase db = mongo.getDatabase("testDB");
-		MongoCollection<Document> table = db.getCollection("startup_log");
+		MongoDatabase db = mongo.getDatabase(dbname);
+		MongoCollection<Document> table = db.getCollection(collection);
 
 		table.insertOne(obj);
 	}
