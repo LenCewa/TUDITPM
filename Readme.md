@@ -29,7 +29,7 @@ Startbefehl:
 
 2. Befehl: mongod --dbpath C:\\Users\Ludwig\Documents\MongoDB\data
 
-3. Den Teil nach --dbpath gibt an wo ihr eure Daten gespeichert haben wollt
+3. Der Teil nach --dbpath gibt an wo ihr eure Daten gespeichert haben wollt
 
 ## Branchstruktur
 
