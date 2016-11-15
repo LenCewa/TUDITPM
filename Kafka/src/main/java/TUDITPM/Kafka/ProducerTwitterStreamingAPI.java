@@ -80,7 +80,7 @@ public class ProducerTwitterStreamingAPI {
 	
 				for (int i = 0; i < 100; i++){
 					try {
-						String tweet = msgQueue.take();
+						String tweet = msgQueue.take().trim();
 						producer.send(new ProducerRecord<String, String>("twitter", tweet));
 						System.out.println(tweet);
 					} catch (InterruptedException e) {
