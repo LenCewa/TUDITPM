@@ -24,8 +24,11 @@ Community Server (Download msi)
 https://www.mongodb.com/download-center?jmp=nav#community
 
 Startbefehl:
+
 1. Konsole im MongoDB .\bin Ordner öffnen
+
 2. Befehl: mongod --dbpath C:\\Users\Ludwig\Documents\MongoDB\data
+
 3. Den Teil nach --dbpath gibt an wo ihr eure Daten gespeichert haben wollt
 
 ## Branchstruktur
