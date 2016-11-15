@@ -38,6 +38,7 @@ public class ConsumerTwitterStreamingAPI {
 				//decode JSON String
 				JSONObject jObj = new JSONObject(record.value());
 				String text = jObj.getString("text");
+				String timeNdate = jObj.getString("created_at");
 				
 				JSONObject user = jObj.getJSONObject("user");
 				String name = user.getString("name");
@@ -48,6 +49,7 @@ public class ConsumerTwitterStreamingAPI {
 				mongo.writetoDb(new Document("name", name)
 						.append("username", username)
 						.append("location", location)
+						.append("timeNDate", timeNdate)
 						.append("text", text));
 				}catch(JSONException e){
 					missedTweets++;
