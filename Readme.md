@@ -27,7 +27,7 @@ Startbefehl:
 
 1. Konsole im MongoDB .\bin Ordner öffnen
 
-2. Befehl: mongod --dbpath C:\\Users\Ludwig\Documents\MongoDB\data
+2. Befehl: mongod --dbpath C:\\Users\Username\Folder\Folder\data
 
 3. Der Teil nach --dbpath gibt an wo ihr eure Daten gespeichert haben wollt
 
