@@ -26,7 +26,7 @@ public class ConsumerTwitterStreamingAPI {
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
 		
-		MongoDBWriter mongo = new MongoDBWriter("localhost", 27017, "dbtest", "testcollection");
+		MongoDBWriter mongo = new MongoDBWriter("dbtest", "testcollection");
 		
 		while(true){
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
