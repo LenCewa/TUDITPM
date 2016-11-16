@@ -18,8 +18,7 @@ public class MongoDBWriter {
 		this.port = port;
 		this.dbname = dbname;
 		this.collection = collection;
-		mongo = new MongoClient(address, port); 
-		
+		mongo = new MongoClient(address, port);
 	}
 	
 	public void writetoDb(Document obj) {

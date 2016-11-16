@@ -32,7 +32,6 @@ public class ConsumerTwitterStreamingAPI {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
 			int missedTweets = 0;
 			for (ConsumerRecord<String, String> record : records) {
-				
 				System.out.println(record.value());
 				try{
 				//decode JSON String
