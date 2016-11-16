@@ -11,6 +11,12 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+/**
+ * 
+ * @author Ludwig Koch
+ * @author Tobias Mahncke
+ * @version 1.1
+ */
 public class MongoDBWriter {
 	private String dbname;
 	private String collection;
@@ -35,10 +41,9 @@ public class MongoDBWriter {
 		}
 	}
 
-	public void writetoDb(Document obj) {
+	public void writeToDb(Document obj) {
 		MongoDatabase db = mongo.getDatabase(dbname);
 		MongoCollection<Document> table = db.getCollection(collection);
-
 		table.insertOne(obj);
 	}
 

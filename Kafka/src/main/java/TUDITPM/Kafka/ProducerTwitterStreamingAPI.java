@@ -25,7 +25,8 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
 /**
  * 
  * @author Yannick Pferr
- * @version 0.0.1
+ * @author Tobias Mahncke
+ * @version 1.1
  */
 public class ProducerTwitterStreamingAPI {
 
