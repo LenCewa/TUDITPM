@@ -1,7 +1,5 @@
 package TUDITPM.Kafka;
 
-import java.io.IOException;
-
 import org.bson.Document;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
@@ -12,39 +10,43 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 /**
+ * Wrapper for the MongoDB database connection.
  * 
  * @author Ludwig Koch
  * @author Tobias Mahncke
- * @version 1.1
+ * @version 1.2
  */
 public class MongoDBWriter {
 	private String dbname;
 	private String collection;
 	private MongoClient mongo;
 
+	/**
+	 * Creates a new writer for the given database and collection.
+	 * 
+	 * @param dbname
+	 *            - database name in which the data will be stored
+	 * @param collection
+	 *            - collection in which the data will be stored
+	 */
 	public MongoDBWriter(String dbname, String collection) {
 		this.dbname = dbname;
 		this.collection = collection;
-		try {
-			mongo = new MongoClient(PropertyLoader.getPropertyValue(
-					PropertyFile.database, "ADRESS"),
-					Integer.parseInt(PropertyLoader.getPropertyValue(
-							PropertyFile.database, "PORT")));
-		} catch (NumberFormatException e) {
-			System.err.print("The given port could not be parsed to a number.");
-			e.printStackTrace();
-			System.exit(1);
-		} catch (IOException e) {
-			System.err.print("Loading configuration for database failed.");
-			e.printStackTrace();
-			System.exit(1);
-		}
+		mongo = new MongoClient(PropertyLoader.getPropertyValue(
+				PropertyFile.database, "ADRESS"),
+				Integer.parseInt(PropertyLoader.getPropertyValue(
+						PropertyFile.database, "PORT")));
 	}
 
+	/**
+	 * Writes the given document to the defined database and collection
+	 * 
+	 * @param obj
+	 *            - document to save
+	 */
 	public void writeToDb(Document obj) {
 		MongoDatabase db = mongo.getDatabase(dbname);
 		MongoCollection<Document> table = db.getCollection(collection);
 		table.insertOne(obj);
 	}
-
 }

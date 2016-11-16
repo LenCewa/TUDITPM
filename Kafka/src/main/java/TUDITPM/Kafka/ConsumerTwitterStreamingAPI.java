@@ -10,26 +10,36 @@ import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.Loading.PropertyFile;
+import TUDITPM.Kafka.Loading.PropertyLoader;
+
 /**
+ * Listening to the twitter Stream and converting the given data to stream it to
+ * spark.
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 1.1
+ * @version 1.2
  */
 public class ConsumerTwitterStreamingAPI {
 
-	public static void main(String[] args) {
+	public ConsumerTwitterStreamingAPI() {
 		Properties props = new Properties();
-		props.put("bootstrap.servers", "localhost:9092");
+		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "bootstrap.servers"));
 		props.put("group.id", "group-1");
-		props.put("enable.auto.commit", "true");
-		props.put("auto.commit.interval.ms", "1000");
-		props.put("auto.offset.reset", "earliest");
-		props.put("session.timeout.ms", "30000");
-		props.put("key.deserializer",
-				"org.apache.kafka.common.serialization.StringDeserializer");
-		props.put("value.deserializer",
-				"org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "enable.auto.commit"));
+		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "enable.auto.commit"));
+		props.put("auto.offset.reset", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "auto.offset.reset"));
+		props.put("session.timeout.ms", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "session.timeout.ms"));
+		props.put("key.deserializer", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "key.deserializer"));
+		props.put("value.deserializer", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "value.deserializer"));
 
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
@@ -61,9 +71,9 @@ public class ConsumerTwitterStreamingAPI {
 					missedTweets++;
 				}
 			}
-			if (missedTweets > 0)
+			if (missedTweets > 0) {
 				System.out.println(missedTweets + " Tweets missed");
+			}
 		}
 	}
-
 }
