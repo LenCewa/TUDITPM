@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Loading;
 
 /**
  * List with all property files to load.

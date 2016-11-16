@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Loading;
 
 import java.io.FileInputStream;
 import java.io.IOException;
