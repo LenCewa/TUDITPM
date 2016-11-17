@@ -20,7 +20,7 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerTwitterStreamingAPI();
-		new ProducerTwitterStreamingAPI();
+		new ConsumerTwitterStreamingAPI().start();
+		new ProducerTwitterStreamingAPI().start();
 	}
 }

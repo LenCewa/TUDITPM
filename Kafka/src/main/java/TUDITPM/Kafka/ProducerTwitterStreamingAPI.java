@@ -23,46 +23,49 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
 
 /**
  * Producer that listens to the twitter streaming API for given keywords and
- * pushes them to the kafka topic "twitter".
+ * pushes them to the kafka topic "twitter". Extends Thread so that it can run
+ * asynchronously.
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
  * @version 1.2
  */
-public class ProducerTwitterStreamingAPI {
+public class ProducerTwitterStreamingAPI extends Thread {
 
-	public ProducerTwitterStreamingAPI() {
+	/**
+	 * Gets called on start of the Thread
+	 */
+	@Override
+	public void run() {
+
 		// set configs for kafka
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "bootstrap.servers"));
-		props.put("acks",
-				PropertyLoader.getPropertyValue(PropertyFile.kafka, "acks"));
-		props.put("retires", Integer.parseInt(PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "retires")));
-		props.put("batch.size", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "batch.size")));
-		props.put("linger.ms", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "linger.ms")));
-		props.put("buffer.memory", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "buffer.memory")));
-		props.put("key.deserializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "key.deserializer"));
-		props.put("value.deserializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "value.deserializer"));
+		props.put("acks", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "acks"));
+		props.put("retries", Integer.parseInt(PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "retries")));
+		props.put("batch.size", Integer.parseInt(PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "batch.size")));
+		props.put("linger.ms", Integer.parseInt(PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "linger.ms")));
+		props.put("buffer.memory", Integer.parseInt(PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "buffer.memory")));
+		props.put("key.serializer", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "key.serializer"));
+		props.put("value.serializer", PropertyLoader.getPropertyValue(
+				PropertyFile.kafka, "value.serializer"));
 
 		// Create the producer
 		Producer<String, String> producer = null;
 
 		// Load configuration for hbc from config files
 		Authentication auth = null;
-		auth = new OAuth1(PropertyLoader.getPropertyValue(
-				PropertyFile.credentials, "OAUTHCONSUMERKEY"),
-				PropertyLoader.getPropertyValue(PropertyFile.credentials,
-						"OAUTHCONSUMERSECRET"),
-				PropertyLoader.getPropertyValue(PropertyFile.credentials,
-						"OAUTHACCESSTOKEN"), PropertyLoader.getPropertyValue(
-						PropertyFile.credentials, "OAUTHACCESSTOKENSECRET"));
+		auth = new OAuth1(PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERKEY"),
+				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERSECRET"),
+				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKEN"),
+				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKENSECRET"));
 
 		BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(100000);
 
@@ -89,8 +92,7 @@ public class ProducerTwitterStreamingAPI {
 				while (sc.nextLine().toLowerCase().equals("y")) {
 					System.out.println("Type next keyword");
 					keywords.add(sc.nextLine());
-					System.out
-							.println("Another Keyword? (y or Anything to stop)");
+					System.out.println("Another Keyword? (y or Anything to stop)");
 				}
 				System.out.println("starting search...");
 
@@ -102,8 +104,7 @@ public class ProducerTwitterStreamingAPI {
 				for (int i = 0; i < 100; i++) {
 					try {
 						String tweet = msgQueue.take().trim();
-						producer.send(new ProducerRecord<String, String>(
-								"twitter", tweet));
+						producer.send(new ProducerRecord<String, String>("twitter", tweet));
 						System.out.println(tweet);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
