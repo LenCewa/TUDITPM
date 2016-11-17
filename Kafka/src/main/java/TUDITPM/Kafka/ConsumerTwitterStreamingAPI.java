@@ -31,7 +31,7 @@ public class ConsumerTwitterStreamingAPI {
 		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "enable.auto.commit"));
 		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "enable.auto.commit"));
+				PropertyFile.kafka, "auto.commit.interval.ms"));
 		props.put("auto.offset.reset", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "auto.offset.reset"));
 		props.put("session.timeout.ms", PropertyLoader.getPropertyValue(
