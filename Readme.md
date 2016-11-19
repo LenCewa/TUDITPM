@@ -31,6 +31,10 @@ Startbefehl:
 
 3. Der Teil nach --dbpath gibt an wo ihr eure Daten gespeichert haben wollt
 
+## Installation Spark
+
+https://hernandezpaul.wordpress.com/2016/01/24/apache-spark-installation-on-windows-10/
+
 ## Branchstruktur
 
 Die folgenden Branches sollen genutzt werden:
