@@ -9,7 +9,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * producer should contain all necessary startup functions in its constructor.
  * 
  * @author Tobias Mahncke
- * @version 1.1
+ * @version 1.2
  */
 public class Main {
 	public static void main(String[] args) {
@@ -20,7 +20,7 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerTwitterStreamingAPI().start();
+		new ConsumerTwitterStreamingAPI("dbname").start();
 		new ProducerTwitterStreamingAPI().start();
 	}
 }
