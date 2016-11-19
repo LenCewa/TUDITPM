@@ -15,15 +15,20 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
  * Listening to the twitter Stream and converting the given data to stream it to
- * spark.
+ * spark. Extends Thread so that it can run asynchronously. 
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
  * @version 1.2
  */
-public class ConsumerTwitterStreamingAPI {
-
-	public ConsumerTwitterStreamingAPI() {
+public class ConsumerTwitterStreamingAPI extends Thread{
+	
+	/**
+	 * Gets called on start of the Thread
+	 */
+	@Override
+	public void run() {
+		
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "bootstrap.servers"));
@@ -31,7 +36,7 @@ public class ConsumerTwitterStreamingAPI {
 		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "enable.auto.commit"));
 		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "enable.auto.commit"));
+				PropertyFile.kafka, "auto.commit.interval.ms"));
 		props.put("auto.offset.reset", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "auto.offset.reset"));
 		props.put("session.timeout.ms", PropertyLoader.getPropertyValue(
