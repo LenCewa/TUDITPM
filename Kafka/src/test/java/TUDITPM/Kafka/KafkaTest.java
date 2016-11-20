@@ -58,7 +58,7 @@ public class KafkaTest {
 					.getCollection("testcollection");
 			assertEquals(1, collection.count());
 			Document document = collection.find().first();
-			// Only check for existence as the complexer test cases will check
+			// Only check for existence as the more complex test cases will check
 			// for the eventualities
 			assertTrue(document.containsKey("username"));
 			assertTrue(document.containsKey("location"));
@@ -79,22 +79,59 @@ public class KafkaTest {
 	}
 	
 	/**
+	 * Question: How not to make separate classes for test purposes?
+	 *   - Test will fail because assertEquals is only true for one out of three text files
+	 * 
 	 * Tests if the text of an oversized tweet get's saved and red correctly. The maximum tweet length
 	 * was 140 characters {@link https://de.wikipedia.org/wiki/Twitter}
 	 * I assume characters aren't count because they have loosen their regulations.
 	 */
 	@Test
-	public void oversizedTextLength() {
+	public void oversizedTextLength() { /*
+		// Start twitter consumer and read the text file
+		new ConsumerTwitterStreamingAPI("junit").start();
+		new ProducerTextfile().start();
 		
+		try {
+			Thread.sleep(10000);
+			// Check the content of the database against the expected outcome
+			MongoCollection<Document> collection = mongo
+					.getCollection("testcollection");
+			assertEquals(1, collection.count());
+			Document document = collection.find().first();
+			// Only check for existence as the more complex test cases will check
+			// for the eventualities
+			assertEquals(140, document.getString("text"));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}*/
 	}
 	
 	/**
+	 * Question: How not to make separate classes for test purposes?
+	 *   - Test will fail because assertEquals is only true for one out of three text files
+	 * 
 	 * Tests if an empty text get's saved and red correctly.
 	 * An empty text is considered as an empty string.
 	 */
 	@Test
-	public void emptyTextLength() {
+	public void emptyTextLength() { /*
+		new ConsumerTwitterStreamingAPI("junit").start();
+		new ProducerTextfile().start();
 		
+		try {
+			Thread.sleep(10000);
+			// Check the content of the database against the expected outcome
+			MongoCollection<Document> collection = mongo
+					.getCollection("testcollection");
+			assertEquals(1, collection.count());
+			Document document = collection.find().first();
+			// Only check for existence as the more complex test cases will check
+			// for the eventualities
+			assertEquals("", document.getString("text"));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}*/
 	}
 	
 	/**
