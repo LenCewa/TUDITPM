@@ -20,7 +20,9 @@ import com.mongodb.client.MongoCollection;
  * special cases.
  * 
  * @author Tobias Mahncke
- * @version 1.1
+ * @author Len Williamson
+ * 
+ * @version 1.2
  */
 public class KafkaTest {
 	private static MongoDBConnector mongo;
@@ -48,6 +50,7 @@ public class KafkaTest {
 		// Start twitter consumer and read the text file
 		new ConsumerTwitterStreamingAPI("junit").start();
 		new ProducerTextfile().start();
+		
 		try {
 			Thread.sleep(10000);
 			// Check the content of the database against the expected outcome
@@ -65,7 +68,35 @@ public class KafkaTest {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/**
+	 * Tests if special characters are stored correctly.
+	 * Edit: I think it is unnecessary because they aren't relevant for the informaition  
+	 */
+	@Test
+	public void specialCharacter() {
+		
+	}
+	
+	/**
+	 * Tests if the text of an oversized tweet get's saved and red correctly. The maximum tweet length
+	 * was 140 characters {@link https://de.wikipedia.org/wiki/Twitter}
+	 * I assume characters aren't count because they have loosen their regulations.
+	 */
+	@Test
+	public void oversizedTextLength() {
+		
+	}
+	
+	/**
+	 * Tests if an empty text get's saved and red correctly.
+	 * An empty text is considered as an empty string.
+	 */
+	@Test
+	public void emptyTextLength() {
+		
+	}
+	
 	/**
 	 * After each test case the collections are dropped to create deterministic
 	 * tests.

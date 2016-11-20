@@ -29,7 +29,7 @@ public class ConsumerTwitterStreamingAPI extends Thread {
 	 * Creates a new consumer for the given database name.
 	 * 
 	 * @param dbname
-	 *            - the name of the database to wihc this consumer connects
+	 *            - the name of the database to which this consumer connects
 	 */
 	public ConsumerTwitterStreamingAPI(String dbname) {
 		this.dbname = dbname;
