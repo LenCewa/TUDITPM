@@ -54,7 +54,7 @@ app.use(express.static(path.join(__dirname, '/public'), {
 app.use(bodyParser.json());
 
 // Routing for the frontend
-app.get('/#/index', function routeIndex(req, res) {
+app.get('/index', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/index.html'));
 });
 

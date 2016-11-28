@@ -1,8 +1,40 @@
-<!--
-/html/index.html
+<!DOCTYPE html>
+<html>
+	<link type="text/css" rel="stylesheet" href="stylesheet.css" />
+	<head>
+		<Title> Add a company </Title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	</head>
+	<body>
+		<div ID="header">
+			<h1 ID="title">Specify a company name in the input field to add it</h1>
+		</div>
+		<div ID="middle">
+		
+		<!-- POST HTML Variante
+			<form ID="company" action="kafka.php" method="post">
+				Company name:<br>
+				<input ID="company" type="text" name="company"><br>
+				<input type="submit" value="Submit">
+     		</form>
+		-->
+		<!-- POST jQuery Variante -->
+			<form ID="company" action="kafka.php" method="post">
+				Company name:<br>
+				<input ID="companyName" type="text" name="company"><br>
+		
+				<input type="button" value="Submit" onClick='postData()'>
 
-Version 2.1
-
-Author Tobias Mahncke
--->
-<h1>Hello World</h1>
+				<script>
+					function postData() {
+						$.post("/api/company", {company: $('#companyName').val()}, function( data ) {
+							alert( "Data Loaded: " + data. );
+						}, "json");
+					}
+				</script>
+     		</form>
+		</div>
+		<div ID="bottom">
+		</div>
+	</body>
+</html>
