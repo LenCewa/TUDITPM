@@ -1,19 +1,34 @@
 'use strict';
 // server.js
 
+/**
+ * Main server file to set up the server.
+ * 
+ * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
+ * @license      MIT
+ * @version      2.1
+ *
+ * @requires body-parser
+ * @requires compression
+ * @requires express
+ * @requires fs-extra
+ */
+
 // Dependencies
-var http = require("http");
-var express = require('express');
-var compress = require('compression');
 var bodyParser = require('body-parser');
+var compress = require('compression');
+var express = require('express');
+var fs = require('fs-extra');
+var http = require("http");
 var path = require('path');
 
 // Create and start the server
 var app = module.exports = express();
 var server = http.Server(app);
 
-// 
+// load configuration
 var config = require('./config/server.conf.json');
+var connections = require('./config/connections.conf.json');
 
 // set up the port
 app.set('port', config.port);
@@ -39,8 +54,41 @@ app.use(express.static(path.join(__dirname, '/public'), {
 app.use(bodyParser.json());
 
 // Routing for the frontend
-app.get('/', function routeIndex(req, res) {
+app.get('/#/index', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/index.html'));
+});
+
+/**
+ *  Takes a company name and appends it to the kafka list of companies
+ */
+app.post('/api/company', function setConfig(req, res) {
+	fs.ensureFile(connections.kafka, function(err) {
+		// if the file cannot be created the server isn't set up right
+		if (err) {
+			res.status(500).send(err);
+		}
+		// file has now been created, including the directory it is to be placed in
+		fs.readFile(connections.kafka, 'utf8', function(err, data) {
+			// if the file cannot be read the user has to contact a adminstrator
+			if (err) {
+				res.status(500).send(err);
+			}
+			// Append the data to existing data
+			if (data !== '') {
+				data = data + '\n' + req.body.company;
+			} else {
+				data = req.body.company;
+			}
+			// if the file cannot be written the user has to contact a adminstrator
+			fs.writeFile(connections.kafka, data, function(err) {
+				if (err) {
+					res.status(500).send(err);
+				}
+				res.status(204).send();
+			});
+		});
+
+	})
 });
 
 // Start Express server.
