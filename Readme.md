@@ -35,6 +35,10 @@ Startbefehl:
 
 https://hernandezpaul.wordpress.com/2016/01/24/apache-spark-installation-on-windows-10/
 
+## Installation Node.js
+Zunächst sollte Node.js installiert werden: https://nodejs.org/en/
+Dabei ist darauf zu achten den Windows Pfad um node zu ergänzen. Jetzt sollten in der Kommandozeile sowohl `node -v` als auch `npm -v` funktionieren. Anschließend sollte ein `npm install` im Node-Ordner ausgeführt werden, um die in der package.json definierten Pakete zu laden.
+
 ## Branchstruktur
 
 Die folgenden Branches sollen genutzt werden:
