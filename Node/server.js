@@ -12,6 +12,8 @@
  * @requires compression
  * @requires express
  * @requires fs-extra
+ * @requires http
+ * @requires path
  */
 
 // Dependencies
@@ -87,7 +89,6 @@ app.post('/api/company', function setConfig(req, res) {
 				res.status(204).send();
 			});
 		});
-
 	})
 });
 

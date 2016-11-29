@@ -1,40 +1,38 @@
 <!DOCTYPE html>
+<!--
+index.html
+
+Version 2.3
+
+Author Tobias Mahncke
+Author Yannick Pferr
+-->
 <html>
-	<link type="text/css" rel="stylesheet" href="stylesheet.css" />
-	<head>
-		<Title> Add a company </Title>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	</head>
-	<body>
-		<div ID="header">
-			<h1 ID="title">Specify a company name in the input field to add it</h1>
-		</div>
-		<div ID="middle">
-		
-		<!-- POST HTML Variante
+
+<head>
+    <Title> Add a company </Title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="js/index.js"></script>
+</head>
+
+<body>
+    <div ID="header">
+        <h1 ID="title">Specify a company name in the input field to add it</h1>
+    </div>
+    <div ID="middle">
+        <!-- POST HTML Variante
 			<form ID="company" action="kafka.php" method="post">
 				Company name:<br>
 				<input ID="company" type="text" name="company"><br>
 				<input type="submit" value="Submit">
      		</form>
 		-->
-		<!-- POST jQuery Variante -->
-			<form ID="company" action="kafka.php" method="post">
-				Company name:<br>
-				<input ID="companyName" type="text" name="company"><br>
-		
-				<input type="button" value="Submit" onClick='postData()'>
-
-				<script>
-					function postData() {
-						$.post("/api/company", {company: $('#companyName').val()}, function( data ) {
-							alert( "Data Loaded: " + data. );
-						}, "json");
-					}
-				</script>
-     		</form>
-		</div>
-		<div ID="bottom">
-		</div>
-	</body>
+        <!-- POST jQuery Variante -->
+        Company name:
+        <input ID="companyName" type="text" name="company">
+        <input type="button" value="Add Company" onClick='postCompany()'>
+    </div>
+    <div ID="bottom">
+    </div>
+</body>
 </html>
