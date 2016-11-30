@@ -5,7 +5,7 @@
  * Grunt task runner file.
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      2.1
+ * @version      2.2
  */
 module.exports = function(grunt) {
 	grunt.initConfig({
@@ -78,7 +78,7 @@ module.exports = function(grunt) {
 			dev: {
 				script: 'server.js',
 				options: {
-					watch: ['app/**/*.js']
+					watch: ['app/**/*.js', 'server.js']
 				}
 			}
 		},
