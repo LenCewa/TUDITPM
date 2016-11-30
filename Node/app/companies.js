@@ -5,7 +5,7 @@
  * Contains all functions to manipulate the list of companies
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      2.2
+ * @version      2.3
  *
  * @requires fs-extra
  */
@@ -47,7 +47,7 @@ function readCompanies(callback) {
 			callback(null, data);
 		});
 	});
-};
+}
 
 module.exports = function(app) {
 	console.log('company routes loading');
@@ -66,17 +66,17 @@ module.exports = function(app) {
 					en: 'The company name cannot be empty.',
 					err: null
 				}
-			})
-		}
-		// Append the data to existing data
-		if (data !== '') {
-			data = data + '\n' + req.body.company;
-		} else {
-			data = req.body.company;
+			});
 		}
 		readCompanies(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
+			}
+			// Append the data to existing data
+			if (data !== '') {
+				data = data + '\n' + req.body.company;
+			} else {
+				data = req.body.company;
 			}
 			// if the file cannot be written the user has to contact a adminstrator
 			fs.writeFile(connections.kafka, data, function(err) {
