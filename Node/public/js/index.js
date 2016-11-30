@@ -18,29 +18,32 @@ function postCompany() {
 		data: '{"company":"' + $('#companyName').val() + '"}',
 		success: function(data) {
 			// TODO: reload list of companies
-			$.get("/api/company", function(data){
-				showCompanies(data);
-			});
+			var table = document.getElementById("companyTable");
+			addTableData(table, $("#companyName").val());
 		},
 		contentType: 'application/json'
 	});
 }
 
-function showCompanies(){
-	
+function showCompanies(data){
 	var table = document.getElementById("companyTable");
-	var array = data.split("\n");
-	for (var i = 0; i < 3; i++){
-		var tr = document.createElement('tr');   
-
-		var td1 = document.createElement('td');
-
-		var text1 = document.createTextNode(array[i]);
-
-		td1.appendChild(text1);
-		tr.appendChild(td1);
-		
-		table.appendChild(tr);
+	console.log(data);
+	for (var i = 0; i < data.length; i++){
+		addTableData(table, data[i]);
 	}
 	document.body.appendChild(table);
+}
+
+function addTableData(table, data){
+	
+	var tr = document.createElement('tr');   
+
+	var td1 = document.createElement('td');
+
+	var text1 = document.createTextNode(data);
+
+	td1.appendChild(text1);
+	tr.appendChild(td1);
+		
+	document.getElementById("companyTableBody").appendChild(tr);
 }

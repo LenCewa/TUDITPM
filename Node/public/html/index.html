@@ -13,6 +13,7 @@ Author Yannick Pferr
     <Title> Add a company </Title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="js/index.js"></script>
+	<link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
 </head>
 
 <body>
@@ -28,17 +29,23 @@ Author Yannick Pferr
      		</form>
 		-->
         <!-- POST jQuery Variante -->
-        Company name:
-        <input ID="companyName" type="text" name="company">
-        <input type="button" value="Add Company" onClick='postCompany()'>
+        
+		<div class="form-group col-md-8">
+			<input class="form-control" ID="companyName" type="text" name="company" placeholder="Company">
+        </div>
+		<input class="btn btn-primary col-md-2" type="button" value="Add Company" onClick='postCompany()'>
     </div>
     <div ID="bottom">
     </div>
 	
-	<table ID="companyTable">
-		<tr>
-			<th>Companies</th>
-		</tr>
+	<table class="table" ID="companyTable">
+		<thead>
+			<tr>
+				<th>Companies</th>
+			</tr>
+		</thead>
+		<tbody ID="companyTableBody">
+		</tbody>
 	</table>
 	
 </body> 
