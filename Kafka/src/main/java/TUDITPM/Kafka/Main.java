@@ -5,11 +5,12 @@ import java.io.IOException;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
- * Main class to start all necessary consumers and producers. Each consumer and
- * producer should contain all necessary startup functions in its constructor.
+ * Main class to start the producer. The producer
+ * should contain all necessary startup functions in its constructor.
  * 
  * @author Tobias Mahncke
- * @version 1.1
+ * @author Yannick Pferr
+ * @version 1.2
  */
 public class Main {
 	public static void main(String[] args) {
@@ -20,7 +21,6 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerTwitterStreamingAPI().start();
 		new ProducerTwitterStreamingAPI().start();
 	}
 }
