@@ -5,7 +5,7 @@
  * Contains all functions to manipulate the list of companies
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      2.3
+ * @version      2.4
  *
  * @requires fs-extra
  */
@@ -78,9 +78,9 @@ module.exports = function(app) {
 			} else {
 				data = req.body.company;
 			}
-			// if the file cannot be written the user has to contact a adminstrator
 			fs.writeFile(connections.kafka, data, function(err) {
 				if (err) {
+					// if the file cannot be written the user has to contact an adminstrator
 					return res.status(500).send({
 						err: {
 							de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
@@ -104,7 +104,8 @@ module.exports = function(app) {
 			if (err) {
 				return res.status(500).send(err);
 			}
-			return res.send(data);
+			var array = data.split('\n');
+			return res.json(array);
 		});
 	});
 };
