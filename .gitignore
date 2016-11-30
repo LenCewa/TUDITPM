@@ -10,3 +10,4 @@ Kafka/properties/companies
 /Spark/.cache-main
 .recommenders/
 RemoteSystemsTempFiles/
+Node/public/dist/
