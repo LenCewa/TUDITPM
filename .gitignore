@@ -4,4 +4,10 @@
 /Kafka/.settings/
 Node/node_modules/
 Kafka/properties/companies
+/Spark/.project
+/Spark/.classpath
+/Spark/.settings/
+/Spark/.cache-main
+.recommenders/
+RemoteSystemsTempFiles/
 Node/public/dist/
