@@ -1,6 +1,13 @@
 package TUDITPM.Kafka;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
@@ -76,50 +83,67 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		Client builder = new ClientBuilder().hosts(Constants.STREAM_HOST)
 				.authentication(auth).endpoint(hosebirdEndpoint)
 				.processor(new StringDelimitedProcessor(msgQueue)).build();
-		// Create a scanner to interact with the user
-		Scanner sc = null;
-
+	
 		try {
 			producer = new KafkaProducer<>(props);
 			// TODO: replace with keywords from file
-			sc = new Scanner(System.in);
-			while (true) {
-				ArrayList<String> keywords = new ArrayList<>();
-				System.out.println("Type Keyword to search Tweets");
-				keywords.add(sc.nextLine());
-
-				System.out.println("Another Keyword? (y or Anything to stop)");
-				while (sc.nextLine().toLowerCase().equals("y")) {
-					System.out.println("Type next keyword");
-					keywords.add(sc.nextLine());
-					System.out.println("Another Keyword? (y or Anything to stop)");
-				}
-				System.out.println("starting search...");
-
-				// Fetches Tweets that contain specified keywords
-				hosebirdEndpoint.trackTerms(keywords);
-				builder.connect();
-
-				// Stop at 100 tweets
-				for (int i = 0; i < 100; i++) {
-					try {
-						String tweet = msgQueue.take().trim();
-						producer.send(new ProducerRecord<String, String>("twitter", tweet));
-						System.out.println(tweet);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						System.out.println("Couldnt fetch tweets");
-					}
-				}
-
+		
+			LinkedList<String> companies = loadCompanies();
+			if(companies.isEmpty()){
+				System.out.println("No companies added, aborting...");
+				producer.close();
 				builder.stop();
-				System.out.println("finished");
+				return;
 			}
+				
+			
+			System.out.println("starting search...");
+
+			// Fetches Tweets that contain specified keywords
+			hosebirdEndpoint.trackTerms(companies);
+			builder.connect();
+
+			// Stop at 100 tweets
+			for (int i = 0; i < 100; i++) {
+				try {
+					String tweet = msgQueue.take().trim();
+					producer.send(new ProducerRecord<String, String>("twitter", tweet));
+					System.out.println(tweet);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					System.out.println("Couldnt fetch tweets");
+				}
+			}
+
+			System.out.println("finished");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			producer.close();
-			sc.close();
+			builder.stop();
 		}
+	}
+	
+private LinkedList<String> loadCompanies(){
+		
+		LinkedList<String> l = new LinkedList<>();
+		try {
+			FileInputStream in = new FileInputStream(new File("properties/companies"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			 
+			String line = null;
+			while ((line = br.readLine()) != null)
+				l.add(line);
+			
+			br.close();
+			in.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return l;
 	}
 }
