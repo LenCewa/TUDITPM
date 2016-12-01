@@ -6,12 +6,11 @@
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
  * @license      MIT
- * @version      2.1
+ * @version      2.2
  *
  * @requires body-parser
  * @requires compression
  * @requires express
- * @requires fs-extra
  * @requires http
  * @requires path
  */
@@ -20,7 +19,6 @@
 var bodyParser = require('body-parser');
 var compress = require('compression');
 var express = require('express');
-var fs = require('fs-extra');
 var http = require("http");
 var path = require('path');
 
@@ -60,37 +58,8 @@ app.get('/index', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/index.html'));
 });
 
-/**
- *  Takes a company name and appends it to the kafka list of companies
- */
-app.post('/api/company', function setConfig(req, res) {
-	fs.ensureFile(connections.kafka, function(err) {
-		// if the file cannot be created the server isn't set up right
-		if (err) {
-			res.status(500).send(err);
-		}
-		// file has now been created, including the directory it is to be placed in
-		fs.readFile(connections.kafka, 'utf8', function(err, data) {
-			// if the file cannot be read the user has to contact a adminstrator
-			if (err) {
-				res.status(500).send(err);
-			}
-			// Append the data to existing data
-			if (data !== '') {
-				data = data + '\n' + req.body.company;
-			} else {
-				data = req.body.company;
-			}
-			// if the file cannot be written the user has to contact a adminstrator
-			fs.writeFile(connections.kafka, data, function(err) {
-				if (err) {
-					res.status(500).send(err);
-				}
-				res.status(204).send();
-			});
-		});
-	})
-});
+// API routing
+require('./app/companies')(app);
 
 // Start Express server.
 server.listen(app.get('port'), function() {

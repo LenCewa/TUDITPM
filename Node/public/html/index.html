@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
-index.html
+public/html/index.html
 
-Version 2.3
+Version 2.4
 
 Author Tobias Mahncke
 Author Yannick Pferr
@@ -34,5 +34,17 @@ Author Yannick Pferr
     </div>
     <div ID="bottom">
     </div>
-</body>
+	
+	<table ID="companyTable">
+		<tr>
+			<th>Companies</th>
+		</tr>
+	</table>
+	
+</body> 
+<script type="text/javascript">
+	$.get("/api/company", function(data){
+				showCompanies(data);
+		});
+</script>
 </html>
