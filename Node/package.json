@@ -12,6 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "bootstrap": "^3.3.7",
     "compression": "^1.6.2",
     "express": "^4.14.0",
     "fs-extra": "^1.0.0"
