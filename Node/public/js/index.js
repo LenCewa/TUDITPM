@@ -1,3 +1,4 @@
+'use strict';
 // public/js/index.js
 /**
  * Javascript file for all the funtions used in the configuration section.
@@ -5,8 +6,56 @@
  * @author       Yannick Pferr
  * @author       Tobias Mahncke
  * 
- * @version      2.2
+ * @version      2.3
  */
+
+/**
+ * Appends the given text in a table cell to the given row.
+ * @param {tr-node} row  The table row to wich to append
+ * @param {String}  text The text wich will be in the table cell
+ */
+function addTableData(row, text) {
+	var cell = document.createElement('td');
+	// Perform a null check 
+	if (!text) {
+		text = '';
+	}
+	var textNode = document.createTextNode(text);
+
+	cell.appendChild(textNode);
+	row.appendChild(cell);
+}
+
+/**
+ * Adds a single table row to the table. The row contains a given number of columns.
+ * @param {[type]} table        [description]
+ * @param {[type]} data         [description]
+ * @param {[type]} index        [description]
+ * @param {[type]} columnNumber [description]
+ * @param {[type]} columnLength [description]
+ */
+function addTableRow(table, data, index, columnNumber, columnLength) {
+	var row = document.createElement('tr');
+	for (var i = 0; i < columnNumber; i++) {
+		console.log(index + columnNumber * columnLength);
+		addTableData(row, data[index + i * columnLength]);
+	}
+	table.appendChild(row);
+}
+
+/**
+ * Displays the given data in a simple table.
+ * @param  {[type]} data [description]
+ */
+function showCompanies(data) {
+	var columnNumber = 4;
+	var columnLength = Math.ceil(data.length / columnNumber);
+	// Fills the table row by row
+	for (var i = 0; i < columnLength; i++) {
+		addTableRow(document.getElementById("companyTableBody"), data, i, columnNumber, columnLength);
+	}
+	document.getElementById("tableWrapper").appendChild(document.getElementById("companyTable"));
+}
 
 /**
  * Sends the company given in the input field "companyName" to the server.
@@ -17,33 +66,10 @@ function postCompany() {
 		url: '/api/company',
 		data: '{"company":"' + $('#companyName').val() + '"}',
 		success: function(data) {
-			// TODO: reload list of companies
-			var table = document.getElementById("companyTable");
-			addTableData(table, $("#companyName").val());
+			$.get("/api/company", function(data) {
+				showCompanies(data);
+			});
 		},
 		contentType: 'application/json'
 	});
-}
-
-function showCompanies(data){
-	var table = document.getElementById("companyTable");
-	console.log(data);
-	for (var i = 0; i < data.length; i++){
-		addTableData(table, data[i]);
-	}
-	document.body.appendChild(table);
-}
-
-function addTableData(table, data){
-	
-	var tr = document.createElement('tr');   
-
-	var td1 = document.createElement('td');
-
-	var text1 = document.createTextNode(data);
-
-	td1.appendChild(text1);
-	tr.appendChild(td1);
-		
-	document.getElementById("companyTableBody").appendChild(tr);
 }
