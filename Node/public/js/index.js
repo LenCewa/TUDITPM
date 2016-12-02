@@ -6,7 +6,7 @@
  * @author       Yannick Pferr
  * @author       Tobias Mahncke
  * 
- * @version      2.3
+ * @version      2.4
  */
 
 /**
@@ -37,10 +37,9 @@ function addTableData(row, text) {
 function addTableRow(table, data, index, columnNumber, columnLength) {
 	var row = document.createElement('tr');
 	for (var i = 0; i < columnNumber; i++) {
-		console.log(index + columnNumber * columnLength);
 		addTableData(row, data[index + i * columnLength]);
 	}
-	table.appendChild(row);
+	table.append(row);
 }
 
 /**
@@ -50,11 +49,13 @@ function addTableRow(table, data, index, columnNumber, columnLength) {
 function showCompanies(data) {
 	var columnNumber = 4;
 	var columnLength = Math.ceil(data.length / columnNumber);
+	// Clear the current data
+	$('#companyTableBody').empty();
 	// Fills the table row by row
 	for (var i = 0; i < columnLength; i++) {
-		addTableRow(document.getElementById("companyTableBody"), data, i, columnNumber, columnLength);
+		addTableRow($('#companyTableBody'), data, i, columnNumber, columnLength);
 	}
-	document.getElementById("tableWrapper").appendChild(document.getElementById("companyTable"));
+	$('#tableWrapper').append($('#companyTable'));
 }
 
 /**
