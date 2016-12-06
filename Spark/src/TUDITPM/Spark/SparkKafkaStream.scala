@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
  * tweets to KeywordExtractor
  *
  * @author Yannick Pferr
- * @version 1.1
+ * @version 3.0
  */
 object SparkKafkaStream {
 
