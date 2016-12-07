@@ -5,7 +5,7 @@
  * Grunt task runner file.
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      2.2
+ * @version      2.3
  */
 module.exports = function(grunt) {
 	grunt.initConfig({
@@ -19,6 +19,9 @@ module.exports = function(grunt) {
 				node: true,
 				strict: true,
 				latedef: true,
+				globals: {
+					'$': false
+				}
 			},
 			all: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js', 'app/**/*.js', 'Gruntfile.js']
 		},
@@ -89,6 +92,17 @@ module.exports = function(grunt) {
 				logConcurrentOutput: true
 			},
 			tasks: ['nodemon', 'watch']
+		},
+
+		// TEST TASKS ==============================================================
+		// run Mocha Tests
+		mochaTest: {
+			backend: {
+				src: ['test/**/*.js', '!test/BackTestHelper.js'],
+			},
+			options: {
+				run: true
+			}
 		}
 	});
 
@@ -100,7 +114,10 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-concurrent');
 	grunt.loadNpmTasks('grunt-nodemon');
+	grunt.loadNpmTasks('grunt-mocha-test');
 
 	// Task to run the server
 	grunt.registerTask('default', ['jshint', 'jscs', 'cssmin', 'uglify', 'concurrent']);
+	// Test task
+	grunt.registerTask('test', ['jshint', 'jscs', 'mochaTest']);
 };
