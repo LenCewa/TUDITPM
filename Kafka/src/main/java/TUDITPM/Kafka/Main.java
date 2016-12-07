@@ -9,7 +9,9 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * producer should contain all necessary startup functions in its constructor.
  * 
  * @author Tobias Mahncke
- * @version 1.2
+ * @author Yannick Pferr
+ * 
+ * @version 3.1
  */
 public class Main {
 	public static void main(String[] args) {

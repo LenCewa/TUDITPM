@@ -1,13 +1,6 @@
 package TUDITPM.Kafka;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,7 +19,8 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 1.3
+ * 
+ * @version 3.1
  */
 public class ConsumerTwitterStreamingAPI extends Thread {
 
@@ -90,7 +84,7 @@ public class ConsumerTwitterStreamingAPI extends Thread {
 							new Document("username", username)
 									.append("location", location)
 									.append("timeNDate", timeNdate)
-									.append("text", text), "testcollection");
+									.append("text", text), "rawdata_twitter");
 				} catch (JSONException e) {
 					e.printStackTrace();
 					missedTweets++;
