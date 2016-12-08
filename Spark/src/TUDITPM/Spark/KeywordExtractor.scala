@@ -19,13 +19,13 @@ import org.clulab.struct.DirectedGraphEdgeIterator
  * @author Ludwig Koch
  * @author Yannick Pferr
  * 
- * @version 1.0
+ * @version 3.1
  */
 object KeywordExtractor {
   
    val mongoConn = MongoClient("localhost", 27017)
-   val mongoDB = mongoConn("dbtest")
-   val mongoColl = mongoDB("testcollection")
+   val mongoDB = mongoConn("keywords_dev")
+   val mongoColl = mongoDB("company_trump")
   
   def extractKey(tweet: String) = {
    

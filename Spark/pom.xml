@@ -38,7 +38,7 @@
 					<launchers>
 						<launcher>
 							<id>main</id>
-							<mainClass>UDITPM.Spark.SparkKafkaStream</mainClass>		
+							<mainClass>TUDITPM.Spark.SparkKafkaStream</mainClass>		
 						</launcher>
 					</launchers>
 				</configuration>

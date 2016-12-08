@@ -11,7 +11,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @author Tobias Mahncke
  * @author Yannick Pferr
  * 
- * @version 3.1
+ * @version 3.2
  */
 public class Main {
 	public static void main(String[] args) {
@@ -22,7 +22,7 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerTwitterStreamingAPI("dbname").start();
+		new ConsumerTwitterStreamingAPI("rawdata_dev").start();
 		new ProducerTwitterStreamingAPI().start();
 	}
 }
