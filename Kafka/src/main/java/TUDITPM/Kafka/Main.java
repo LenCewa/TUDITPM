@@ -14,7 +14,8 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @version 3.2
  */
 public class Main {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SecurityException,
+			IOException {
 		try {
 			new PropertyLoader();
 		} catch (IOException e) {
@@ -22,7 +23,10 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerTwitterStreamingAPI("rawdata_dev").start();
+		ConsumerTwitterStreamingAPI consumerTwitterStreamingAPI = new ConsumerTwitterStreamingAPI(
+				"rawdata_dev");
+		Thread consumer = new Thread(consumerTwitterStreamingAPI);
+		consumer.start();
 		new ProducerTwitterStreamingAPI().start();
 	}
 }

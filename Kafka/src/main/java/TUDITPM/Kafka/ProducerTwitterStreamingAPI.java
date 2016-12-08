@@ -86,7 +86,6 @@ public class ProducerTwitterStreamingAPI extends Thread {
 
 		try {
 			producer = new KafkaProducer<>(props);
-			// TODO: replace with keywords from file
 
 			LinkedList<String> companies = loadCompanies();
 			if (companies.isEmpty()) {

@@ -19,6 +19,9 @@ https://gradle.org/gradle-download/
 
 vorausgesetzt jeder hat git installiert
 
+## Log-Reader
+https://sourceforge.net/projects/jlogviewer/
+
 ## Installation MongoDB
 Community Server (Download msi)
 https://www.mongodb.com/download-center?jmp=nav#community

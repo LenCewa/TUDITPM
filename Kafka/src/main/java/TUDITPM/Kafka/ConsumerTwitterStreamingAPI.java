@@ -1,7 +1,10 @@
 package TUDITPM.Kafka;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Observable;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -15,25 +18,30 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
  * Listening to the twitter Stream and converting the given data to stream it to
- * spark. Extends Thread so that it can run asynchronously.
+ * spark. Implements Runnable so that it can run asynchronously.
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
  * 
- * @version 3.1
+ * @version 3.2
  */
-public class ConsumerTwitterStreamingAPI extends Thread {
+public class ConsumerTwitterStreamingAPI extends Observable implements Runnable {
+	private final Logger log = Logger.getLogger(this.getClass().getName());
 
-	private String dbname;
+	private MongoDBConnector mongo;
 
 	/**
 	 * Creates a new consumer for the given database name.
 	 * 
 	 * @param dbname
 	 *            - the name of the database to which this consumer connects
+	 * @throws IOException 
+	 * @throws SecurityException 
 	 */
-	public ConsumerTwitterStreamingAPI(String dbname) {
-		this.dbname = dbname;
+	public ConsumerTwitterStreamingAPI(String dbname) throws SecurityException, IOException {
+		log.addHandler(LoggingHandler.getHandler());
+		mongo = new MongoDBConnector(dbname);
+		log.info("Consumer connected to database");
 	}
 
 	/**
@@ -60,39 +68,49 @@ public class ConsumerTwitterStreamingAPI extends Thread {
 
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
-
-		MongoDBConnector mongo = new MongoDBConnector(dbname);
+		log.info("Consumer connected to topic TWITTER");
 
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
 			int missedTweets = 0;
 			for (ConsumerRecord<String, String> record : records) {
-				System.out.println(record.value());
 				try {
-					// decode JSON String
-					JSONObject jObj = new JSONObject(record.value());
-					String text = jObj.getString("text");
-					String timeNdate = jObj.getString("created_at");
-
-					JSONObject user = jObj.getJSONObject("user");
-					String username = user.getString("screen_name");
-					String location = (!user.get("location").toString()
-							.equals("null")) ? user.getString("location") : "";
-					
-					// Write to DB
-					mongo.writeToDb(
-							new Document("username", username)
-									.append("location", location)
-									.append("timeNDate", timeNdate)
-									.append("text", text), "rawdata_twitter");
+					writeToDatabase(new JSONObject(record.value()));
 				} catch (JSONException e) {
 					e.printStackTrace();
 					missedTweets++;
 				}
 			}
 			if (missedTweets > 0) {
-				System.out.println(missedTweets + " Tweets missed");
+				log.warning(missedTweets + " Tweets missed");
 			}
 		}
+	}
+
+	/**
+	 * Writes the given JSONObject to the MongoDB and notifies the observers.
+	 * 
+	 * @param jObj
+	 *            - The JSONObject to save.
+	 */
+	private void writeToDatabase(JSONObject jObj) {
+		// decode JSON String
+		String text = jObj.getString("text");
+		String timeNdate = jObj.getString("created_at");
+
+		JSONObject user = jObj.getJSONObject("user");
+		String username = user.getString("screen_name");
+		String location = (!user.get("location").toString().equals("null")) ? user
+				.getString("location") : "";
+
+		// Write to DB
+		Document document = new Document("username", username)
+				.append("location", location).append("timeNDate", timeNdate)
+				.append("text", text);
+		mongo.writeToDb(document, "rawdata_twitter");
+		log.info("Twitter record " + jObj.getString("id_str")
+				+ " written to database");
+		setChanged();
+		notifyObservers(document);
 	}
 }

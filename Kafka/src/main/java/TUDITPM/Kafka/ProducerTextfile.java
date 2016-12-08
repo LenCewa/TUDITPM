@@ -2,10 +2,11 @@ package TUDITPM.Kafka;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -23,6 +24,16 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @version 1.2
  */
 public class ProducerTextfile extends Thread {
+	private final Logger log = Logger.getLogger(this.getClass().getName());
+
+	private String filename;
+
+	public ProducerTextfile(String filename) throws SecurityException,
+			IOException {
+		log.addHandler(LoggingHandler.getHandler());
+		log.setLevel(Level.ALL);
+		this.filename = "src/test/data/" + filename;
+	}
 
 	/**
 	 * Gets called on start of the Thread
@@ -49,51 +60,46 @@ public class ProducerTextfile extends Thread {
 				PropertyFile.kafka, "value.serializer"));
 
 		// Create the producer
-		Producer<String, String> producer_test = new KafkaProducer<>(props);
-		Producer<String, String> producer_empty_text = new KafkaProducer<>(props);
-		Producer<String, String> producer_140_chars = new KafkaProducer<>(props);
+		Producer<String, String> producer = new KafkaProducer<>(props);
 
-		List<String> lines_test = null;
-		List<String> lines_empty_text = null;
-		List<String> lines_140_chars = null;
+		log.info("Producer set up.");
+
+		List<String> lines = null;
 		
 		try {
-			lines_test = Files.readAllLines(Paths.get("test.txt"));
-			
-			// Added two more test text files for testing purposes by Len
-			lines_140_chars = Files.readAllLines(Paths.get("test_140_chars.txt"));
-			lines_empty_text = Files.readAllLines(Paths.get("test_empty_text.txt"));
+			lines = Files.readAllLines(Paths.get(filename));
+			log.fine("Read tweet from file " + lines);
 		} catch (IOException e) {
 			e.printStackTrace();
+			log.warning("File not found: " + e.getMessage());
 		}
-		StringBuilder sb_test = new StringBuilder();
-		StringBuilder sb_empty_text = new StringBuilder();
-		StringBuilder sb_140_chars = new StringBuilder();
-		
-		String m_lines_test = appendLinesFromTextFileToStringbuilder(sb_test, lines_test);
-		String m_lines_empty_text = appendLinesFromTextFileToStringbuilder(sb_empty_text, lines_empty_text);
-		String m_lines_140_chars = appendLinesFromTextFileToStringbuilder(sb_140_chars, lines_140_chars);
-		
-		producer_test.send(new ProducerRecord<String, String>("twitter", m_lines_test));
-		producer_test.close();
-		producer_empty_text.send(new ProducerRecord<String, String>("twitter", m_lines_empty_text));
-		producer_empty_text.close();
-		producer_140_chars.send(new ProducerRecord<String, String>("twitter", m_lines_140_chars));
-		producer_140_chars.close();
+		StringBuilder sb = new StringBuilder();
+
+		String m_lines = appendLinesFromTextFileToStringbuilder(sb, lines);
+
+		log.fine("Read tweet from file " + m_lines);
+
+		producer.send(new ProducerRecord<String, String>("twitter", m_lines));
+
+		log.info("Send tweet to topic TWITTER");
+
+		producer.close();
 	}
-	
+
 	/**
 	 * Appends the lines from red txt-File to the StringBuilder
+	 * 
 	 * @param sb
-	 * 			- the String Builder that is needed
+	 *            - the String Builder that is needed
 	 * @param list
-	 * 			- a list that contains all lines from the red txt-File
-	 * @return
-	 * 			- a String that contains the red lines from the given list
+	 *            - a list that contains all lines from the red txt-File
+	 * @return - a String that contains the red lines from the given list
 	 */
-	public String appendLinesFromTextFileToStringbuilder(StringBuilder sb, List<String> list) {
+	public String appendLinesFromTextFileToStringbuilder(StringBuilder sb,
+			List<String> list) {
 		for (String s : list) {
-		sb.append(s);
+			log.fine("Append Line: " + s);
+			sb.append(s);
 		}
 		return sb.toString();
 	}
