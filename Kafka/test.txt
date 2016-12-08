@@ -1,3 +1,3 @@
-Brand in Wiesbaden
-Unfall A3
-Unfall
+{"user": {"screen_name": "test123", "location": "New York"},  
+ "text": "This is some text including a news and a keyword. The keyword is important and the keyword is mentioned several times.",
+ "created_at": "1970-01-01 00:01"}
