@@ -34,6 +34,14 @@
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 				<version>3.2.1</version>
+				<configuration>
+					<launchers>
+						<launcher>
+							<id>main</id>
+							<mainClass>UDITPM.Spark.SparkKafkaStream</mainClass>		
+						</launcher>
+					</launchers>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
