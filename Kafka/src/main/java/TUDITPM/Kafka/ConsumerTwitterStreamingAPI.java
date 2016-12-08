@@ -15,20 +15,32 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
  * Listening to the twitter Stream and converting the given data to stream it to
- * spark. Extends Thread so that it can run asynchronously. 
+ * spark. Extends Thread so that it can run asynchronously.
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 1.2
+ * 
+ * @version 3.1
  */
-public class ConsumerTwitterStreamingAPI extends Thread{
-	
+public class ConsumerTwitterStreamingAPI extends Thread {
+
+	private String dbname;
+
+	/**
+	 * Creates a new consumer for the given database name.
+	 * 
+	 * @param dbname
+	 *            - the name of the database to which this consumer connects
+	 */
+	public ConsumerTwitterStreamingAPI(String dbname) {
+		this.dbname = dbname;
+	}
+
 	/**
 	 * Gets called on start of the Thread
 	 */
 	@Override
 	public void run() {
-		
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "bootstrap.servers"));
@@ -49,7 +61,7 @@ public class ConsumerTwitterStreamingAPI extends Thread{
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
 
-		MongoDBWriter mongo = new MongoDBWriter("dbtest", "testcollection");
+		MongoDBConnector mongo = new MongoDBConnector(dbname);
 
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
@@ -66,13 +78,15 @@ public class ConsumerTwitterStreamingAPI extends Thread{
 					String username = user.getString("screen_name");
 					String location = (!user.get("location").toString()
 							.equals("null")) ? user.getString("location") : "";
-
+					
 					// Write to DB
-					mongo.writeToDb(new Document("username", username)
-							.append("location", location)
-							.append("timeNDate", timeNdate)
-							.append("text", text));
+					mongo.writeToDb(
+							new Document("username", username)
+									.append("location", location)
+									.append("timeNDate", timeNdate)
+									.append("text", text), "rawdata_twitter");
 				} catch (JSONException e) {
+					e.printStackTrace();
 					missedTweets++;
 				}
 			}

@@ -1,8 +1,59 @@
+<!DOCTYPE html>
 <!--
-/html/index.html
+public/html/index.html
 
-Version 2.1
+Version 2.5
 
 Author Tobias Mahncke
+Author Yannick Pferr
 -->
-<h1>Hello World</h1>
+<html>
+
+<head>
+    <Title> Add a company </Title>
+    <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
+    <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
+    <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
+    <!-- Custom Javascript files -->
+    <script src="dist/js/app.min.js"></script>
+</head>
+
+<body>
+    <div ID="header" class="col-md-12">
+        <h1 ID="title">Specify a company name in the input field to add it</h1>
+    </div>
+    <div ID="middle">
+        <!-- POST HTML Variante
+			<form ID="company" action="kafka.php" method="post">
+				Company name:<br>
+				<input ID="company" type="text" name="company"><br>
+				<input type="submit" value="Submit">
+     		</form>
+		-->
+        <!-- POST jQuery Variante -->
+        <div class="form-group col-md-8">
+            <input class="form-control" ID="companyName" type="text" name="company" placeholder="Company">
+        </div>
+        <input class="btn btn-primary col-md-2" type="button" value="Add Company" onClick='postCompany()'>
+        <div ID="tableWrapper" class="col-md-12">
+            <table class="table table-striped" ID="companyTable">
+                <thead>
+                    <tr>
+                        <th>Companies</th>
+                    </tr>
+                </thead>
+                <tbody ID="companyTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div ID="bottom">
+    </div>
+</body>
+<script type="text/javascript">
+$.get("/api/company", function(data) {
+    showCompanies(data);
+});
+</script>
+
+</html>
