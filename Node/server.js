@@ -21,6 +21,10 @@ var compress = require('compression');
 var express = require('express');
 var http = require("http");
 var path = require('path');
+var redis = require("redis");
+
+// Create a redis client
+var client = redis.createClient();
 
 // Create and start the server
 var app = module.exports = express();
@@ -59,7 +63,7 @@ app.get('/index', function routeIndex(req, res) {
 });
 
 // API routing
-require('./app/companies')(app);
+require('./app/companies')(app, client);
 
 // Start Express server.
 server.listen(app.get('port'), function() {

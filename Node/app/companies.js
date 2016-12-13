@@ -49,7 +49,7 @@ function readCompanies(callback) {
 	});
 }
 
-module.exports = function(app) {
+module.exports = function(app, client) {
 	console.log('company routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
@@ -106,6 +106,30 @@ module.exports = function(app) {
 			}
 			var array = data.split('\n');
 			return res.json(array);
+		});
+	});
+	
+	/**
+	 *  Returns all the news
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
+	app.get('/api/news', function(req, res) {
+		
+		// Gets a key from redis, returns null if key is not found
+		client.get("TestKey", function(err, reply) {	
+			if (err) {
+				return res.status(500).send(err);
+			}
+			var newsArray = JSON.parse(reply).Meldungen;
+			if(newsArray == undefined)
+				return res.status(500).send({
+						err: {
+							de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
+							en: 'Accessing the news failed. Please contact an adminstrator.',
+						}
+					});
+			return res.send(newsArray);
 		});
 	});
 };
