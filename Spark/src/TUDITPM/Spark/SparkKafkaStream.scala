@@ -10,11 +10,11 @@ import java.util.LinkedList
 import scala.collection.JavaConversions._
 
 /**
- * Starts a Kafka Stream which reads from twitter topic and passes 
+ * Starts a Kafka Stream which reads from twitter topic and passes
  * tweets to KeywordExtractor
  *
  * @author Yannick Pferr
- * @version 1.1
+ * @version 3.0
  */
 object SparkKafkaStream {
 
@@ -38,18 +38,20 @@ object SparkKafkaStream {
     //calls the function with annotates the text and writes all nouns to mongo db
     val thread = new Thread {
       override def run {
-
         while (true) {
           println(tweets.size())
-          if (tweets.size() >= 100) {
+          if (tweets.size() >= 10) {
             ssc.stop(false)
-            for (tweet <- tweets)
+            for (tweet <- tweets) {
               KeywordExtractor.extractKey(tweet)
-            System.exit(1)
+              RedisWriter.writeToRedis()
+              System.exit(1)
+            }
           }
         }
       }
     }
+    RedisWriter.writeToRedis()
     thread.start()
 
     //start the kafka stream and wait until manually finished or
