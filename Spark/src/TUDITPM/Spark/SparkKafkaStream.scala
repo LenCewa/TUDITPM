@@ -52,7 +52,6 @@ object SparkKafkaStream {
         }
       }
     }
-    RedisWriter.writeToRedis()
     thread.start()
 
     //start the kafka stream and wait until manually finished or
