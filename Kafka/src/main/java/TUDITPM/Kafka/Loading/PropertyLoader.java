@@ -13,7 +13,7 @@ import java.util.Properties;
  * @version 1.2
  */
 public class PropertyLoader {
-	private static HashMap<PropertyFile, Properties> propertyMap = new HashMap<>();
+	private static HashMap<PropertyFile, Properties> propertyMap = new HashMap<PropertyFile, Properties>();
 	private static boolean loaded = false;
 	
 	/**

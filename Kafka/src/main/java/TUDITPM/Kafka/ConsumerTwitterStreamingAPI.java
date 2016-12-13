@@ -53,7 +53,7 @@ public class ConsumerTwitterStreamingAPI extends Thread{
 		props.put("value.deserializer", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "value.deserializer"));
 
-		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
+		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter"));
 
 		MongoDBWriter mongo = new MongoDBWriter("dbtest", "testcollection");

@@ -6,6 +6,8 @@
 Kafka/properties/companies
 
 Node/node_modules/
+Node/public/dist/
+
 .recommenders/
 RemoteSystemsTempFiles/
 
@@ -16,3 +18,4 @@ Spark/target/
 /Spark/.settings/
 /Spark/.cache-main
 Redis/.project
+Userslen13DesktopOrdnerProgrammierenKafkaLog/
