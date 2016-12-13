@@ -5,35 +5,34 @@ import scala.util.parsing.json.JSONArray
 import scala.util.parsing.json.JSONObject
 import com.mongodb.casbah.commons.MongoDBObject
 import redis.clients.jedis.Jedis
+import java.util.ArrayList
+import com.mongodb.DBObject
 
 /**
- * Stores collection items in Redis
+ * Stores a MongoDB collection in Redis
  *
  * @author Ludwig Koch
  * @version 3.0
  */
 
-
 object RedisWriter {
-  //Open connection to MongoDB
+  //Open MongoDB connection
   val mongoConn = MongoClient("localhost", 27017)
   val mongoDB = mongoConn("dbtest")
   val mongoColl = mongoDB("testcollection")
   
+  
   def writeToRedis(){
-    //Loads all elements in the collection
+    //Read all elements in the MongoDB collection
     var it = mongoColl.find()
-    //Creates new JSONArray with all elements stored in it
-    var news = new JSONArray(it.toList)
-   
-    //Builds new JSONObject
+    
+    //Build JSONString from Array
     val builder = MongoDBObject.newBuilder
-    builder += "Meldungen" -> news
+    builder += "Meldungen" -> it.toArray
     val company = builder.result
-    //Converts JSONObject to JSONString
     val result = company.toString()
     
-    //Opens Redis connection and stores the JSONString
+    //Open Redis connection and store the collection
     val jedis = new Jedis("localhost")
     jedis.set("TestKey", result)
     println("Stored string : " + jedis.get("TestKey"));
