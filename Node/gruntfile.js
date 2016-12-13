@@ -19,6 +19,9 @@ module.exports = function(grunt) {
 				node: true,
 				strict: true,
 				latedef: true,
+				globals: {
+					'$': false
+				}
 			},
 			all: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js', 'app/**/*.js', 'Gruntfile.js']
 		},

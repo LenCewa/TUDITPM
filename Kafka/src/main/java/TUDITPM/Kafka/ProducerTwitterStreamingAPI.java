@@ -85,7 +85,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 				.processor(new StringDelimitedProcessor(msgQueue)).build();
 	
 		try {
-			producer = new KafkaProducer<>(props);
+			producer = new KafkaProducer<String, String>(props);
 			// TODO: replace with keywords from file
 		
 			LinkedList<String> companies = loadCompanies();
@@ -127,7 +127,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 	
 private LinkedList<String> loadCompanies(){
 		
-		LinkedList<String> l = new LinkedList<>();
+		LinkedList<String> l = new LinkedList<String>();
 		try {
 			FileInputStream in = new FileInputStream(new File("properties/companies"));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
