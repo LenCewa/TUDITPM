@@ -42,16 +42,16 @@ object SparkKafkaStream {
           println(tweets.size())
           if (tweets.size() >= 10) {
             ssc.stop(false)
-            for (tweet <- tweets) {
+            for (tweet <- tweets)
               KeywordExtractor.extractKey(tweet)
-              RedisWriter.writeToRedis()
-              System.exit(1)
-            }
+
+            RedisWriter.writeToRedis()
+            System.exit(1)
+
           }
         }
       }
     }
-    RedisWriter.writeToRedis()
     thread.start()
 
     //start the kafka stream and wait until manually finished or
