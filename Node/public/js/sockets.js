@@ -13,12 +13,12 @@ var socket = io();
 var connected = true;
 socket.on('redis', function(msg){
 	if (msg === 'Redis unavailable'){
-		if(connected){
+		if (connected){
 			$('#alerts').append($('<div>').addClass('alert alert-danger alert-dismissible').attr('role', 'alert').text(msg));
 		}
 		connected = false;
 	} else {
-		if(!connected){
+		if (!connected){
 			$('#alerts').empty();
 			$('#alerts').append($('<div>').addClass('alert alert-success alert-dismissible').attr('role', 'alert').text('Redis reconnected'));
 			// TODO: Per Timer ausblenden
