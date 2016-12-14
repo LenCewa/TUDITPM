@@ -1,7 +1,33 @@
 {
-	"kafka": "../Kafka/properties/companies",
-	"redis": {
-		"address": "127.0.0.1",
-		"port": 6379
+	"dev": {
+		"kafka": "../Kafka/properties/companies",
+		"redis": {
+			"address": "127.0.0.1",
+			"port": 6379
+		},
+		"mongodb": {
+			"user": "mongodb://localhost:27017/user_dev",
+		}
+	},
+	"test": {
+		"kafka": "../Kafka/properties/companies",
+		"redis": {
+			"address": "127.0.0.1",
+			"port": 6379
+		},
+		"mongodb": {
+			"user": "mongodb://localhost:27017/user_test",
+			"news": "mongodb://localhost:27017/dbtest"
+		}
+	},
+	"prod": {
+		"kafka": "../Kafka/properties/companies",
+		"redis": {
+			"address": "127.0.0.1",
+			"port": 6379
+		},
+		"mongodb": {
+			"user": "mongodb://localhost:27017/user_prod"
+		}
 	}
 }

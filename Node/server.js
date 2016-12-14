@@ -31,7 +31,8 @@ var server = http.Server(app);
 
 // load configuration
 var config = require('./config/server.conf.json');
-var connections = require('./config/connections.conf.json');
+//TODO: use NODE_ENV instead of hardcoded string
+var connections = require('./config/connections.conf.json')['dev'];
 
 // Create a redis client
 var client = redis.createClient(connections.redis.port, connections.redis.address);

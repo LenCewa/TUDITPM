@@ -77,5 +77,5 @@ function postCompany() {
 
 // TODO: Auf Laden der Seite warten
 $.get("/api/company", function(data) {
-    showCompanies(data);
+	showCompanies(data);
 });
