@@ -18,7 +18,7 @@ var fs = require('fs-extra');
 var request = require('supertest');
 
 // create a config mockup
-var connections = require('../config/connections.conf.json');
+var connections = require('../config/connections.conf.json')['dev'];
 
 // Set up the server
 var app = require('../server.js');

@@ -14,7 +14,8 @@
 var fs = require('fs-extra');
 
 // load configuration
-var connections = require('../config/connections.conf.json');
+// couldnt use ['dev'] because of an error
+var connections = require('../config/connections.conf.json').dev;
 
 /**
  * Helper function to read the company list
