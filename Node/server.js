@@ -53,10 +53,29 @@ app.use(express.static(path.join(__dirname, '/public'), {
 // parse application/json
 app.use(bodyParser.json());
 
-// Routing for the frontend
-app.get('/index', function routeIndex(req, res) {
-	res.sendFile(path.join(__dirname, '/public/html/index.html'));
+
+// Routing startseite
+app.get('/', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/start.html'));
 });
+
+// Routing addcompany
+app.get('/addcompany', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/addcompany.html'));
+});
+
+// Routing keywords
+app.get('/keywords', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/keywords.html'));
+});
+
+// Routing admin
+app.get('/admin', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/admin.html'));
+});
+
+
+
 
 // API routing
 require('./app/companies')(app);
