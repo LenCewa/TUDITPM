@@ -101,9 +101,12 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			// Fetches Tweets that contain specified keywords
 			hosebirdEndpoint.trackTerms(companies);
 			builder.connect();
+			
+			final int abortSize = Integer.parseInt(PropertyLoader
+					.getPropertyValue(PropertyFile.kafka, "abort.size"));
 
 			// Stop at 100 tweets
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < abortSize; i++) {
 				try {
 					String tweet = msgQueue.take().trim();
 					producer.send(new ProducerRecord<String, String>("twitter",
