@@ -40,7 +40,7 @@ object SparkKafkaStream {
       override def run {
         while (true) {
           println(tweets.size())
-          if (tweets.size() >= 10) {
+          if (tweets.size() >= 2) {
             ssc.stop(false)
             for (tweet <- tweets)
               KeywordExtractor.extractKey(tweet)

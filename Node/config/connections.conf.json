@@ -6,7 +6,8 @@
 			"port": 6379
 		},
 		"mongodb": {
-			"user": "mongodb://localhost:27017/user_dev"
+			"user": "mongodb://localhost:27017/user_dev",
+			"news": "mongodb://localhost:27017/dbtest"
 		}
 	},
 	"test": {

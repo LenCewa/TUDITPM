@@ -6,8 +6,9 @@
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
  * @author       Yannick Pferr <yannick.pferr@stud.tu-darmstadt.de>
+ * @author       Ludwig Koch <ludwig.koch@stud.tu-darmstadt.de>
  * @license      MIT
- * @version      3.1
+ * @version      3.2
  *
  * @requires body-parser
  * @requires compression
@@ -24,6 +25,7 @@ var http = require('http');
 var socket = require('socket.io');
 var path = require('path');
 var redis = require('redis');
+var mongodb = require('mongodb');
 
 // Create and start the server
 var app = module.exports = express();
@@ -37,6 +39,25 @@ var connections = require('./config/connections.conf.json')['dev'];
 // Create a redis client
 var client = redis.createClient(connections.redis.port, connections.redis.address);
 
+//Create a mongoDB client
+var mongoClient = mongodb.MongoClient;
+
+//Import mongoDB collection to Redis
+//Connect to mongoDB
+mongodb.connect(connections.mongodb.news, function(err, db) {
+	if(err) { return console.dir(err); }
+	//Open collection
+	var collection = db.collection('testcollection', function(err, collcetion){});
+	//Store collection in array
+	collection.find().toArray(function(err, items) {
+		//Build JSONObject with array in it
+		var doc = {'Meldungen': items};
+		//Convert to JSONString
+		var result = JSON.stringify(doc);
+		//Save to Redis
+		client.set("TestKey", result);
+	});
+});
 // Socket connections
 var io = socket(server);
 io.on('connection', function(socket){
