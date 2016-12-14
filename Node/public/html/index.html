@@ -2,7 +2,7 @@
 <!--
 public/html/index.html
 
-Version 2.5
+Version 3.1
 
 Author Tobias Mahncke
 Author Yannick Pferr
@@ -13,12 +13,14 @@ Author Yannick Pferr
     <Title> Add a company </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
+	<script src="/libs/socket.io/socket.io.min.js"></script>
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
     <!-- Custom Javascript files -->
     <script src="dist/js/app.min.js"></script>
 </head>
 
 <body>
+	<div ID="alerts"></div>
     <div ID="header" class="col-md-12">
         <h1 ID="title">Specify a company name in the input field to add it</h1>
     </div>
@@ -50,10 +52,4 @@ Author Yannick Pferr
     <div ID="bottom">
     </div>
 </body>
-<script type="text/javascript">
-$.get("/api/company", function(data) {
-    showCompanies(data);
-});
-</script>
-
 </html>

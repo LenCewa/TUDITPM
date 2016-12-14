@@ -5,8 +5,9 @@
  * Main server file to set up the server.
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
+ * @author       Yannick Pferr <yannick.pferr@stud.tu-darmstadt.de>
  * @license      MIT
- * @version      2.2
+ * @version      3.1
  *
  * @requires body-parser
  * @requires compression
@@ -19,9 +20,10 @@
 var bodyParser = require('body-parser');
 var compress = require('compression');
 var express = require('express');
-var http = require("http");
+var http = require('http');
+var socket = require('socket.io');
 var path = require('path');
-var redis = require("redis");
+var redis = require('redis');
 
 // Create and start the server
 var app = module.exports = express();
@@ -34,8 +36,22 @@ var connections = require('./config/connections.conf.json');
 // Create a redis client
 var client = redis.createClient(connections.redis.port, connections.redis.address);
 
-client.on("error", function (err) {
-    console.log("Error " + err);
+// Socket connections
+var io = socket(server);
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('disconnect', function(){
+	console.log('a user disconnected');  
+  });
+});
+
+client.on('error', function (err) {
+    console.log('Error ' + err);
+	io.emit('redis', 'Redis unavailable');
+});
+
+client.on('connect', function(){
+	io.emit('redis', 'Redis available');
 });
 
 // set up the port
@@ -82,3 +98,5 @@ server.listen(app.get('port'), function() {
 		process.exit(0);
 	});
 });
+
+module.exports.io = io;

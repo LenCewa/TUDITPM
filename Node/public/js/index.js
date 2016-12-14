@@ -6,7 +6,7 @@
  * @author       Yannick Pferr
  * @author       Tobias Mahncke
  * 
- * @version      2.4
+ * @version      3.1
  */
 
 /**
@@ -74,3 +74,8 @@ function postCompany() {
 		contentType: 'application/json'
 	});
 }
+
+// TODO: Auf Laden der Seite warten
+$.get("/api/company", function(data) {
+    showCompanies(data);
+});

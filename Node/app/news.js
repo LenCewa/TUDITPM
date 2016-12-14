@@ -9,6 +9,9 @@
  * @version      3.1
  *
  */
+ 
+var server = require('../server');
+ 
 module.exports = function(app, client) {
 	console.log('news routes loading');
 	/**
@@ -17,6 +20,7 @@ module.exports = function(app, client) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/news/:key', function(req, res) {
+		server.io.emit('get', {for: 'everyone'});
 		// Gets a key from redis, returns null if key is not found
 		client.get(req.params.key, function(err, reply) {	
 			if (err) {
@@ -28,7 +32,7 @@ module.exports = function(app, client) {
 					}
 				});
 			}
-			if(reply === null){
+			if (reply === null){
 				return res.status(404).send({
 					err: {
 						de: 'Der angegebene Schlüssel konnte nicht gefunden werden.',
