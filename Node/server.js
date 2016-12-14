@@ -23,9 +23,6 @@ var http = require("http");
 var path = require('path');
 var redis = require("redis");
 
-// Create a redis client
-var client = redis.createClient();
-
 // Create and start the server
 var app = module.exports = express();
 var server = http.Server(app);
@@ -33,6 +30,13 @@ var server = http.Server(app);
 // load configuration
 var config = require('./config/server.conf.json');
 var connections = require('./config/connections.conf.json');
+
+// Create a redis client
+var client = redis.createClient(connections.redis.port, connections.redis.address);
+
+client.on("error", function (err) {
+    console.log("Error " + err);
+});
 
 // set up the port
 app.set('port', config.port);
@@ -63,7 +67,8 @@ app.get('/index', function routeIndex(req, res) {
 });
 
 // API routing
-require('./app/companies')(app, client);
+require('./app/companies')(app);
+require('./app/news')(app, client);
 
 // Start Express server.
 server.listen(app.get('port'), function() {

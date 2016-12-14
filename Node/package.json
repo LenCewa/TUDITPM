@@ -15,7 +15,8 @@
     "bootstrap": "^3.3.7",
     "compression": "^1.6.2",
     "express": "^4.14.0",
-    "fs-extra": "^1.0.0"
+    "fs-extra": "^1.0.0",
+    "redis": "^2.6.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",

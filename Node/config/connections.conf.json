@@ -1,3 +1,7 @@
 {
-	"kafka": "../Kafka/properties/companies"
+	"kafka": "../Kafka/properties/companies",
+	"redis": {
+		"address": "127.0.0.1",
+		"port": 6379
+	}
 }
