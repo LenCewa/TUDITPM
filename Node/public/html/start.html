@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 public/html/start.html
-Version 1.0
+Version 2.0
 Author Arne Schmidt
 -->
 <html>
@@ -11,6 +11,7 @@ Author Arne Schmidt
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="dist/js/app.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -59,28 +60,69 @@ Author Arne Schmidt
 	
     <div ID="middle">
         <p style="margin-bottom: 40px">
-
         <div class="container">
-           <div class="col-md-6">   
-              <h2>Unternehmensnamen</h2>
-              <p class="text">Auf der Konfigurationsseite werden neue Unternehmensnamen hinzugefügt. <br> Eine Tabelle listet die bisher eingepflegten Unternehmen auf. </p>
-              <p style="margin-bottom: 20px">
-              <p><a class="btn btn-primary" href="http://localhost:8888/addcompany" role="button">Seite aufrufen »</a></p>
-            </div> 
-            
-            <div class="col-md-6">   
-              <h2>Schlagwörter</h2>
-              <p class="text">Auf der Konfigurationsseite werden neue Schlagwörter hinzugefügt.  <br> Eine Tabelle listet die bisher eingepflegten Schlagwörter auf. </p>
-              <p style="margin-bottom: 20px">
-              <p><a class="btn btn-primary" href="http://localhost:8888/keywords" role="button">Seite aufrufen »</a></p>
-            </div> 
-            
-        </div>
-            
+            <div class="col-md-1"></div>
+            <div class="col-md-4">
+                <table class="table table-hover" ID="companyStartTable">
+                    <thead>
+                        <tr>
+                            <th>Unternehmen</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="companyStartTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-5">
+                <table class="table table-hover" ID="keywordStartTable">
+                    <thead>
+                        <tr>
+                            <th>Gefundene Schlagwörter</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="keywordStartTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>         
+        </div>        
         
     </div>
+    
+    
     <div ID="bottom">
     </div>
 </body>
+<script type="text/javascript">
+$.get("/api/company", function(data) {   
+    showCompaniesStart(data);
+});
+    
+function showCompaniesStart(data) {
+    for (var i = 0; i < data.length; i++) {
+        $('#companyStartTable').append('<tr><td>' + data[i] + '</td></tr>');
+    }
+}    
+    
+$.get("api/news/TestKey", function(data) {   
+    showKeywordStart(data);
+});
+
+function showKeywordStart(data) {
+    var meldungen;
+    var newskey;
+    var textkey;
+    
+    for (var i = 0; i < data.length; i++) {
+        meldungen = data[i];
+        newskey = Object.keys(meldungen);
+        textkey = newskey[1];
+    
+        $('#keywordStartTable').append('<tr><td>' + meldungen[textkey] + '</td></tr>');
+    }
+} 
+
+</script>
 
 </html>
