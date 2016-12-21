@@ -24,5 +24,8 @@ public class Main {
 		}
 		new ConsumerTwitterStreamingAPI("rawdata_dev").start();
 		new ProducerTwitterStreamingAPI().start();
+		
+		new ConsumerRSSatOM("rawdata_dev").start();
+		new ProducerRSSatOM().start();
 	}
 }
