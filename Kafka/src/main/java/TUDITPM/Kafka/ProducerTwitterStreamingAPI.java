@@ -85,7 +85,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 				.processor(new StringDelimitedProcessor(msgQueue)).build();
 
 		try {
-			producer = new KafkaProducer<>(props);
+			producer = new KafkaProducer<String, String>(props);
 			// TODO: replace with keywords from file
 
 			LinkedList<String> companies = loadCompanies();

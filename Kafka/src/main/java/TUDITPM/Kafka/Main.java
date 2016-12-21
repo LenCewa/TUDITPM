@@ -22,8 +22,8 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		//new ConsumerTwitterStreamingAPI("rawdata_dev").start();
-		//new ProducerTwitterStreamingAPI().start();
+		new ConsumerTwitterStreamingAPI("rawdata_dev").start();
+		new ProducerTwitterStreamingAPI().start();
 		
 		new ConsumerRSSatOM("rawdata_dev").start();
 		new ProducerRSSatOM().start();

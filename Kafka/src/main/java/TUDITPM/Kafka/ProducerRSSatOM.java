@@ -23,6 +23,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.ArrayList;
 
+import com.google.common.collect.Multiset.Entry;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
@@ -66,7 +67,7 @@ public class ProducerRSSatOM extends Thread {
 				PropertyFile.kafka, "value.serializer"));
 		
 		// Create the producer
-		Producer<String, List<SyndEntry>> producer = null;
+		Producer<String, String> producer = null;
 
 		ArrayList<String> allFeeds = loadFeedSources();
 
@@ -79,7 +80,6 @@ public class ProducerRSSatOM extends Thread {
 			// TODO: while schleife oder Timer drumherum fuer Dauerbetrieb..
 
 			for (int i = 0; i < allFeeds.size(); i++) {
-
 				try (CloseableHttpClient client = listClients.get(i)) {
 					HttpUriRequest method = new HttpGet(allFeeds.get(i));
 					try (CloseableHttpResponse response = client.execute(method);
@@ -89,12 +89,13 @@ public class ProducerRSSatOM extends Thread {
 						System.out.println(feed1.getTitle());
 						entries.addAll(feed1.getEntries());
 						System.out.println(entries.get(i).getTitle());
-
-						producer.send(new ProducerRecord<String, List<SyndEntry>>("rss", entries));
-						// TODO: Statt syso in Kafka rein
+						
+						for(SyndEntry entry : entries){
+							producer.send(new ProducerRecord<String, String>("rss", entry.toString()));
+							// TODO: Statt syso in Kafka rein
+						}
 					}
 				}
-
 			}
 		} catch (Exception ex) {
 			System.out.println("ERROR: " + ex.getMessage());
