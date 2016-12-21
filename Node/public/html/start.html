@@ -38,6 +38,7 @@ Author Arne Schmidt
                         <ul class="dropdown-menu">
                             <li><a href="http://localhost:8888/addcompany">Unternehmensnamen</a></li>
                             <li><a href="http://localhost:8888/keywords">Schlagwörter</a></li>
+                            <li><a href="http://localhost:8888/rss">RSS/Atom</a></li>
                         </ul>
                     </li>
                     
@@ -100,7 +101,12 @@ $.get("/api/company", function(data) {
     showCompaniesStart(data);
 });
     
-function showCompaniesStart(data) {    
+/**
+ * Displays the companylist in a table
+ * @param {[type]} data         [description]
+ */ 
+function showCompaniesStart(data) {
+    // Fills the table row by row
     for (var i = 0; i < data.length; i++) {
         $('#companyStartTable').append('<tr><td>' + data[i] + '</td></tr>');
     }
@@ -111,27 +117,41 @@ $.get("api/news/TestKey", function(data) {
     showKeywordStart(data);
 });
 
+    
+/**
+ * Displays the keywords in a table
+ * @param {[type]} data         [description]
+ */    
 function showKeywordStart(data) {
     var meldungen;
     var newskey;
     var textkey;
     
+    // Fills the table row by row
     for (var i = 0; i < data.length; i++) {
         meldungen = data[i];
+        //Array with all keys of the given object
         newskey = Object.keys(meldungen);
+        //required key is the second one "_text"
         textkey = newskey[1];
     
         $('#keywordStartTable').append('<tr><td>' + meldungen[textkey] + '</td></tr>');
     }
 } 
 
-    
+/**
+ * allows to search the tables of the homepage
+ */    
 function search() {
+    //read userinput 
     var inputValue = $('#searchInput').val();
     
+    //iterate through the whole table
     $('#companyStartTableBody tr').each(function() {
+        //save content of current row
         var tableValue = $(this).text();
-
+        
+        //edit current row
         if(tableValue.includes(inputValue) && inputValue != ""){
             $(this).html('<td class="success" >' + tableValue + '</td>')
         } else{
@@ -142,8 +162,10 @@ function search() {
     });
     
     $('#keywordStartTableBody tr').each(function() {
+        //save content of current row
         var tableValue = $(this).text();
         
+        //edit current row
         if(tableValue.includes(inputValue) && inputValue != ""){
             $(this).html('<td class="success" >' + tableValue + '</td>')
         } else{
