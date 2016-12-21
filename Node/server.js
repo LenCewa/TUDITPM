@@ -47,7 +47,7 @@ var mongoClient = mongodb.MongoClient;
 mongodb.connect(connections.mongodb.news, function(err, db) {
 	if(err) { return console.dir(err); }
 	//Open collection
-	var collection = db.collection('testcollection', function(err, collcetion){});
+	var collection = db.collection('company_trump', function(err, collcetion){});
 	//Store collection in array
 	collection.find().toArray(function(err, items) {
 		//Build JSONObject with array in it
