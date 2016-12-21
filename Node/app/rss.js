@@ -50,7 +50,7 @@ function readCompanies(callback) {
 }
 
 module.exports = function(app, client) {
-	console.log('company routes loading');
+	console.log('rss routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
 	 *  Expects the request to contain a json with a company name.
