@@ -15,7 +15,11 @@
     "bootstrap": "^3.3.7",
     "compression": "^1.6.2",
     "express": "^4.14.0",
-    "fs-extra": "^1.0.0"
+    "fs-extra": "^1.0.0",
+    "grunt-cli": "^1.2.0",
+    "mongodb": "^2.2.16",
+    "redis": "^2.6.3",
+    "socket.io": "^1.7.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",

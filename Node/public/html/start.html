@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<!--
+public/html/start.html
+Version 2.0
+Author Arne Schmidt
+-->
+<html>
+
+<head>
+    <Title> Startseite </Title>
+    <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="dist/js/app.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<!-- set charset to utf-8 -->
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <style>
+        body { padding-top: 50px; }
+	</style>
+</head>
+
+<!-- standard größe navbars sind 50px -->
+<body>
+    <div ID="header">
+		
+		<nav class="navbar navbar-default navbar-fixed-top">
+		  <div class="container-fluid">
+			<div class="navbar-header">
+			 <a class="navbar-brand" href="http://localhost:8888">Start</a>
+			</div>
+
+			<div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="http://localhost:8888/addcompany">Unternehmensnamen</a></li>
+                            <li><a href="http://localhost:8888/keywords">Schlagwörter</a></li>
+                            <li><a href="http://localhost:8888/rss">RSS/Atom</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li><a href="http://localhost:8888/admin">Administration</a></li>
+                </ul>
+                
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Suchen">
+                    </div>
+                    <button id="searchbutton" type="button" class="btn btn-default" onClick='search()'>Los</button>
+                </form>
+
+			</div>
+			
+		  </div>
+		</nav>
+
+    </div>
+	
+    <div ID="middle">
+        <p style="margin-bottom: 40px">
+        <div class="container">
+            <div class="col-md-1"></div>
+            <div class="col-md-4">
+                <table class="table table-hover" ID="companyStartTable">
+                    <thead>
+                        <tr>
+                            <th>Eingegebene Unternehmen</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="companyStartTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-5">
+                <table class="table table-hover" ID="keywordStartTable">
+                    <thead>
+                        <tr>
+                            <th>Gefundene Schlagwörter</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="keywordStartTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>         
+        </div>        
+        
+    </div>
+    
+    
+    <div ID="bottom">
+    </div>
+</body>
+<script type="text/javascript">
+    
+$.get("/api/company", function(data) {   
+    showCompaniesStart(data);
+});
+    
+/**
+ * Displays the companylist in a table
+ * @param {[type]} data         [description]
+ */ 
+function showCompaniesStart(data) {
+    // Fills the table row by row
+    for (var i = 0; i < data.length; i++) {
+        $('#companyStartTable').append('<tr><td>' + data[i] + '</td></tr>');
+    }
+}    
+
+    
+$.get("api/news/TestKey", function(data) {   
+    showKeywordStart(data);
+});
+
+    
+/**
+ * Displays the keywords in a table
+ * @param {[type]} data         [description]
+ */    
+function showKeywordStart(data) {
+    var meldungen;
+    var newskey;
+    var textkey;
+    
+    // Fills the table row by row
+    for (var i = 0; i < data.length; i++) {
+        meldungen = data[i];
+        //Array with all keys of the given object
+        newskey = Object.keys(meldungen);
+        //required key is the second one "_text"
+        textkey = newskey[1];
+    
+        $('#keywordStartTable').append('<tr><td>' + meldungen[textkey] + '</td></tr>');
+    }
+} 
+
+/**
+ * allows to search the tables of the homepage
+ */    
+function search() {
+    //read userinput 
+    var inputValue = $('#searchInput').val();
+    
+    //iterate through the whole table
+    $('#companyStartTableBody tr').each(function() {
+        //save content of current row
+        var tableValue = $(this).text();
+        
+        //edit current row
+        if(tableValue.includes(inputValue) && inputValue != ""){
+            $(this).html('<td class="success" >' + tableValue + '</td>')
+        } else{
+            $(this).html('<td>' + tableValue + '</td>') 
+        }
+        
+        
+    });
+    
+    $('#keywordStartTableBody tr').each(function() {
+        //save content of current row
+        var tableValue = $(this).text();
+        
+        //edit current row
+        if(tableValue.includes(inputValue) && inputValue != ""){
+            $(this).html('<td class="success" >' + tableValue + '</td>')
+        } else{
+            $(this).html('<td>' + tableValue + '</td>') 
+        }
+        
+    });
+    
+    
+}
+/*
+$('#companyStartTable').on('click', 'td', function() {
+    var inhalt = $(this).text();
+    $(this).html('<tr class="success"><td> xx </td></tr>');
+    
+});    
+*/   
+    
+</script>
+
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!--
+public/html/konfig.html
+Version 4.0
+Author Tobias Mahncke
+Author Yannick Pferr
+Author Arne Schmidt
+-->
+<html>
+
+<head>
+    <Title> Unternehmensnamen </Title>
+    <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<!-- Custom Javascript files -->
+    <script src="dist/js/app.min.js"></script>
+	<!-- set charset to utf-8 -->
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<style>
+	body { padding-top: 50px; }
+	</style>
+</head>
+
+<body>
+    <div ID="header">
+		
+		<nav class="navbar navbar-default navbar-fixed-top">
+		  <div class="container-fluid">
+			<div class="navbar-header">
+			  <a class="navbar-brand" href="http://localhost:8888">Start</a>
+			</div>
+
+			<div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    
+                    <li class="dropdown">
+                        <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="http://localhost:8888/addcompany">Unternehmensnamen</a></li>
+                            <li><a href="http://localhost:8888/keywords">Schlagwörter</a></li>
+                            <li><a href="http://localhost:8888/rss">RSS/Atom</a></li>
+                        </ul>
+                    </li>
+                    
+                    <li><a href="http://localhost:8888/admin">Administration</a></li>
+                </ul>
+                
+                <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Suchen">
+                    </div>
+                    <button id="searchbutton" type="button" class="btn btn-default">Los</button>
+                </form>
+
+			</div>
+			
+		  </div>
+		</nav>
+
+    </div>
+	
+    <div ID="middle">
+		<p style="margin-bottom: 10px">
+            
+		<h3 class="form-text col-md-12"> Unternehmensnamen hinzufügen</h3>  
+		
+        <div class="form-group col-md-6">
+            <input class="form-control" ID="companyName" type="text" name="company" placeholder="Unternehmensname">
+        </div>
+        <input class="btn btn-primary col-md-2" type="button" value="Unternehmen hinzufügen" onClick='postCompany()'>
+        <div ID="tableWrapper" class="col-md-12">
+            <table class="table table-striped" ID="companyTable">
+                <thead>
+                    <tr>
+                        <th>Unternehmen</th>
+                    </tr>
+                </thead>
+                <tbody ID="companyTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div ID="bottom">
+    </div>
+</body>
+<script type="text/javascript">
+$.get("/api/company", function(data) {
+    showCompanies(data);
+});
+</script>
+
+</html>

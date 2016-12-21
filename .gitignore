@@ -16,3 +16,9 @@ Userslen13DesktopOrdnerProgrammierenKafkaLog/
 /Spark/.classpath
 /Spark/.settings/
 /Spark/.cache-main
+.recommenders/
+RemoteSystemsTempFiles/
+Node/public/dist/
+RemoteSystemsTempFiles/.project
+Spark/.cache-main
+Spark/target/

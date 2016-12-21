@@ -1,11 +1,11 @@
 'use strict';
-// app/companies.js
+// app/rss.js
 
 /**
  * Contains all functions to manipulate the list of companies
  * 
- * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      2.4
+ * @author       Arne Schmidt
+ * @version      1.0
  *
  * @requires fs-extra
  */
@@ -14,11 +14,10 @@
 var fs = require('fs-extra');
 
 // load configuration
-// couldnt use ['dev'] because of an error
-var connections = require('../config/connections.conf.json').dev;
+var connections = require('../config/connections.conf.json').rss;
 
 /**
- * Helper function to read the company list
+ * Helper function to read the url list
  * @param callback callback function, gets an error as first element and data as second
  */
 function readCompanies(callback) {
@@ -58,7 +57,7 @@ module.exports = function(app, client) {
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.post('/api/company', function(req, res) {
+	app.post('/api/rss', function(req, res) {
 		// Check if the request is correctly formed
 		if (req.body.company === undefined || req.body.company === null || req.body.company === '') {
 			return res.status(400).send({
@@ -100,7 +99,7 @@ module.exports = function(app, client) {
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.get('/api/company', function(req, res) {
+	app.get('/api/rss', function(req, res) {
 		readCompanies(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);

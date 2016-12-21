@@ -129,7 +129,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 	}
 
 	private LinkedList<String> loadCompanies() {
-		LinkedList<String> l = new LinkedList<>();
+		LinkedList<String> l = new LinkedList<String>();
 		try {
 			FileInputStream in = new FileInputStream(new File(
 					"properties/companies"));

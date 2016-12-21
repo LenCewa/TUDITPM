@@ -70,36 +70,43 @@
 			<artifactId>stanford-corenlp</artifactId>
 			<version>3.6.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.clulab</groupId>
 			<artifactId>processors-corenlp_2.11</artifactId>
 			<version>6.0.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.clulab</groupId>
 			<artifactId>processors-main_2.11</artifactId>
 			<version>6.0.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.clulab</groupId>
 			<artifactId>processors-models_2.11</artifactId>
 			<version>6.0.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.mongodb.spark</groupId>
 			<artifactId>mongo-spark-connector_2.11</artifactId>
 			<version>2.0.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-sql_2.11</artifactId>
 			<version>2.0.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.reactivemongo</groupId>
 			<artifactId>reactivemongo_2.11</artifactId>
 			<version>0.12.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.typesafe.play</groupId>
 			<artifactId>play-json_2.11</artifactId>
@@ -110,6 +117,12 @@
 			<groupId>org.mongodb</groupId>
 			<artifactId>casbah-core_2.11</artifactId>
 			<version>3.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.9.0</version>
 		</dependency>
 
 	</dependencies>

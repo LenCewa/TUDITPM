@@ -5,7 +5,8 @@
  * Grunt task runner file.
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      2.3
+ * @author       Yannick Pferr <yannick.pferr@stud.tu-darmstadt.de>
+ * @version      3.1
  */
 module.exports = function(grunt) {
 	grunt.initConfig({
@@ -20,7 +21,8 @@ module.exports = function(grunt) {
 				strict: true,
 				latedef: true,
 				globals: {
-					'$': false
+					'$': false,
+					'io': false
 				}
 			},
 			all: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js', 'app/**/*.js', 'Gruntfile.js']
