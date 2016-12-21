@@ -9,11 +9,10 @@ Author Arne Schmidt
 <html>
 
 <head>
-    <Title> Schlagwörter </Title>
+    <Title> RSS / Atom </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script src="dist/js/app.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<!-- Custom Javascript files -->
     <script src="dist/js/app.min.js"></script>
@@ -35,7 +34,7 @@ Author Arne Schmidt
 
 			<div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-
+                    
                     <li class="dropdown">
                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -65,27 +64,61 @@ Author Arne Schmidt
     <div ID="middle">
 		<p style="margin-bottom: 10px">
             
-		<h3 class="form-text col-md-12"> Schlagwörter hinzufügen</h3>  
+		<h3 class="form-text col-md-12">URLs für RSS und Atom Feeds hinzufügen</h3>  
 		
         <div class="form-group col-md-6">
-            <input class="form-control" ID="keywordName" type="text" name="keyword" placeholder="Schlagwort">
+            <input class="form-control" ID="rssName" type="text" placeholder="URL">
         </div>
-        <input class="btn btn-primary col-md-2" type="button" value="Schlagwort hinzufügen" onClick=''>
-        <div ID="keyTableWrapper" class="col-md-12">
-            <table class="table table-striped" ID="keywordTable">
+        <input class="btn btn-primary col-md-2" type="button" value="URL hinzufügen" onClick='postUrls()'>
+        <div class="col-md-12">
+            <table class="table table-hover" ID="urlTable">
                 <thead>
                     <tr>
-                        <th>Schlagwörter</th>
+                        <th>URLs</th>
                     </tr>
                 </thead>
-                <tbody ID="keywordTableBody">
+                <tbody ID="urlTableBody">
                 </tbody>
             </table>
         </div>
-
     </div>
     <div ID="bottom">
     </div>
 </body>
+<script type="text/javascript">
+/**
+ * Displays the rssurls in a table
+ * @param {[type]} data         [description]
+ */ 
+function showUrls(data) {
+    // Fills the table row by row
+    for (var i = 0; i < data.length; i++) {
+        $('#urlTable').append('<tr><td>' + data[i] + '</td></tr>');
+    }
+}  
+
+/**
+ * Sends the company given in the input field "companyName" to the server.
+ */
+function postUrls() {
+	$.ajax({
+		type: 'POST',
+		url: '/api/rss',
+		data: '{"company":"' + $('#rssName').val() + '"}',
+		success: function(data) {
+			$.get("/api/rss", function(data) {
+				showUrls(data);
+			});
+		},
+		contentType: 'application/json'
+	});
+}
+
+// TODO: Auf Laden der Seite warten
+$.get("/api/rss", function(data) {
+	showUrls(data);
+});
+
+</script>
 
 </html>
