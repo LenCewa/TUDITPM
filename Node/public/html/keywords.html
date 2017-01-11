@@ -52,7 +52,6 @@ Author Arne Schmidt
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Suchen">
                     </div>
-                    <button id="searchbutton" type="button" class="btn btn-default">Los</button>
                 </form>
 
 			</div>
@@ -63,29 +62,72 @@ Author Arne Schmidt
     </div>
 	
     <div ID="middle">
-		<p style="margin-bottom: 10px">
-            
-		<h3 class="form-text col-md-12"> Schlagwörter hinzufügen</h3>  
+		<p style="margin-bottom: 40px">
 		
-        <div class="form-group col-md-6">
-            <input class="form-control" ID="keywordName" type="text" name="keyword" placeholder="Schlagwort">
+        <div class="container">
+            <div class="col-md-2"></div>
+            <div class="form-group col-md-6">
+                <input class="form-control" ID="keywordName" type="text" placeholder="Schlagwort">
+            </div>
+            <input class="btn btn-primary col-md-2" type="button" value="Schlagwort hinzufügen" onClick='postUrls()'>
+            <div class="col-md-2"></div>
         </div>
-        <input class="btn btn-primary col-md-2" type="button" value="Schlagwort hinzufügen" onClick=''>
-        <div ID="keyTableWrapper" class="col-md-12">
-            <table class="table table-striped" ID="keywordTable">
-                <thead>
-                    <tr>
-                        <th>Schlagwörter</th>
-                    </tr>
-                </thead>
-                <tbody ID="keywordTableBody">
-                </tbody>
-            </table>
+        <div class="container">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-striped" ID="keywordTable">
+                    <thead>
+                        <tr>
+                            <th>Schlagwörter</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="keywordTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
         </div>
-
     </div>
     <div ID="bottom">
     </div>
 </body>
+<script type="text/javascript">
+/**
+ * Displays the keywords in a table
+ * @param {[type]} data         [description]
+ */ 
+function showUrls(data) {
+    //evtl urlTable verwenden
+    $('#keywordTableBody').empty();
+    
+    // Fills the table row by row
+    for (var i = 0; i < data.length; i++) {
+        $('#keywordTable').append('<tr><td>' + data[i] + '</td></tr>');
+    }
+}  
 
+/**
+ * Sends the keyword given in the input field "keywordName" to the server.
+ */
+function postUrls() {
+	$.ajax({
+		type: 'POST',
+		url: '/api/keywords',
+		data: '{"company":"' + $('#keywordName').val() + '"}',
+		success: function(data) {
+			$.get("/api/keywords", function(data) {
+				showUrls(data);
+			});
+		},
+		contentType: 'application/json'
+	});
+    
+}
+
+// TODO: Auf Laden der Seite warten
+$.get("/api/keywords", function(data) {
+	showUrls(data);
+});
+
+</script>
 </html>

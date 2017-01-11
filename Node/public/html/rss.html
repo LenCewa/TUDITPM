@@ -51,7 +51,6 @@ Author Arne Schmidt
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="Suchen">
                     </div>
-                    <button id="searchbutton" type="button" class="btn btn-default">Los</button>
                 </form>
 
 			</div>
@@ -62,24 +61,31 @@ Author Arne Schmidt
     </div>
 	
     <div ID="middle">
-		<p style="margin-bottom: 10px">
-            
-		<h3 class="form-text col-md-12">URLs für RSS und Atom Feeds hinzufügen</h3>  
+
+		<p style="margin-bottom: 40px">
 		
-        <div class="form-group col-md-6">
-            <input class="form-control" ID="rssName" type="text" placeholder="URL">
+        <div class="container">
+            <div class="col-md-2"></div>
+            <div class="form-group col-md-6">
+                <input class="form-control" ID="rssName" type="text" placeholder="URL">
+            </div>
+            <input class="btn btn-primary col-md-2" type="button" value="URL hinzufügen" onClick='postUrls()'>
+            <div class="col-md-2"></div>
         </div>
-        <input class="btn btn-primary col-md-2" type="button" value="URL hinzufügen" onClick='postUrls()'>
-        <div class="col-md-12">
-            <table class="table table-hover" ID="urlTable">
-                <thead>
-                    <tr>
-                        <th>URLs</th>
-                    </tr>
-                </thead>
-                <tbody ID="urlTableBody">
-                </tbody>
-            </table>
+        <div class="container">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-striped" ID="urlTable">
+                    <thead>
+                        <tr>
+                            <th>URLs</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="urlTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
         </div>
     </div>
     <div ID="bottom">
@@ -91,6 +97,9 @@ Author Arne Schmidt
  * @param {[type]} data         [description]
  */ 
 function showUrls(data) {
+    //evtl urlTable verwenden
+    $('#urlTableBody').empty();
+    
     // Fills the table row by row
     for (var i = 0; i < data.length; i++) {
         $('#urlTable').append('<tr><td>' + data[i] + '</td></tr>');
@@ -98,7 +107,7 @@ function showUrls(data) {
 }  
 
 /**
- * Sends the company given in the input field "companyName" to the server.
+ * Sends the rsslinks given in the input field "rssName" to the server.
  */
 function postUrls() {
 	$.ajax({

@@ -1,8 +1,8 @@
 'use strict';
-// app/rss.js
+// app/keywords.js
 
 /**
- * Contains all functions to manipulate the list of companies
+ * Contains all functions to manipulate the list of keywords
  * 
  * @author       Arne Schmidt
  * @version      1.0
@@ -14,13 +14,13 @@
 var fs = require('fs-extra');
 
 // load configuration
-var connections = require('../config/connections.conf.json').rss;
+var connections = require('../config/connections.conf.json').keys;
 
 /**
  * Helper function to read the url list
  * @param callback callback function, gets an error as first element and data as second
  */
-function readLinks(callback) {
+function readKeywords(callback) {
 	fs.ensureFile(connections.kafka, function(err) {
 		// if the file cannot be created the server isn't set up right
 		if (err) {
@@ -50,25 +50,25 @@ function readLinks(callback) {
 }
 
 module.exports = function(app, client) {
-	console.log('rss routes loading');
+	console.log('keywords routes loading');
 	/**
-	 *  Takes a company name and appends it to the kafka list of companies.
+	 *  Takes a keyword and appends it to the kafka list of keywords.
 	 *  Expects the request to contain a json with a company name.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.post('/api/rss', function(req, res) {
+	app.post('/api/keywords', function(req, res) {
 		// Check if the request is correctly formed
 		if (req.body.company === undefined || req.body.company === null || req.body.company === '') {
 			return res.status(400).send({
 				err: {
-					de: 'Der Rss Link wurde nicht angegeben.',
-					en: 'The Link cannot be empty.',
+					de: 'Es wurde kein Schlagwort angegeben.',
+					en: 'The keyword cannot be empty.',
 					err: null
 				}
 			});
 		}
-		readLinks(function(err, data) {
+		readKeywords(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
@@ -83,8 +83,8 @@ module.exports = function(app, client) {
 					// if the file cannot be written the user has to contact an adminstrator
 					return res.status(500).send({
 						err: {
-							de: 'Fehler beim Zugriff auf die Liste der Rss Links. Bitte informieren Sie einen Administrator.',
-							en: 'Accessing the Rss file failed. Please contact an adminstrator.',
+							de: 'Fehler beim Zugriff auf die Schlagwortliste. Bitte informieren Sie einen Administrator.',
+							en: 'Accessing the keyword file failed. Please contact an adminstrator.',
 							err: err
 						}
 					});
@@ -95,12 +95,12 @@ module.exports = function(app, client) {
 	});
 
 	/**
-	 *  Returns all the listed companies vie HTTP get.
+	 *  Returns all the listed keywords vie HTTP get.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.get('/api/rss', function(req, res) {
-		readLinks(function(err, data) {
+	app.get('/api/keywords', function(req, res) {
+		readKeywords(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}

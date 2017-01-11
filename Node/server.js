@@ -132,6 +132,7 @@ app.get('/admin', function routeIndex(req, res) {
 // API routing
 require('./app/companies')(app);
 require('./app/rss')(app);
+require('./app/keywords')(app);
 require('./app/news')(app, client);
 
 // Start Express server.

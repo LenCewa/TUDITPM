@@ -49,7 +49,6 @@ Author Arne Schmidt
                     <div class="form-group">
                         <input type="text" class="form-control" id="searchInput" placeholder="Suchen">
                     </div>
-                    <button id="searchbutton" type="button" class="btn btn-default" onClick='search()'>Los</button>
                 </form>
 
 			</div>
@@ -61,6 +60,40 @@ Author Arne Schmidt
 	
     <div ID="middle">
         <p style="margin-bottom: 40px">
+            
+        <div class="container">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-hover" ID="resultTable">
+                    <thead>
+                        <tr>
+                            <th>PLZ</th>
+                            <th>Unternehmen</th>
+                            <th>Kategorie</th>
+                            <th>Schlagwörter</th>
+                            <th>Textvorschau</th>
+                            <th>Datum</th>
+                            <th>Quellenlink</th>                            
+                        </tr>
+                    </thead>
+                    <tbody ID="resultTableBody">
+                        <tr>
+                            <td>65201</td>
+                            <td>Raifeisen</td>
+                            <td>Standort</td>
+                            <td>Arbeitsplätze</td>
+                            <td>Die Firma Raifeisen hat 10 neue Mitarbeiter eingestellt ...</td>
+                            <td>25.12.2016</td>
+                            <td><a href="http://www.spiegel.de">spiegel.de</a></td>                            
+                        </tr>  
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>         
+        </div> 
+        
+        <p style="margin-bottom: 40px">
+        
         <div class="container">
             <div class="col-md-1"></div>
             <div class="col-md-4">
@@ -87,8 +120,8 @@ Author Arne Schmidt
                 </table>
             </div>
             <div class="col-md-1"></div>         
-        </div>        
-        
+        </div>
+            
     </div>
     
     
@@ -139,9 +172,22 @@ function showKeywordStart(data) {
     }
 } 
 
-/**
+
+// no Refresh if you press enter 
+$('#searchInput').keypress(function(event) { 
+    return event.keyCode != 13;
+}); 
+
+    
+// start searching if you press any key   
+$('#searchInput').on('keyup', function (e) {
+        search();
+});
+    
+    
+ /**
  * allows to search the tables of the homepage
- */    
+ */   
 function search() {
     //read userinput 
     var inputValue = $('#searchInput').val();
@@ -152,7 +198,7 @@ function search() {
         var tableValue = $(this).text();
         
         //edit current row
-        if(tableValue.includes(inputValue) && inputValue != ""){
+        if(tableValue.toLowerCase().includes(inputValue.toLowerCase()) && inputValue != ""){
             $(this).html('<td class="success" >' + tableValue + '</td>')
         } else{
             $(this).html('<td>' + tableValue + '</td>') 
@@ -174,7 +220,18 @@ function search() {
         
     });
     
-    
+    /*$('#resultTableBody tr').each(function() {
+        //save content of current row
+        var tableValue = $(this).text();
+        
+        //edit current row
+        if(tableValue.includes(inputValue) && inputValue != ""){
+            $(this).html('<td class="success" >' + tableValue + '</td>')
+        } else{
+            $(this).html('<td>' + tableValue + '</td>') 
+        }       
+
+    });*/    
 }
 /*
 $('#companyStartTable').on('click', 'td', function() {
