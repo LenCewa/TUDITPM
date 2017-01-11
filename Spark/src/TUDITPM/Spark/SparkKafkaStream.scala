@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
  * tweets to KeywordExtractor
  *
  * @author Yannick Pferr
- * @version 3.0
+ * @version 4.0
  */
 object SparkKafkaStream {
 
@@ -40,11 +40,14 @@ object SparkKafkaStream {
       override def run {
         while (true) {
           println(tweets.size())
-          if (tweets.size() >= 2) {
+          if (tweets.size() >= 98) {
             ssc.stop(false)
-            for (tweet <- tweets)
-              KeywordExtractor.extractKey(tweet)
-
+            val solr = new Solr
+            for (tweet <- tweets){
+               if(solr.checkForKeyword(tweet, "trump"))
+                 solr.writeToDb(tweet);
+            }
+            
             RedisWriter.writeToRedis()
             System.exit(1)
 
