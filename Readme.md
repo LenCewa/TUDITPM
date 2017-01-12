@@ -43,6 +43,11 @@ Dabei ist darauf zu achten den Windows Pfad um node zu ergänzen. Jetzt sollten 
 
 Anleitung hier: https://redislabs.com/ebook/redis-in-action/appendix-a/a3-installing-on-windows/a3-2-installing-redis-on-window
 
+## Installation Solr
+
+Downloadlink: http://mirror.softaculous.com/apache/lucene/solr/6.3.0
+Danach entpacken und zum starten den Befhel "solr start" im bin Ordner ausführen
+
 ## Branchstruktur
 
 Die folgenden Branches sollen genutzt werden:
