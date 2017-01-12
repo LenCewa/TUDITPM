@@ -1,6 +1,14 @@
 package TUDITPM.Spark;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
+
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -10,17 +18,20 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.bson.Document;
+import org.clulab.serialization.json.JSONSerializer;
+import org.json.JSONObject;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
 
 /**
  * 
  * @author Yannick Pferr
  * @author Ludwig Koch
  * 
- * @version 4.0
+ * @version 4.1
  *
  */
 public class Solr {
@@ -32,6 +43,7 @@ public class Solr {
 	private String dbname = "dbtest";
 	private String collection = "testcollection";
 	private MongoClient mongo;
+	private String keywordList = "C:/Users/Ludwig/Documents/TUDITPM/Kafka/properties/keywords";
 	
 	public Solr(){
 	
@@ -49,8 +61,14 @@ public class Solr {
 	 * @return - true if tweet contains at least one of the keywords, otherwise false
 	 */
 	public boolean checkForKeyword(String tweet, String keywords){
-		boolean isAdded = add(tweet);
+		
 		boolean containsKeywords = false;
+		
+		System.out.println(tweet);
+		JSONObject json = new JSONObject(tweet);
+		String extractedText = (String) json.get("text");
+		boolean isAdded = add(extractedText);
+		System.out.println(extractedText);
 		
 		if(isAdded)
 			containsKeywords = search(keywords);
@@ -126,11 +144,54 @@ public class Solr {
 		}
 	}
 	
+	/**
+	 * Writes the text to MongoDB
+	 * @param text the JsonString of the tweet element
+	 */
+	
 	public void writeToDb(String text) {
-		Document obj = new Document("text", text);
+		JSONObject json = new JSONObject(text);
+		String extractedText = (String) json.get("text");
+		
+		Document obj = new Document("text", extractedText);
 		MongoDatabase db = mongo.getDatabase(dbname);
 		MongoCollection<Document> table = db.getCollection(collection);
 		table.insertOne(obj);
+	}
+	
+	/**
+	 * Reads keywords from keyword textfile
+	 * @return - returns all keywords seperated by a space
+	 */
+	
+	public String readKeywords(){
+		
+		File file = new File(Paths.get(keywordList).toString());
+		BufferedReader reader = null;
+		
+		try {
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+			return null;
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+			return null;
+		}
+
+	    String         line = null;
+	    StringBuilder  stringBuilder = new StringBuilder();
+
+	    try {
+	        while((line = reader.readLine()) != null) {
+	            stringBuilder.append(line + " ");
+	        }
+	        reader.close();
+	    } catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} 
+	    return stringBuilder.toString();
 	}
 	
 	/**
