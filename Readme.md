@@ -45,7 +45,7 @@ Anleitung hier: https://redislabs.com/ebook/redis-in-action/appendix-a/a3-instal
 
 ## Installation Solr
 
-Downloadlink: http://mirror.softaculous.com/apache/lucene/solr/6.3.0
+Downloadlink: http://mirror.softaculous.com/apache/lucene/solr/6.3.0 (Nur die zip downloaden)
 Danach entpacken und zum starten den Befhel "solr start" im bin Ordner ausführen
 
 ## Branchstruktur
