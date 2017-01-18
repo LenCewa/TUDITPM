@@ -15,18 +15,21 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import TUDITPM.Spark.Loading.PropertyFile;
+import TUDITPM.Spark.Loading.PropertyLoader;
+
 /**
  * 
  * @author Yannick Pferr
  * @author Ludwig Koch
  * 
- * @version 4.0
+ * @version 5.0
  *
  */
 public class Solr {
 
 	// Temporär, dann in Config
-	private final String urlString = "http://localhost:8983/solr/new_core";
+	private final String urlString = PropertyLoader.getPropertyValue(PropertyFile.solr, "core.url");
 	private SolrClient solr;
 	private final String id = "0";
 	private String dbname = "dbtest";
@@ -36,9 +39,8 @@ public class Solr {
 	public Solr(){
 	
 		solr = new HttpSolrClient.Builder(urlString).build();
-		mongo = new MongoClient("localhost", 27017);
-		
-		
+		mongo = new MongoClient(PropertyLoader.getPropertyValue(PropertyFile.database, "ADRESS"), 
+				Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.database, "PORT")));
 	}
 	
 	/**

@@ -8,6 +8,8 @@ import java.io.File
 import org.apache.spark.storage.StorageLevel
 import java.util.LinkedList
 import scala.collection.JavaConversions._
+import TUDITPM.Spark.Loading.PropertyLoader
+import TUDITPM.Spark.Loading.PropertyFile
 
 /**
  * Starts a Kafka Stream which reads from twitter topic and passes
@@ -21,15 +23,22 @@ object SparkKafkaStream {
   val tweets = new LinkedList[String]()
 
   def main(args: Array[String]) {
+    
+    //EXCEPTION NOCH ABFANGEN
+    new PropertyLoader()
 
     val conf = new SparkConf().setAppName("Spark Twitter")
-    conf.setMaster("local[2]")
-    val ssc = new StreamingContext(conf, Seconds(1))
+    conf.setMaster(PropertyLoader.getPropertyValue(PropertyFile.spark, "master"))
+    val ssc = new StreamingContext(conf, Seconds(Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.spark, "batch.size"))))
 
     //set topic(s) to listen for
     val topics = Map("twitter" -> 1)
     //create kafka stream with specified topic
-    val lines = KafkaUtils.createStream(ssc, "localhost:2181", "group-1", topics, StorageLevel.DISK_ONLY).map(_._2)
+    val lines = KafkaUtils.createStream(ssc, 
+        PropertyLoader.getPropertyValue(PropertyFile.spark, "server"), 
+        PropertyLoader.getPropertyValue(PropertyFile.spark, "group.id"), 
+        topics, 
+        StorageLevel.DISK_ONLY).map(_._2)
 
     //adds tweets to list
     lines.foreachRDD(_.foreach(tweets.add(_)))
