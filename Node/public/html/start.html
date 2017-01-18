@@ -13,6 +13,9 @@ Author Arne Schmidt
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="dist/js/app.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <style>
@@ -64,30 +67,7 @@ Author Arne Schmidt
         <div class="container">
             <div class="col-md-1"></div>
             <div class="col-md-10">
-                <table class="table table-hover" ID="resultTable">
-                    <thead>
-                        <tr>
-                            <th>PLZ</th>
-                            <th>Unternehmen</th>
-                            <th>Kategorie</th>
-                            <th>Schlagwörter</th>
-                            <th>Textvorschau</th>
-                            <th>Datum</th>
-                            <th>Quellenlink</th>                            
-                        </tr>
-                    </thead>
-                    <tbody ID="resultTableBody">
-                        <tr>
-                            <td>65201</td>
-                            <td>Raifeisen</td>
-                            <td>Standort</td>
-                            <td>Arbeitsplätze</td>
-                            <td>Die Firma Raifeisen hat 10 neue Mitarbeiter eingestellt ...</td>
-                            <td>25.12.2016</td>
-                            <td><a href="http://www.spiegel.de">spiegel.de</a></td>                            
-                        </tr>  
-                    </tbody>
-                </table>
+                <div ID="jsGrid"></div>
             </div>
             <div class="col-md-1"></div>         
         </div> 
@@ -218,28 +198,40 @@ function search() {
             $(this).html('<td>' + tableValue + '</td>') 
         }
         
-    });
-    
-    /*$('#resultTableBody tr').each(function() {
-        //save content of current row
-        var tableValue = $(this).text();
-        
-        //edit current row
-        if(tableValue.includes(inputValue) && inputValue != ""){
-            $(this).html('<td class="success" >' + tableValue + '</td>')
-        } else{
-            $(this).html('<td>' + tableValue + '</td>') 
-        }       
-
-    });*/    
+    });  
 }
-/*
-$('#companyStartTable').on('click', 'td', function() {
-    var inhalt = $(this).text();
-    $(this).html('<tr class="success"><td> xx </td></tr>');
-    
-});    
-*/   
+  
+    var clients = [
+        { "Unternehmen": "Otto Clay", "PLZ": 25},
+        { "Unternehmen": "Connor Johnston", "PLZ": 45},
+        { "Unternehmen": "Lacey Hess", "PLZ": 29},
+        { "Unternehmen": "Timothy Henson", "PLZ": 56},
+        { "Unternehmen": "Ramona Benton", "PLZ": 32}
+    ];
+ 
+ 
+    $("#jsGrid").jsGrid({
+        width: "100%",
+        height: "100%",
+ 
+        inserting: false,
+        editing: false,
+        sorting: true,
+        paging: false,
+ 
+        data: clients,
+ 
+        fields: [
+			{ name: "PLZ", type: "number", width: 25,  },
+			{ name: "Unternehmen", type: "text", width: 50,  },
+			{ name: "Kategorie", type: "text", width: 25,  },
+		    { name: "Schlagwörter", type: "text", width: 50,  },
+            { name: "Inhalt", type: "text", width: 150, validate: "required" },
+            { name: "Datum", type: "number", width: 25,  },
+			{ name: "Quelle", type: "text", width: 25,  },
+			//{ type: "control" }
+        ]
+    });
     
 </script>
 
