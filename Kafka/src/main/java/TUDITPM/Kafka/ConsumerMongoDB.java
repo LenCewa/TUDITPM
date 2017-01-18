@@ -75,7 +75,8 @@ public class ConsumerMongoDB extends Thread {
 
 					Document mongoDBdoc = new Document("text",
 							json.getString("text")).append("link",
-							json.getString("link"));
+							json.getString("link")).append("company",
+							json.getString("company"));
 					try {
 						String title = json.getString("title");
 						mongoDBdoc.append("title", title);

@@ -1,11 +1,5 @@
 package TUDITPM.Kafka;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -84,25 +78,18 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		Client builder = new ClientBuilder().hosts(Constants.STREAM_HOST)
 				.authentication(auth).endpoint(hosebirdEndpoint)
 				.processor(new StringDelimitedProcessor(msgQueue)).build();
+		Solr solr = new Solr();
 
 		try {
 			producer = new KafkaProducer<String, String>(props);
-			// TODO: replace with keywords from file
 
-			LinkedList<String> companies = loadCompanies();
-			if (companies.isEmpty()) {
-				System.out.println("No companies added, aborting...");
-				producer.close();
-				builder.stop();
-				return;
-			}
-
+			LinkedList<String> companies = PropertyLoader.getCompanies();
 			System.out.println("starting search...");
 
 			// Fetches Tweets that contain specified keywords
 			hosebirdEndpoint.trackTerms(companies);
 			builder.connect();
-			
+
 			final int abortSize = Integer.parseInt(PropertyLoader
 					.getPropertyValue(PropertyFile.kafka, "abort.size"));
 
@@ -113,12 +100,27 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					JSONObject JSONrawdata = new JSONObject(tweet);
 					JSONObject json = new JSONObject();
 					String text = JSONrawdata.getString("text");
-					json.put("source", "twitter");
-					json.put("text", text);
-					json.put("date", JSONrawdata.getString("created_at"));
-					json.put("link", "https://twitter.com/statuses/" + JSONrawdata.getString("id_str"));
-					producer.send(new ProducerRecord<String, String>("twitter",
-							json.toString()));
+					String id = solr.add(text);
+					boolean companyFound = false;
+					for (String company : PropertyLoader.getCompanies()) {
+						if (solr.search("\"" + company + "\"", id)) {
+							json.put("company", company);
+							companyFound = true;
+							break;
+						}
+					}
+
+					if (companyFound) {
+						json.put("source", "twitter");
+						json.put("text", text);
+						json.put("date", JSONrawdata.getString("created_at"));
+						json.put("link", "https://twitter.com/statuses/"
+								+ JSONrawdata.getString("id_str"));
+						producer.send(new ProducerRecord<String, String>(
+								"twitter", json.toString()));
+					} else {
+						solr.delete(id);
+					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					System.out.println("Couldnt fetch tweets");
@@ -133,27 +135,5 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			producer.close();
 			builder.stop();
 		}
-	}
-
-	private LinkedList<String> loadCompanies() {
-		LinkedList<String> l = new LinkedList<String>();
-		try {
-			FileInputStream in = new FileInputStream(new File(
-					"properties/companies"));
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				l.add(line);
-			}
-			br.close();
-			in.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return l;
 	}
 }
