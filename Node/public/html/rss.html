@@ -13,13 +13,17 @@ Author Arne Schmidt
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<!-- Custom Javascript files -->
     <script src="dist/js/app.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<style>
-	body { padding-top: 50px; }
+    <style>
+        body { padding-top: 50px; }
+        body { margin-left:100px; }
+        body { margin-right:100px; }
 	</style>
 </head>
 
@@ -72,42 +76,53 @@ Author Arne Schmidt
             <input class="btn btn-primary col-md-2" type="button" value="URL hinzufügen" onClick='postUrls()'>
             <div class="col-md-2"></div>
         </div>
-        <div class="container">
-            <div class="col-md-1"></div>
-            <div class="col-md-10">
-                <table class="table table-striped" ID="urlTable">
-                    <thead>
-                        <tr>
-                            <th>URLs</th>
-                        </tr>
-                    </thead>
-                    <tbody ID="urlTableBody">
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-1"></div>
-        </div>
+
+        <div ID="jsGrid"></div>
+        
     </div>
     <div ID="bottom">
     </div>
 </body>
 <script type="text/javascript">
-/**
- * Displays the rssurls in a table
- * @param {[type]} data         [description]
- */ 
-function showUrls(data) {
-    //evtl urlTable verwenden
-    $('#urlTableBody').empty();
     
-    // Fills the table row by row
-    for (var i = 0; i < data.length; i++) {
-        $('#urlTable').append('<tr><td>' + data[i] + '</td></tr>');
-    }
-}  
+$.get("/api/rss", function(data) {   
+    readData(data);
+});
+
+
+function readData(data) {
+
+        var clients = [];
+        for (var i = 0; i < data.length; i++) {
+            var element = {};
+            element.URL = data[i];
+            element.ID = i + 1;
+            clients.push(element);
+        }
+    
+        $("#jsGrid").jsGrid({
+        width: "100%",
+        height: "100%",
+ 
+        inserting: false,
+        editing: false,
+        sorting: true,
+        paging: false,
+ 
+        data: clients,
+ 
+        fields: [
+            { name: "ID", type: "number", width: 25,  },
+			{ name: "URL", type: "text", width: 50,  }
+			//{ type: "control" }
+        ]
+    });
+    
+}     
+ 
 
 /**
- * Sends the rsslinks given in the input field "rssName" to the server.
+ * Sends the keyword given in the input field "keywordName" to the server.
  */
 function postUrls() {
 	$.ajax({
@@ -116,17 +131,13 @@ function postUrls() {
 		data: '{"company":"' + $('#rssName').val() + '"}',
 		success: function(data) {
 			$.get("/api/rss", function(data) {
-				showUrls(data);
+				readData(data);
 			});
 		},
 		contentType: 'application/json'
 	});
+    
 }
-
-// TODO: Auf Laden der Seite warten
-$.get("/api/rss", function(data) {
-	showUrls(data);
-});
 
 </script>
 
