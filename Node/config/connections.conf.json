@@ -31,6 +31,7 @@
 			"user": "mongodb://localhost:27017/user_prod"
 		}
 	},
+
     "rss": {
 		"kafka": "../Kafka/properties/feedsources"
 	},
