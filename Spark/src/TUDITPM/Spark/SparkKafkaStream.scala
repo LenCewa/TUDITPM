@@ -57,8 +57,8 @@ object SparkKafkaStream {
             ssc.stop(false)
             for (tweet <- tweets) {
               
-              if (solr.checkForKeyword(company., tweet, keywords))
-                solr.writeToDb(tweet);
+              //if (solr.checkForKeyword(company., tweet, keywords))
+                //solr.writeToDb(tweet);
             }
 
             RedisWriter.writeToRedis()
