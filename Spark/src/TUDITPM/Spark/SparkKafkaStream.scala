@@ -28,8 +28,8 @@ object SparkKafkaStream {
     new PropertyLoader()
 
     val conf = new SparkConf().setAppName("Spark Twitter")
-    conf.setMaster(PropertyLoader.getPropertyValue(PropertyFile.spark, "master"))
-    val ssc = new StreamingContext(conf, Seconds(Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.spark, "batch.size"))))
+    conf.setMaster(PropertyLoader.getPropertyValue(PropertyFile.spark, "master.url"))
+    val ssc = new StreamingContext(conf, Seconds(Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.spark, "batch.duration"))))
 
     //set topic(s) to listen for
     val topics = Map("twitter" -> 1)
