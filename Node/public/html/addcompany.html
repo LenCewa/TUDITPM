@@ -13,13 +13,17 @@ Author Arne Schmidt
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<!-- Custom Javascript files -->
     <script src="dist/js/app.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-	<style>
-	body { padding-top: 50px; }
+    <style>
+        body { padding-top: 50px; }
+        body { margin-left:100px; }
+        body { margin-right:100px; }
 	</style>
 </head>
 
@@ -61,33 +65,81 @@ Author Arne Schmidt
     </div>
 	
     <div ID="middle">
-		<p style="margin-bottom: 10px">
-            
-		<h3 class="form-text col-md-12"> Unternehmensnamen hinzufügen</h3>  
+		<p style="margin-bottom: 40px">
 		
-        <div class="form-group col-md-6">
-            <input class="form-control" ID="companyName" type="text" name="company" placeholder="Unternehmensname">
+        <div class="container">
+            <div class="col-md-2"></div>
+            <div class="form-group col-md-6">
+                <input class="form-control" ID="companyName" type="text" placeholder="Unternehmensname">
+            </div>
+            <input class="btn btn-primary col-md-2" type="button" value="Unternehmen hinzufügen" onClick='postUrls()'>
+            <div class="col-md-2"></div>
         </div>
-        <input class="btn btn-primary col-md-2" type="button" value="Unternehmen hinzufügen" onClick='postCompany()'>
-        <div ID="tableWrapper" class="col-md-12">
-            <table class="table table-striped" ID="companyTable">
-                <thead>
-                    <tr>
-                        <th>Unternehmen</th>
-                    </tr>
-                </thead>
-                <tbody ID="companyTableBody">
-                </tbody>
-            </table>
-        </div>
+
+        <div ID="jsGrid"></div>
+        
     </div>
     <div ID="bottom">
     </div>
 </body>
 <script type="text/javascript">
-$.get("/api/company", function(data) {
-    showCompanies(data);
+    
+    
+$.get("/api/company", function(data) {   
+    readData(data);
 });
+
+
+function readData(data) {
+
+        var clients = [];
+        for (var i = 0; i < data.length; i++) {
+            var element = {};
+            element.Unternehmen = data[i];
+            element.ID = i + 1;
+            clients.push(element);
+        }
+    
+        $("#jsGrid").jsGrid({
+        width: "100%",
+        height: "100%",
+ 
+        inserting: false,
+        editing: false,
+        sorting: true,
+        paging: false,
+ 
+        data: clients,
+ 
+        fields: [
+            { name: "ID", type: "number", width: 25,  },
+			{ name: "Unternehmen", type: "text", width: 50,  }
+			//{ type: "control" }
+        ]
+    });
+    
+}     
+ 
+
+/**
+ * Sends the keyword given in the input field "keywordName" to the server.
+ */
+function postUrls() {
+	$.ajax({
+		type: 'POST',
+		url: '/api/company',
+		data: '{"company":"' + $('#companyName').val() + '"}',
+		success: function(data) {
+			$.get("/api/company", function(data) {
+				readData(data);
+			});
+		},
+		contentType: 'application/json'
+	});
+    
+}
+
+
 </script>
 
 </html>
