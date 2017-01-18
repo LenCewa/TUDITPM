@@ -20,6 +20,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -40,7 +41,8 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * 
  * 
  * @author Christian Zendo
- * @version 3.0
+ * @author Tobias Mahncke
+ * @version 5.0
  */
 public class ProducerRSSatOM extends Thread {
 
@@ -85,14 +87,17 @@ public class ProducerRSSatOM extends Thread {
 					try (CloseableHttpResponse response = client.execute(method);
 							InputStream stream = response.getEntity().getContent()) {
 						SyndFeedInput input = new SyndFeedInput();
-						SyndFeed feed1 = input.build(new XmlReader(stream));
-						System.out.println(feed1.getTitle());
-						entries.addAll(feed1.getEntries());
-						System.out.println(entries.get(i).getTitle());
+						SyndFeed feed = input.build(new XmlReader(stream));
+						entries.addAll(feed.getEntries());
 						
 						for(SyndEntry entry : entries){
-							producer.send(new ProducerRecord<String, String>("rss", entry.toString()));
-							// TODO: Statt syso in Kafka rein
+							JSONObject json = new JSONObject();
+							json.put("source", "rss");
+							json.put("link", entry.getLink());
+							json.put("title", entry.getTitle());
+							json.put("text", entry.getDescription().getValue());
+							json.put("date", entry.getPublishedDate());
+							producer.send(new ProducerRecord<String, String>("rss", json.toString()));
 						}
 					}
 				}
