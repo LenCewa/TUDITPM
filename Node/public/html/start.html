@@ -20,6 +20,8 @@ Author Arne Schmidt
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <style>
         body { padding-top: 50px; }
+		body { margin-right: 100px; }
+		body { margin-left: 100px; }
 	</style>
 </head>
 
@@ -63,14 +65,8 @@ Author Arne Schmidt
 	
     <div ID="middle">
         <p style="margin-bottom: 40px">
-            
-        <div class="container">
-            <div class="col-md-1"></div>
-            <div class="col-md-10">
+
                 <div ID="jsGrid"></div>
-            </div>
-            <div class="col-md-1"></div>         
-        </div> 
         
         <p style="margin-bottom: 40px">
         
@@ -128,6 +124,7 @@ function showCompaniesStart(data) {
     
 $.get("api/news/TestKey", function(data) {   
     showKeywordStart(data);
+	fillTable(data);
 });
 
     
@@ -201,13 +198,27 @@ function search() {
     });  
 }
   
-    var clients = [
+function fillTable(data){
+	
+	var clients = [];
+	for (var i = 0; i < data.length; i++) {
+		var element = {};
+        meldungen = data[i];
+        //Array with all keys of the given object
+        newskey = Object.keys(meldungen);
+        //required key is the second one "_text"
+        textkey = newskey[1];
+		element.Inhalt = meldungen[textkey];
+        clients.push(element);
+    
+    }
+    /*var clients = [
         { "Unternehmen": "Otto Clay", "PLZ": 25},
         { "Unternehmen": "Connor Johnston", "PLZ": 45},
         { "Unternehmen": "Lacey Hess", "PLZ": 29},
         { "Unternehmen": "Timothy Henson", "PLZ": 56},
         { "Unternehmen": "Ramona Benton", "PLZ": 32}
-    ];
+    ];*/
  
  
     $("#jsGrid").jsGrid({
@@ -232,6 +243,7 @@ function search() {
 			//{ type: "control" }
         ]
     });
+}
     
 </script>
 
