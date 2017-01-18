@@ -27,7 +27,7 @@ Author Arne Schmidt
 		<nav class="navbar navbar-default navbar-fixed-top">
 		  <div class="container-fluid">
 			<div class="navbar-header">
-			 <a class="navbar-brand" href="http://localhost:8888">Start</a>
+			 <a class="navbar-brand" href="/">Start</a>
 			</div>
 
 			<div class="collapse navbar-collapse">
@@ -36,19 +36,19 @@ Author Arne Schmidt
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="http://localhost:8888/addcompany">Unternehmensnamen</a></li>
-                            <li><a href="http://localhost:8888/keywords">Schlagwörter</a></li>
+                            <li><a href="/addcompany">Unternehmensnamen</a></li>
+                            <li><a href="/keywords">Schlagwörter</a></li>
+                            <li><a href="/rss">RSS/Atom</a></li>
                         </ul>
                     </li>
                     
-                    <li><a href="http://localhost:8888/admin">Administration</a></li>
+                    <li><a href="/admin">Administration</a></li>
                 </ul>
                 
                 <form class="navbar-form navbar-right">
                     <div class="form-group">
                         <input type="text" class="form-control" id="searchInput" placeholder="Suchen">
                     </div>
-                    <button id="searchbutton" type="button" class="btn btn-default" onClick='search()'>Los</button>
                 </form>
 
 			</div>
@@ -60,6 +60,40 @@ Author Arne Schmidt
 	
     <div ID="middle">
         <p style="margin-bottom: 40px">
+            
+        <div class="container">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-hover" ID="resultTable">
+                    <thead>
+                        <tr>
+                            <th>PLZ</th>
+                            <th>Unternehmen</th>
+                            <th>Kategorie</th>
+                            <th>Schlagwörter</th>
+                            <th>Textvorschau</th>
+                            <th>Datum</th>
+                            <th>Quellenlink</th>                            
+                        </tr>
+                    </thead>
+                    <tbody ID="resultTableBody">
+                        <tr>
+                            <td>65201</td>
+                            <td>Raifeisen</td>
+                            <td>Standort</td>
+                            <td>Arbeitsplätze</td>
+                            <td>Die Firma Raifeisen hat 10 neue Mitarbeiter eingestellt ...</td>
+                            <td>25.12.2016</td>
+                            <td><a href="http://www.spiegel.de">spiegel.de</a></td>                            
+                        </tr>  
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>         
+        </div> 
+        
+        <p style="margin-bottom: 40px">
+        
         <div class="container">
             <div class="col-md-1"></div>
             <div class="col-md-4">
@@ -86,8 +120,8 @@ Author Arne Schmidt
                 </table>
             </div>
             <div class="col-md-1"></div>         
-        </div>        
-        
+        </div>
+            
     </div>
     
     
@@ -100,7 +134,12 @@ $.get("/api/company", function(data) {
     showCompaniesStart(data);
 });
     
-function showCompaniesStart(data) {    
+/**
+ * Displays the companylist in a table
+ * @param {[type]} data         [description]
+ */ 
+function showCompaniesStart(data) {
+    // Fills the table row by row
     for (var i = 0; i < data.length; i++) {
         $('#companyStartTable').append('<tr><td>' + data[i] + '</td></tr>');
     }
@@ -111,28 +150,55 @@ $.get("api/news/TestKey", function(data) {
     showKeywordStart(data);
 });
 
+    
+/**
+ * Displays the keywords in a table
+ * @param {[type]} data         [description]
+ */    
 function showKeywordStart(data) {
     var meldungen;
     var newskey;
     var textkey;
     
+    // Fills the table row by row
     for (var i = 0; i < data.length; i++) {
         meldungen = data[i];
+        //Array with all keys of the given object
         newskey = Object.keys(meldungen);
+        //required key is the second one "_text"
         textkey = newskey[1];
     
         $('#keywordStartTable').append('<tr><td>' + meldungen[textkey] + '</td></tr>');
     }
 } 
 
+
+// no Refresh if you press enter 
+$('#searchInput').keypress(function(event) { 
+    return event.keyCode != 13;
+}); 
+
     
+// start searching if you press any key   
+$('#searchInput').on('keyup', function (e) {
+        search();
+});
+    
+    
+ /**
+ * allows to search the tables of the homepage
+ */   
 function search() {
+    //read userinput 
     var inputValue = $('#searchInput').val();
     
+    //iterate through the whole table
     $('#companyStartTableBody tr').each(function() {
+        //save content of current row
         var tableValue = $(this).text();
-
-        if(tableValue.includes(inputValue) && inputValue != ""){
+        
+        //edit current row
+        if(tableValue.toLowerCase().includes(inputValue.toLowerCase()) && inputValue != ""){
             $(this).html('<td class="success" >' + tableValue + '</td>')
         } else{
             $(this).html('<td>' + tableValue + '</td>') 
@@ -142,8 +208,10 @@ function search() {
     });
     
     $('#keywordStartTableBody tr').each(function() {
+        //save content of current row
         var tableValue = $(this).text();
         
+        //edit current row
         if(tableValue.includes(inputValue) && inputValue != ""){
             $(this).html('<td class="success" >' + tableValue + '</td>')
         } else{
@@ -152,7 +220,18 @@ function search() {
         
     });
     
-    
+    /*$('#resultTableBody tr').each(function() {
+        //save content of current row
+        var tableValue = $(this).text();
+        
+        //edit current row
+        if(tableValue.includes(inputValue) && inputValue != ""){
+            $(this).html('<td class="success" >' + tableValue + '</td>')
+        } else{
+            $(this).html('<td>' + tableValue + '</td>') 
+        }       
+
+    });*/    
 }
 /*
 $('#companyStartTable').on('click', 'td', function() {

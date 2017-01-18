@@ -16,7 +16,7 @@ import TUDITPM.Spark.Loading.PropertyFile
  * tweets to KeywordExtractor
  *
  * @author Yannick Pferr
- * @version 4.0
+ * @version 4.1
  */
 object SparkKafkaStream {
 
@@ -47,16 +47,17 @@ object SparkKafkaStream {
     //calls the function with annotates the text and writes all nouns to mongo db
     val thread = new Thread {
       override def run {
+        val solr = new Solr
+        val keywords = solr.readKeywords()
         while (true) {
           println(tweets.size())
-          if (tweets.size() >= 98) {
+          if (tweets.size() >= 10) {
             ssc.stop(false)
-            val solr = new Solr
-            for (tweet <- tweets){
-               if(solr.checkForKeyword(tweet, "trump"))
-                 solr.writeToDb(tweet);
+            for (tweet <- tweets) {
+              if (solr.checkForKeyword(tweet, keywords))
+                solr.writeToDb(tweet);
             }
-            
+
             RedisWriter.writeToRedis()
             System.exit(1)
 

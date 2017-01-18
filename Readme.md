@@ -39,6 +39,15 @@ https://hernandezpaul.wordpress.com/2016/01/24/apache-spark-installation-on-wind
 Zunächst sollte Node.js installiert werden: https://nodejs.org/en/
 Dabei ist darauf zu achten den Windows Pfad um node zu ergänzen. Jetzt sollten in der Kommandozeile sowohl `node -v` als auch `npm -v` funktionieren. Anschließend sollte ein `npm install` im Node-Ordner ausgeführt werden, um die in der package.json definierten Pakete zu laden.
 
+## Installation Redis
+
+Anleitung hier: https://redislabs.com/ebook/redis-in-action/appendix-a/a3-installing-on-windows/a3-2-installing-redis-on-window
+
+## Installation Solr
+
+Downloadlink: http://mirror.softaculous.com/apache/lucene/solr/6.3.0 (Nur die zip downloaden)
+Danach entpacken und zum starten den Befhel "solr start" im bin Ordner ausführen
+
 ## Branchstruktur
 
 Die folgenden Branches sollen genutzt werden:

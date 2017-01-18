@@ -1,27 +1,24 @@
 .metadata/
+.recommenders/
+RemoteSystemsTempFiles/
+Userslen13DesktopOrdnerProgrammierenKafkaLog/
 
 /Kafka/.project
 /Kafka/.classpath
 /Kafka/.settings/
-Kafka/properties/companies
+/Kafka/properties/companies
 
-Node/node_modules/
-Node/public/dist/
+/Node/node_modules/
+/Node/public/dist/
 
-.recommenders/
-RemoteSystemsTempFiles/
-
-Spark/.cache-main
-Spark/target/
+/Spark/target/
 /Spark/.project
 /Spark/.classpath
 /Spark/.settings/
 /Spark/.cache-main
-.recommenders/
+Redis/.project
 RemoteSystemsTempFiles/
 Node/public/dist/
 RemoteSystemsTempFiles/.project
 Spark/.cache-main
 Spark/target/
-Userslen13DesktopOrdnerProgrammierenKafkaLog/
-

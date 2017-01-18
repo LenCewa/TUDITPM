@@ -47,7 +47,7 @@ var mongoClient = mongodb.MongoClient;
 mongodb.connect(connections.mongodb.news, function(err, db) {
 	if(err) { return console.dir(err); }
 	//Open collection
-	var collection = db.collection('testcollection', function(err, collcetion){});
+	var collection = db.collection('company_trump', function(err, collcetion){});
 	//Store collection in array
 	collection.find().toArray(function(err, items) {
 		//Build JSONObject with array in it
@@ -115,6 +115,11 @@ app.get('/keywords', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/keywords.html'));
 });
 
+// Routing RSS/Atom
+app.get('/rss', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/rss.html'));
+});
+
 // Routing admin
 app.get('/admin', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/admin.html'));
@@ -123,8 +128,11 @@ app.get('/admin', function routeIndex(req, res) {
 
 
 
+
 // API routing
 require('./app/companies')(app);
+require('./app/rss')(app);
+require('./app/keywords')(app);
 require('./app/news')(app, client);
 
 // Start Express server.

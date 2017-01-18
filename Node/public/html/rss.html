@@ -9,7 +9,7 @@ Author Arne Schmidt
 <html>
 
 <head>
-    <Title> Unternehmensnamen </Title>
+    <Title> RSS / Atom </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
@@ -29,7 +29,7 @@ Author Arne Schmidt
 		<nav class="navbar navbar-default navbar-fixed-top">
 		  <div class="container-fluid">
 			<div class="navbar-header">
-			  <a class="navbar-brand" href="http://localhost:8888">Start</a>
+			  <a class="navbar-brand" href="/">Start</a>
 			</div>
 
 			<div class="collapse navbar-collapse">
@@ -61,33 +61,73 @@ Author Arne Schmidt
     </div>
 	
     <div ID="middle">
-		<p style="margin-bottom: 10px">
-            
-		<h3 class="form-text col-md-12"> Unternehmensnamen hinzufügen</h3>  
+
+		<p style="margin-bottom: 40px">
 		
-        <div class="form-group col-md-6">
-            <input class="form-control" ID="companyName" type="text" name="company" placeholder="Unternehmensname">
+        <div class="container">
+            <div class="col-md-2"></div>
+            <div class="form-group col-md-6">
+                <input class="form-control" ID="rssName" type="text" placeholder="URL">
+            </div>
+            <input class="btn btn-primary col-md-2" type="button" value="URL hinzufügen" onClick='postUrls()'>
+            <div class="col-md-2"></div>
         </div>
-        <input class="btn btn-primary col-md-2" type="button" value="Unternehmen hinzufügen" onClick='postCompany()'>
-        <div ID="tableWrapper" class="col-md-12">
-            <table class="table table-striped" ID="companyTable">
-                <thead>
-                    <tr>
-                        <th>Unternehmen</th>
-                    </tr>
-                </thead>
-                <tbody ID="companyTableBody">
-                </tbody>
-            </table>
+        <div class="container">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <table class="table table-striped" ID="urlTable">
+                    <thead>
+                        <tr>
+                            <th>URLs</th>
+                        </tr>
+                    </thead>
+                    <tbody ID="urlTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-1"></div>
         </div>
     </div>
     <div ID="bottom">
     </div>
 </body>
 <script type="text/javascript">
-$.get("/api/company", function(data) {
-    showCompanies(data);
+/**
+ * Displays the rssurls in a table
+ * @param {[type]} data         [description]
+ */ 
+function showUrls(data) {
+    //evtl urlTable verwenden
+    $('#urlTableBody').empty();
+    
+    // Fills the table row by row
+    for (var i = 0; i < data.length; i++) {
+        $('#urlTable').append('<tr><td>' + data[i] + '</td></tr>');
+    }
+}  
+
+/**
+ * Sends the rsslinks given in the input field "rssName" to the server.
+ */
+function postUrls() {
+	$.ajax({
+		type: 'POST',
+		url: '/api/rss',
+		data: '{"company":"' + $('#rssName').val() + '"}',
+		success: function(data) {
+			$.get("/api/rss", function(data) {
+				showUrls(data);
+			});
+		},
+		contentType: 'application/json'
+	});
+}
+
+// TODO: Auf Laden der Seite warten
+$.get("/api/rss", function(data) {
+	showUrls(data);
 });
+
 </script>
 
 </html>
