@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.json.JSONObject;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
@@ -33,7 +34,7 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 3.1
+ * @version 5.0
  */
 public class ProducerTwitterStreamingAPI extends Thread {
 
@@ -109,9 +110,15 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			for (int i = 0; i < abortSize; i++) {
 				try {
 					String tweet = msgQueue.take().trim();
+					JSONObject JSONrawdata = new JSONObject(tweet);
+					JSONObject json = new JSONObject();
+					String text = JSONrawdata.getString("text");
+					json.put("source", "twitter");
+					json.put("text", text);
+					json.put("date", JSONrawdata.getString("created_at"));
+					json.put("link", "https://twitter.com/statuses/" + JSONrawdata.getString("id_str"));
 					producer.send(new ProducerRecord<String, String>("twitter",
-							tweet));
-					System.out.println(tweet);
+							json.toString()));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					System.out.println("Couldnt fetch tweets");
