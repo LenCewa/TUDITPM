@@ -91,7 +91,8 @@ public class ProducerRSSatOM extends Thread {
 						System.out.println(entries.get(i).getTitle());
 						
 						for(SyndEntry entry : entries){
-							producer.send(new ProducerRecord<String, String>("rss", entry.toString()));
+							String jsonString = "{ link:" +  entry.getLink() + ", title" + entry.getTitle() + ", text:" + entry.getDescription().getValue() + "}";
+							producer.send(new ProducerRecord<String, String>("rss", jsonString));
 							// TODO: Statt syso in Kafka rein
 						}
 					}
@@ -113,8 +114,7 @@ public class ProducerRSSatOM extends Thread {
 	private ArrayList<String> loadFeedSources() {
 		ArrayList<String> l = new ArrayList<>();
 		try {
-			FileInputStream in = new FileInputStream(new File(
-					"properties/feedsources"));
+			FileInputStream in = new FileInputStream(new File("properties/feedsources"));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
 			String line = null;

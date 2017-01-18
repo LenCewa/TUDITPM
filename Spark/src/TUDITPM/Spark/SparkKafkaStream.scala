@@ -49,12 +49,15 @@ object SparkKafkaStream {
       override def run {
         val solr = new Solr
         val keywords = solr.readKeywords()
+        val companies:LinkedList[String] = solr.loadCompanies();
+        
         while (true) {
           println(tweets.size())
           if (tweets.size() >= 10) {
             ssc.stop(false)
             for (tweet <- tweets) {
-              if (solr.checkForKeyword(tweet, keywords))
+              
+              if (solr.checkForKeyword(company., tweet, keywords))
                 solr.writeToDb(tweet);
             }
 
