@@ -96,7 +96,9 @@ public class ProducerRSSatOM extends Thread {
 							json.put("link", entry.getLink());
 							json.put("title", entry.getTitle());
 							json.put("text", entry.getDescription().getValue());
-							json.put("date", entry.getPublishedDate());
+							if(entry.getPublishedDate() != null){
+								json.put("date", entry.getPublishedDate());
+							}
 							producer.send(new ProducerRecord<String, String>("rss", json.toString()));
 						}
 					}

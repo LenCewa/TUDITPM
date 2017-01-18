@@ -65,7 +65,7 @@ public class ConsumerMongoDB extends Thread {
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
 
 		while (true) {
-			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
+			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
 			int missedTweets = 0;
 			for (ConsumerRecord<String, String> record : records) {
 				System.out.println(record.value());
@@ -74,13 +74,18 @@ public class ConsumerMongoDB extends Thread {
 					JSONObject json = new JSONObject(record.value());
 
 					Document mongoDBdoc = new Document("text",
-							json.getString("text"))
-							.append("link", json.getString("link"))
-							.append("date", json.getString("date"))
-							.append("company", json.getString("company"));
+							json.getString("text")).append("link",
+							json.getString("link"));
 					try {
 						String title = json.getString("title");
 						mongoDBdoc.append("title", title);
+					} catch (JSONException e) {
+						// title field is optional and not saved if not
+						// available
+					}
+					try {
+						String date = json.getString("date");
+						mongoDBdoc.append("date", date);
 					} catch (JSONException e) {
 						// title field is optional and not saved if not
 						// available
