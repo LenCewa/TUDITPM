@@ -87,5 +87,17 @@
 		  <artifactId>httpclient</artifactId>
 		  <version>4.3.6</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-solrj</artifactId>
+			<version>6.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.9.0</version>
+		</dependency>
 	</dependencies>
 </project>
