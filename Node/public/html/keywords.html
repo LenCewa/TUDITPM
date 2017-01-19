@@ -104,17 +104,14 @@ function readData(data) {
         width: "100%",
         height: "100%",
  
-        inserting: false,
-        editing: false,
         sorting: true,
-        paging: false,
  
         data: clients,
  
         fields: [
             { name: "ID", type: "number", width: 25,  },
-			{ name: "Schlagwort", type: "text", width: 50,  }
-			//{ type: "control" }
+			{ name: "Schlagwort", type: "text", width: 50,  },
+			{ name: "Kategorie", type: "text", width: 50,  }
         ]
     });
     
