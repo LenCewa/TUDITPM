@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
-
+import java.util.LinkedList;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -18,39 +18,40 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.bson.Document;
-import org.clulab.serialization.json.JSONSerializer;
 import org.json.JSONObject;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import TUDITPM.Spark.Loading.PropertyFile;
+import TUDITPM.Spark.Loading.PropertyLoader;
 
 /**
  * 
  * @author Yannick Pferr
  * @author Ludwig Koch
  * 
- * @version 4.1
+ * @version 5.0
  *
  */
 public class Solr {
 
 	// Temporär, dann in Config
-	private final String urlString = "http://localhost:8983/solr/new_core";
+	private final String urlString = PropertyLoader.getPropertyValue(PropertyFile.solr, "core.url");
 	private SolrClient solr;
 	private final String id = "0";
 	private String dbname = "dbtest";
 	private String collection = "testcollection";
 	private MongoClient mongo;
-	private String keywordList = "C:/Users/Ludwig/Documents/TUDITPM/Kafka/properties/keywords";
+	private String keywordList = "../properties/keywords";
+	private final int PROXIMITY = Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.solr, "proximity"));
 	
 	public Solr(){
 	
 		solr = new HttpSolrClient.Builder(urlString).build();
-		mongo = new MongoClient("localhost", 27017);
-		
-		
+		mongo = new MongoClient(PropertyLoader.getPropertyValue(PropertyFile.database, "ADRESS"), 
+				Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.database, "PORT")));
 	}
 	
 	/**
@@ -60,7 +61,7 @@ public class Solr {
 	 * @param keywords - the keywords to search for
 	 * @return - true if tweet contains at least one of the keywords, otherwise false
 	 */
-	public boolean checkForKeyword(String tweet, String keywords){
+	public boolean checkForKeyword(String company, String tweet, String[] keywords){
 		
 		boolean containsKeywords = false;
 		
@@ -71,7 +72,7 @@ public class Solr {
 		System.out.println(extractedText);
 		
 		if(isAdded)
-			containsKeywords = search(keywords);
+			containsKeywords = search(company, keywords);
 		else
 			System.err.println("Document couldnt be added, contact an admin");
 		
@@ -82,11 +83,11 @@ public class Solr {
 	/**
 	 * Searches the solr documents for specified keyword
 	 * @param keyword
-	 * @return
+	 * @return true if doc contains keyword else false
 	 */
-	private boolean search(String keywords){
+	private boolean search(String company, String[] keywords){
 		SolrQuery query = new SolrQuery();
-	    query.setQuery(keywords);
+	    query.setQuery("id:" + id + " AND \"" + company + " " + keywords[0] + "\"" + "~" + PROXIMITY);
 	    QueryResponse response = null;
 		try {
 			response = solr.query(query);
@@ -98,6 +99,7 @@ public class Solr {
 			e.printStackTrace();
 		}
 	    SolrDocumentList results = response.getResults();
+
 	    if(!results.isEmpty())
 	    	return true;
 	    
@@ -179,8 +181,8 @@ public class Solr {
 			return null;
 		}
 
-	    String         line = null;
-	    StringBuilder  stringBuilder = new StringBuilder();
+	    String line = null;
+	    StringBuilder stringBuilder = new StringBuilder();
 
 	    try {
 	        while((line = reader.readLine()) != null) {
@@ -195,6 +197,33 @@ public class Solr {
 	}
 	
 	/**
+	 * Reads companies from companies textfile
+	 * @return - returns all companies in a list
+	 */
+	
+	public LinkedList<String> loadCompanies() {
+		LinkedList<String> l = new LinkedList<String>();
+		try {
+			FileInputStream in = new FileInputStream(new File(
+					"properties/companies"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				l.add(line);
+			}
+			br.close();
+			in.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return l;
+	}
+	
+	/**
 	 * Closes the server connection
 	 */
 	public void close(){
@@ -204,5 +233,11 @@ public class Solr {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args) throws IOException {
+		new PropertyLoader();
+		Solr solr = new Solr();
+		solr.add("Projekt Quantum: GPU-Prozess kann Firefox schneller und sicherer machen");
 	}
 }

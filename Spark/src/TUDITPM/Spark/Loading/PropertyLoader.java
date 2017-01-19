@@ -1,12 +1,8 @@
-package TUDITPM.Kafka.Loading;
+package TUDITPM.Spark.Loading;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Properties;
 
 /**
@@ -18,13 +14,10 @@ import java.util.Properties;
  */
 public class PropertyLoader {
 	private static HashMap<PropertyFile, Properties> propertyMap = new HashMap<PropertyFile, Properties>();
-	private static LinkedList<String> companyList = new LinkedList<String>();
 	private static boolean loaded = false;
-
+	
 	/**
-	 * Loads all files defined in {@link PropertyFile} into a map to retrieve
-	 * the values at a later time.
-	 * 
+	 * Loads all files defined in {@link PropertyFile} into a map to retrieve the values at a later time.
 	 * @throws IOException
 	 */
 	public PropertyLoader() throws IOException {
@@ -36,21 +29,7 @@ public class PropertyLoader {
 			stream.close();
 			propertyMap.put(file, properties);
 		}
-
-		FileInputStream in = new FileInputStream(new File(
-				"properties/companies"));
-		BufferedReader br = new BufferedReader(new InputStreamReader(in,
-				"UTF-8"));
-
-		String line = null;
-		while ((line = br.readLine()) != null) {
-			companyList.add(line);
-		}
-		br.close();
-		in.close();
-
 		loaded = true;
-
 	}
 
 	/**
@@ -63,9 +42,8 @@ public class PropertyLoader {
 	 *         does not exist.
 	 */
 	public static Properties getProperties(PropertyFile propertyFile) {
-		// If the constructor was not called before using this method throw a
-		// runtime exception -> developer mistake
-		if (!loaded) {
+		// If the constructor was not called before using this method throw a runtime exception -> developer mistake
+		if(!loaded){
 			throw new RuntimeException("Property files where not loaded.");
 		}
 		return propertyMap.get(propertyFile);
@@ -83,14 +61,5 @@ public class PropertyLoader {
 	 */
 	public static String getPropertyValue(PropertyFile propertyFile, String key) {
 		return getProperties(propertyFile).getProperty(key);
-	}
-
-	public static LinkedList<String> getCompanies() {
-		// If the constructor was not called before using this method throw a
-		// runtime exception -> developer mistake
-		if (!loaded) {
-			throw new RuntimeException("Property files where not loaded.");
-		}
-		return companyList;
 	}
 }

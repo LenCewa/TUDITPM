@@ -48,7 +48,7 @@ public class KafkaTest {
 	@Test
 	public void simpleText() {
 		// Start twitter consumer and read the text file
-		new ConsumerTwitterStreamingAPI("junit").start();
+		new ConsumerMongoDB("junit").start();
 		new ProducerTextfile().start();
 		
 		try {

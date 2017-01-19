@@ -1,13 +1,14 @@
-package TUDITPM.Kafka.Loading;
+package TUDITPM.Spark.Loading;
 
 /**
  * List with all property files to load. Names must match the filename in the properties path.
  * 
  * @author Tobias Mahncke
- * @version 5.0
+ * @author Yannick Pferr
+ * @version 4.0
  */
 public enum PropertyFile {
-	credentials, database, kafka, solr;
+	credentials, database, kafka, spark, solr;
 
 	/**
 	 * Gets the corresponding filename including the path for the property.

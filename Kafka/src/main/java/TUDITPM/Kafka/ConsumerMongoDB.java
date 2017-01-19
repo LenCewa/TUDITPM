@@ -20,9 +20,9 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @author Yannick Pferr
  * @author Tobias Mahncke
  * 
- * @version 3.1
+ * @version 5.0
  */
-public class ConsumerTwitterStreamingAPI extends Thread {
+public class ConsumerMongoDB extends Thread {
 
 	private String dbname;
 
@@ -32,7 +32,7 @@ public class ConsumerTwitterStreamingAPI extends Thread {
 	 * @param dbname
 	 *            - the name of the database to which this consumer connects
 	 */
-	public ConsumerTwitterStreamingAPI(String dbname) {
+	public ConsumerMongoDB(String dbname) {
 		this.dbname = dbname;
 	}
 
@@ -58,40 +58,31 @@ public class ConsumerTwitterStreamingAPI extends Thread {
 		props.put("value.deserializer", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "value.deserializer"));
 
-		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(props);
-		kafkaConsumer.subscribe(Arrays.asList("twitter"));
+		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(
+				props);
+		kafkaConsumer.subscribe(Arrays.asList("twitter", "rss"));
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
 
 		while (true) {
-			ConsumerRecords<String, String> records = kafkaConsumer.poll(100);
-			int missedTweets = 0;
+			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
 			for (ConsumerRecord<String, String> record : records) {
-				System.out.println(record.value());
-				try {
-					// decode JSON String
-					JSONObject jObj = new JSONObject(record.value());
-					String text = jObj.getString("text");
-					String timeNdate = jObj.getString("created_at");
+				// decode JSON String
+				JSONObject json = new JSONObject(record.value());
 
-					JSONObject user = jObj.getJSONObject("user");
-					String username = user.getString("screen_name");
-					String location = (!user.get("location").toString()
-							.equals("null")) ? user.getString("location") : "";
-					
-					// Write to DB
-					mongo.writeToDb(
-							new Document("username", username)
-									.append("location", location)
-									.append("timeNDate", timeNdate)
-									.append("text", text), "rawdata_twitter");
+				Document mongoDBdoc = new Document("text",
+						json.getString("text")).append("link",
+						json.getString("link")).append("company",
+						json.getString("company"));
+				try {
+					String title = json.getString("title");
+					mongoDBdoc.append("title", title);
 				} catch (JSONException e) {
-					e.printStackTrace();
-					missedTweets++;
+					// title field is optional and not saved if not
+					// available
 				}
-			}
-			if (missedTweets > 0) {
-				System.out.println(missedTweets + " Tweets missed");
+				// Write to DB
+				mongo.writeToDb(mongoDBdoc, json.getString("source"));
 			}
 		}
 	}
