@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
@@ -116,6 +117,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 						json.put("date", JSONrawdata.getString("created_at"));
 						json.put("link", "https://twitter.com/statuses/"
 								+ JSONrawdata.getString("id_str"));
+						json.put("id", id);
 						producer.send(new ProducerRecord<String, String>(
 								"twitter", json.toString()));
 					} else {
@@ -123,7 +125,9 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					System.out.println("Couldnt fetch tweets");
+					System.out.println("Couldnt fetch tweets.");
+				} catch (JSONException e) {
+					System.out.println("Tweet limit reached.");
 				}
 			}
 

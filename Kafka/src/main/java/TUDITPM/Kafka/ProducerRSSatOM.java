@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -71,7 +72,6 @@ public class ProducerRSSatOM extends Thread {
 
 		try {
 			producer = new KafkaProducer<>(props);
-			List<SyndEntry> entries = new ArrayList<SyndEntry>();
 			ArrayList<CloseableHttpClient> listClients = getClientList(allFeeds);
 
 			// feed.setEntries(entries);
@@ -84,44 +84,52 @@ public class ProducerRSSatOM extends Thread {
 							.execute(method);
 							InputStream stream = response.getEntity()
 									.getContent()) {
+						System.out.println("Reading RSS: " + allFeeds.get(i));
 						SyndFeedInput input = new SyndFeedInput();
 						SyndFeed feed = input.build(new XmlReader(stream));
-						entries.addAll(feed.getEntries());
 
-						for (SyndEntry entry : entries) {
+						for (SyndEntry entry : feed.getEntries()) {
 							String title = entry.getTitle();
-							String text = entry.getDescription().getValue();
-							String id = solr.add(title + " " + text);
-							JSONObject json = new JSONObject();
-							boolean companyFound = false;
-							for (String company : PropertyLoader.getCompanies()) {
-								if (solr.search("\"" + company + "\"", id)) {
-									json.put("company", company);
-									companyFound = true;
-									break;
+							System.out.println("Reading RSS " + i + ": " + title);
+							if (entry.getDescription() != null) {
+								String text = entry.getDescription().getValue();
+								String id = solr.add(title + " " + text);
+								JSONObject json = new JSONObject();
+								boolean companyFound = false;
+								for (String company : PropertyLoader
+										.getCompanies()) {
+									if (solr.search("\"" + company + "\"", id)) {
+										json.put("company", company);
+										companyFound = true;
+										break;
+									}
 								}
-							}
 
-							if (companyFound) {
-								json.put("source", "rss");
-								json.put("link", entry.getLink());
-								json.put("title", title);
-								json.put("text", text);
-								json.put("id", id);
-								if (entry.getPublishedDate() != null) {
-									json.put("date", entry.getPublishedDate());
+								if (companyFound) {
+									json.put("source", "rss");
+									json.put("link", entry.getLink());
+									json.put("title", title);
+									json.put("text", text);
+									json.put("id", id);
+									if (entry.getPublishedDate() != null) {
+										json.put("date",
+												entry.getPublishedDate());
+									} else {
+										json.put("date", new Date().toString());
+									}
+									System.out.println("PRODUCER: " + json.toString());
+									producer.send(new ProducerRecord<String, String>(
+											"rss", json.toString()));
+								} else {
+									solr.delete(id);
 								}
-								producer.send(new ProducerRecord<String, String>(
-										"rss", json.toString()));
-							} else {
-								solr.delete(id);
 							}
 						}
 					}
 				}
 			}
 		} catch (Exception ex) {
-			System.out.println("ERROR: " + ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
 
@@ -151,6 +159,7 @@ public class ProducerRSSatOM extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Loaded " + l.size() + " feed sources.");
 
 		return l;
 	}

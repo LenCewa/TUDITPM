@@ -22,7 +22,8 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerMongoDB("rawdata_dev").start();
+		//new ConsumerMongoDB("rawdata_dev").start();
+		new Consumer("enhanceddata_dev").start();
 		
 		new ProducerTwitterStreamingAPI().start();
 		new ProducerRSSatOM().start();

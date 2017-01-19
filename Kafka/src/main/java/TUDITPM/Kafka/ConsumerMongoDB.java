@@ -66,41 +66,23 @@ public class ConsumerMongoDB extends Thread {
 
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
-			int missedTweets = 0;
 			for (ConsumerRecord<String, String> record : records) {
-				System.out.println(record.value());
-				try {
-					// decode JSON String
-					JSONObject json = new JSONObject(record.value());
+				// decode JSON String
+				JSONObject json = new JSONObject(record.value());
 
-					Document mongoDBdoc = new Document("text",
-							json.getString("text")).append("link",
-							json.getString("link")).append("company",
-							json.getString("company"));
-					try {
-						String title = json.getString("title");
-						mongoDBdoc.append("title", title);
-					} catch (JSONException e) {
-						// title field is optional and not saved if not
-						// available
-					}
-					try {
-						String date = json.getString("date");
-						mongoDBdoc.append("date", date);
-					} catch (JSONException e) {
-						// title field is optional and not saved if not
-						// available
-					}
-					// Write to DB
-					mongo.writeToDb(mongoDBdoc,
-							"rawdata_" + json.getString("source"));
+				Document mongoDBdoc = new Document("text",
+						json.getString("text")).append("link",
+						json.getString("link")).append("company",
+						json.getString("company"));
+				try {
+					String title = json.getString("title");
+					mongoDBdoc.append("title", title);
 				} catch (JSONException e) {
-					e.printStackTrace();
-					missedTweets++;
+					// title field is optional and not saved if not
+					// available
 				}
-			}
-			if (missedTweets > 0) {
-				System.out.println(missedTweets + " Tweets missed");
+				// Write to DB
+				mongo.writeToDb(mongoDBdoc, json.getString("source"));
 			}
 		}
 	}
