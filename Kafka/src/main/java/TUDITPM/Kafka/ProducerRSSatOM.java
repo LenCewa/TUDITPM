@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -46,25 +47,22 @@ public class ProducerRSSatOM extends Thread {
 
 		// set configs for kafka
 		Properties props = new Properties();
-		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "bootstrap.servers"));
-		props.put("acks",
-				PropertyLoader.getPropertyValue(PropertyFile.kafka, "acks"));
-		props.put("retries", Integer.parseInt(PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "retries")));
-		props.put("batch.size", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "batch.size")));
-		props.put("linger.ms", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "linger.ms")));
-		props.put("buffer.memory", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "buffer.memory")));
-		props.put("key.serializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "key.serializer"));
-		props.put("value.serializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "value.serializer"));
+		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(PropertyFile.kafka, "bootstrap.servers"));
+		props.put("acks", PropertyLoader.getPropertyValue(PropertyFile.kafka, "acks"));
+		props.put("retries", Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "retries")));
+		props.put("batch.size", Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "batch.size")));
+		props.put("linger.ms", Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "linger.ms")));
+		props.put("buffer.memory",
+				Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "buffer.memory")));
+		props.put("key.serializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "key.serializer"));
+		props.put("value.serializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "value.serializer"));
 
 		// Create the producer
 		Producer<String, String> producer = null;
+
+		LinkedList<String> companiesWithLegalForms = PropertyLoader.getCompanies();
+		LinkedList<String> legalForms = PropertyLoader.getLegalForms();
+		LinkedList<String> companies = removeLegalForms(companiesWithLegalForms, legalForms);
 
 		Solr solr = new Solr();
 
@@ -80,10 +78,8 @@ public class ProducerRSSatOM extends Thread {
 			for (int i = 0; i < allFeeds.size(); i++) {
 				try (CloseableHttpClient client = listClients.get(i)) {
 					HttpUriRequest method = new HttpGet(allFeeds.get(i));
-					try (CloseableHttpResponse response = client
-							.execute(method);
-							InputStream stream = response.getEntity()
-									.getContent()) {
+					try (CloseableHttpResponse response = client.execute(method);
+							InputStream stream = response.getEntity().getContent()) {
 						System.out.println("Reading RSS: " + allFeeds.get(i));
 						SyndFeedInput input = new SyndFeedInput();
 						SyndFeed feed = input.build(new XmlReader(stream));
@@ -94,35 +90,39 @@ public class ProducerRSSatOM extends Thread {
 							if (entry.getDescription() != null) {
 								String text = entry.getDescription().getValue();
 								String id = solr.add(title + " " + text);
+
+								// Checked here because of performance
+								if ((text.trim().equals("") || text == null)
+										&& (title.trim().equals("") || title == null)) {
+									solr.delete(id);
+									break;
+								} else if (text.trim().equals("") || text == null)
+									text = title;
+
 								JSONObject json = new JSONObject();
 								boolean companyFound = false;
-								for (String company : PropertyLoader
-										.getCompanies()) {
+								for (String company : companies) {
 									if (solr.search("\"" + company + "\"", id)) {
-										json.put("company", company);
 										companyFound = true;
-										break;
-									}
-								}
+										json.put("company", company);
 
-								if (companyFound) {
-									json.put("source", "rss");
-									json.put("link", entry.getLink());
-									json.put("title", title);
-									json.put("text", text);
-									json.put("id", id);
-									if (entry.getPublishedDate() != null) {
-										json.put("date",
-												entry.getPublishedDate());
-									} else {
-										json.put("date", new Date().toString());
+										json.put("source", "rss");
+										json.put("link", entry.getLink());
+										json.put("title", title);
+										json.put("text", text);
+										json.put("id", id);
+										if (entry.getPublishedDate() != null) {
+											json.put("date", entry.getPublishedDate());
+										} else {
+											json.put("date", new Date().toString());
+										}
+										System.out.println("PRODUCER: " + json.toString());
+
+										producer.send(new ProducerRecord<String, String>("rss", json.toString()));
 									}
-									System.out.println("PRODUCER: " + json.toString());
-									producer.send(new ProducerRecord<String, String>(
-											"rss", json.toString()));
-								} else {
-									solr.delete(id);
 								}
+								if(!companyFound)
+									solr.delete(id);
 							}
 						}
 					}
@@ -144,8 +144,7 @@ public class ProducerRSSatOM extends Thread {
 	private ArrayList<String> loadFeedSources() {
 		ArrayList<String> l = new ArrayList<>();
 		try {
-			FileInputStream in = new FileInputStream(new File(
-					"properties/feedsources"));
+			FileInputStream in = new FileInputStream(new File("properties/feedsources"));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
 			String line = null;
@@ -164,4 +163,25 @@ public class ProducerRSSatOM extends Thread {
 		return l;
 	}
 
+	/**
+	 * Removes the legal forms of every Company from the list
+	 * 
+	 * @param companies
+	 *            - list of companies
+	 * @param legalForms
+	 *            - list of legal forms possible
+	 * @return - list of companies with their legal form removed
+	 */
+	private LinkedList<String> removeLegalForms(LinkedList<String> companies, LinkedList<String> legalForms) {
+		LinkedList<String> removed = new LinkedList<>();
+
+		for (String company : companies) {
+			for (String legalForm : legalForms) {
+				company = company.replace(legalForm, "").trim();
+			}
+			removed.add(company);
+		}
+
+		return removed;
+	}
 }

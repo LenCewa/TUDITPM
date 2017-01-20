@@ -79,7 +79,7 @@ public class Consumer extends Thread {
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
 			for (ConsumerRecord<String, String> record : records) {
-				System.out.println("CONSUMER: " + record.value());
+				System.out.println("CONSUMER_ENHANCEDDATA: " + record.value());
 				// decode JSON String
 				JSONObject json = new JSONObject(record.value());
 				String id = json.getString("id");
@@ -87,6 +87,7 @@ public class Consumer extends Thread {
 				for (String keyword : keywords) {
 					if (solr.search("\"" + json.getString("company") + " "
 							+ keyword + "\"" + "~" + PROXIMITY, id)) {
+						
 						Document mongoDBdoc = new Document("text",
 								json.getString("text"))
 								.append("link", json.getString("link"))
