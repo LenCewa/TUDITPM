@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -59,6 +60,10 @@ public class ProducerRSSatOM extends Thread {
 		// Create the producer
 		Producer<String, String> producer = null;
 
+		LinkedList<String> companiesWithLegalForms = PropertyLoader.getCompanies();
+		LinkedList<String> legalForms = PropertyLoader.getLegalForms();
+		LinkedList<String> companies = removeLegalForms(companiesWithLegalForms, legalForms);
+
 		Solr solr = new Solr();
 
 		ArrayList<String> allFeeds = loadFeedSources();
@@ -85,18 +90,18 @@ public class ProducerRSSatOM extends Thread {
 							if (entry.getDescription() != null) {
 								String text = entry.getDescription().getValue();
 								String id = solr.add(title + " " + text);
-								
+
 								// Checked here because of performance
 								if ((text.trim().equals("") || text == null)
-										&& (title.trim().equals("") || title == null)){
+										&& (title.trim().equals("") || title == null)) {
 									solr.delete(id);
 									break;
-								}
-								else if (text.trim().equals("") || text == null)
+								} else if (text.trim().equals("") || text == null)
 									text = title;
 
 								JSONObject json = new JSONObject();
-								for (String company : PropertyLoader.getCompanies()) {
+
+								for (String company : companies) {
 									if (solr.search("\"" + company + "\"", id)) {
 										json.put("company", company);
 
@@ -156,4 +161,25 @@ public class ProducerRSSatOM extends Thread {
 		return l;
 	}
 
+	/**
+	 * Removes the legal forms of every Company from the list
+	 * 
+	 * @param companies
+	 *            - list of companies
+	 * @param legalForms
+	 *            - list of legal forms possible
+	 * @return - list of companies with their legal form removed
+	 */
+	private LinkedList<String> removeLegalForms(LinkedList<String> companies, LinkedList<String> legalForms) {
+		LinkedList<String> removed = new LinkedList<>();
+
+		for (String company : companies) {
+			for (String legalForm : legalForms) {
+				company = company.replace(legalForm, "").trim();
+			}
+			removed.add(company);
+		}
+
+		return removed;
+	}
 }
