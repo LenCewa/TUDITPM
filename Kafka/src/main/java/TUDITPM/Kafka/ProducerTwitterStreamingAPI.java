@@ -110,8 +110,10 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					JSONObject json = new JSONObject();
 					String text = JSONrawdata.getString("text");
 					String id = solr.add(text);
+					boolean companyFound = false;
 					for (String company : companies) {
 						if (solr.search("\"" + company + "\"", id)) {
+							companyFound = true;
 							json.put("company", company);
 							
 							json.put("source", "twitter");
@@ -125,7 +127,8 @@ public class ProducerTwitterStreamingAPI extends Thread {
 									"twitter", json.toString()));
 						}
 					}
-					solr.delete(id);
+					if(!companyFound)
+						solr.delete(id);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					System.out.println("Couldnt fetch tweets.");

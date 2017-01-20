@@ -100,9 +100,10 @@ public class ProducerRSSatOM extends Thread {
 									text = title;
 
 								JSONObject json = new JSONObject();
-
+								boolean companyFound = false;
 								for (String company : companies) {
 									if (solr.search("\"" + company + "\"", id)) {
+										companyFound = true;
 										json.put("company", company);
 
 										json.put("source", "rss");
@@ -120,7 +121,8 @@ public class ProducerRSSatOM extends Thread {
 										producer.send(new ProducerRecord<String, String>("rss", json.toString()));
 									}
 								}
-								solr.delete(id);
+								if(!companyFound)
+									solr.delete(id);
 							}
 						}
 					}

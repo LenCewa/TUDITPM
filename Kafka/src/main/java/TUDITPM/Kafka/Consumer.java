@@ -87,6 +87,7 @@ public class Consumer extends Thread {
 				for (String keyword : keywords) {
 					if (solr.search("\"" + json.getString("company") + " "
 							+ keyword + "\"" + "~" + PROXIMITY, id)) {
+						
 						Document mongoDBdoc = new Document("text",
 								json.getString("text"))
 								.append("link", json.getString("link"))
