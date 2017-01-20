@@ -119,9 +119,51 @@ function showCompaniesStart(data) {
 
     
 $.get("api/news/TestKey", function(data) {   
-	fillTable(data);
+	readData(data);
 });
 
+var db = {
+
+        loadData: function(filter) {
+            return $.grep(this.clients, function(client) {
+                return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
+                    && (!filter.ID || client.ID === filter.ID);
+            });
+        },
+
+    };
+
+function readData(data) {
+
+        db.clients = [];
+        for (var i = 0; i < data.length; i++) {
+            var element = {};
+            element.Unternehmen = data[i];
+            db.clients.push(element);
+        }
+$("#jsGrid").jsGrid({
+        height: 300,
+        width: "100%",
+ 
+        filtering: true,
+        sorting: true,
+        autoload: true,
+
+ 
+        controller: db,
+ 
+        fields: [
+			{ name: "PLZ", type: "number", width: 25,  },
+			{ name: "Unternehmen", type: "text", width: 50,  },
+			{ name: "Kategorie", type: "text", width: 25,  },
+		    { name: "Schlagwörter", type: "text", width: 50,  },
+            { name: "Inhalt", type: "text", width: 150, validate: "required" },
+            { name: "Datum", type: "number", width: 25,  },
+			{ name: "Quelle", type: "text", width: 25,  },
+			{ type: "control" },
+        ]
+    });
+}
     
 /**
  * Displays the keywords in a table
@@ -145,98 +187,8 @@ function showKeywordStart(data) {
 } 
 
 
-// no Refresh if you press enter 
-$('#searchInput').keypress(function(event) { 
-    return event.keyCode != 13;
-}); 
-
-    
-// start searching if you press any key   
-$('#searchInput').on('keyup', function (e) {
-        search();
-});
-    
-    
- /**
- * allows to search the tables of the homepage
- */   
- /*
-function search() {
-    //read userinput 
-    var inputValue = $('#searchInput').val();
-    
-    //iterate through the whole table
-    $('#companyStartTableBody tr').each(function() {
-        //save content of current row
-        var tableValue = $(this).text();
-        
-        //edit current row
-        if(tableValue.toLowerCase().includes(inputValue.toLowerCase()) && inputValue != ""){
-            $(this).html('<td class="success" >' + tableValue + '</td>')
-        } else{
-            $(this).html('<td>' + tableValue + '</td>') 
-        }
-        
-        
-    });
-    
-    $('#keywordStartTableBody tr').each(function() {
-        //save content of current row
-        var tableValue = $(this).text();
-        
-        //edit current row
-        if(tableValue.includes(inputValue) && inputValue != ""){
-            $(this).html('<td class="success" >' + tableValue + '</td>')
-        } else{
-            $(this).html('<td>' + tableValue + '</td>') 
-        }
-        
-    });  
-}
-*/
   
-function fillTable(data){
-	
-	var clients = [];
-	for (var i = 0; i < data.length; i++) {
-		var element = {};
-        meldungen = data[i];
-        //Array with all keys of the given object
-        newskey = Object.keys(meldungen);
-        //required key is the second one "_text"
-        textkey = newskey[1];
-		element.Inhalt = meldungen[textkey];
-        clients.push(element);
-    
-    }
-    /*var clients = [
-        { "Unternehmen": "Otto Clay", "PLZ": 25},
-        { "Unternehmen": "Connor Johnston", "PLZ": 45},
-        { "Unternehmen": "Lacey Hess", "PLZ": 29},
-        { "Unternehmen": "Timothy Henson", "PLZ": 56},
-        { "Unternehmen": "Ramona Benton", "PLZ": 32}
-    ];*/
- 
- 
-    $("#jsGrid").jsGrid({
-        width: "100%",
-        height: "100%",
- 
-        sorting: true,
- 
-        data: clients,
-		
-        fields: [
-			{ name: "PLZ", type: "number", width: 25,  },
-			{ name: "Unternehmen", type: "text", width: 50,  },
-			{ name: "Kategorie", type: "text", width: 25,  },
-		    { name: "Schlagwörter", type: "text", width: 50,  },
-            { name: "Inhalt", type: "text", width: 150, validate: "required" },
-            { name: "Datum", type: "number", width: 25,  },
-			{ name: "Quelle", type: "text", width: 25,  },
-        ]
-    });
-}
+
     
 </script>
 

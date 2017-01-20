@@ -90,32 +90,43 @@ $.get("/api/keywords", function(data) {
 });
 
 
+var db = {
+
+        loadData: function(filter) {
+            return $.grep(this.clients, function(client) {
+                return (!filter.Keywords || client.Keywords.indexOf(filter.Keywords) > -1)
+                    && (!filter.ID || client.ID === filter.ID);
+            });
+        },
+
+    };
+
 function readData(data) {
 
-        var clients = [];
+        db.clients = [];
         for (var i = 0; i < data.length; i++) {
             var element = {};
-            element.Schlagwort = data[i];
+            element.Keywords = data[i];
             element.ID = i + 1;
-            clients.push(element);
+            db.clients.push(element);
         }
-    
-        $("#jsGrid").jsGrid({
+$("#jsGrid").jsGrid({
+        height: "300",
         width: "100%",
-        height: "100%",
  
+        filtering: true,
         sorting: true,
+        autoload: true,
  
-        data: clients,
+        controller: db,
  
         fields: [
-            { name: "ID", type: "number", width: 25,  },
-			{ name: "Schlagwort", type: "text", width: 50,  },
-			{ name: "Kategorie", type: "text", width: 50,  }
+			{ name: "ID", type: "number", width: 50 },
+            { name: "Keywords", type: "textarea", width: 150 },
+            { type: "control" }
         ]
     });
-    
-}     
+}
  
 
 /**
