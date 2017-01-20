@@ -494,8 +494,8 @@ http://www.buerstaedter-zeitung.de/wirtschaft/wirtschaft-ueberregional/index.rss
 http://www.buerstaedter-zeitung.de/lokales/biblis/index.rss
 http://www.buerstaedter-zeitung.de/lokales/bergstrasse/index.rss
 http://www.tagblatt.de/Sulz.rss
-http://www.tagblatt.de/Kreis Freudenstadt.rss
-http://www.tagblatt.de/Kreis Reutlingen.rss
+http://www.tagblatt.de/Kreis%20Freudenstadt.rss
+http://www.tagblatt.de/Kreis%20Reutlingen.rss
 http://www.die-glocke.de/feeds/lokalnews_rss_de.xml
 https://www.dieharke.de/RSS/Lokales/
 https://www.dieharke.de/RSS/Nachrichten/
@@ -508,7 +508,7 @@ http://www.infranken.de/storage/rss/rss/2.0/coburg.xml
 http://www.infranken.de/storage/rss/rss/2.0/erlangen_hoechstadt.xml
 http://www.infranken.de/storage/rss/rss/2.0/forchheim.xml
 http://www.infranken.de/storage/rss/rss/2.0/hassberge.xml
-http://www.tagblatt.de/Kreis Tübingen.rss
+http://www.tagblatt.de/Kreis%20Tübingen.rss
 http://www.tagblatt.de/Schwitzkasten.rss
 http://www.tagblatt.de/Freudenstadt.rss
 http://www.esslinger-zeitung.de/feed/27-startseite-teaser-feed.xml
@@ -525,7 +525,6 @@ http://www.cn-online.de/?type=221
 http://www.cn-online.de/?type=222
 http://www.infranken.de/storage/rss/rss/2.0/startseite.xml
 http://www.infranken.de/storage/rss/rss/2.0/lokales.xml
-http://www.echo-online.de/lokales/darmstadt/index.rss
 http://www.echo-online.de/lokales/darmstadt-dieburg/index.rss
 http://www.echo-online.de/lokales/bergstrasse/index.rss
 http://www.echo-online.de/lokales/kreis-gross-gerau/index.rss
@@ -595,7 +594,3 @@ http://www.infranken.de/storage/rss/rss/2.0/kultur.xml
 http://www.infranken.de/storage/rss/rss/2.0/wirtschaft.xml
 http://www.dzonline.de/rss/feed/dz_duelmen
 http://www.dzonline.de/rss/feed/dz_muensterland
-http://rss.feedsportal.com/c/32139/f/646634/index.rss
-http://rss.feedsportal.com/c/32139/f/646635/index.rss
-http://rss.feedsportal.com/c/32139/f/646636/index.rss
-http://rss.feedsportal.com/c/32139/f/646637/index.rss
