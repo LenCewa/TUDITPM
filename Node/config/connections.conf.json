@@ -7,7 +7,7 @@
 		},
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_dev",
-			"news": "mongodb://localhost:27017/dbtest"
+			"news": "mongodb://localhost:27017/enhanceddata_dev"
 		}
 	},
 	"test": {

@@ -118,7 +118,8 @@ function showCompaniesStart(data) {
 }    
 
     
-$.get("api/news/TestKey", function(data) {   
+$.get("api/news/TestKey", function(data) {  
+	showKeywordStart(data) 
 	readData(data);
 });
 
@@ -126,8 +127,12 @@ var db = {
 
         loadData: function(filter) {
             return $.grep(this.clients, function(client) {
-                return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
-                    && (!filter.ID || client.ID === filter.ID);
+                return (!filter.Inhalt || client.Inhalt.indexOf(filter.Inhalt) > -1)
+				    && (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
+					&& (!filter.Schlagwörter || client.Schlagwörter.indexOf(filter.Schlagwörter) > -1)
+					&& (!filter.Quelle || client.Quelle.indexOf(filter.Quelle) > -1)
+					&& (!filter.Datum || client.Datum.indexOf(filter.Datum) > -1);
+       
             });
         },
 
@@ -137,8 +142,12 @@ function readData(data) {
 
         db.clients = [];
         for (var i = 0; i < data.length; i++) {
-            var element = {};
-            element.Unternehmen = data[i];
+			meldungen = data[i];
+			//Array with all keys of the given object
+			newskey = Object.keys(meldungen);
+			//required key is the second one "_text"
+            var element = {"Inhalt": meldungen[newskey[1]], "Quelle": meldungen[newskey[2]],
+			"Datum": meldungen[newskey[3]], "Unternehmen": meldungen[newskey[4]], "Schlagwörter":meldungen[newskey[5]]};
             db.clients.push(element);
         }
 $("#jsGrid").jsGrid({
