@@ -50,7 +50,7 @@ function readCompanies(callback) {
 	});
 }
 
-module.exports = function(app, client) {
+module.exports = function(app, producer) {
 	console.log('company routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
@@ -90,6 +90,15 @@ module.exports = function(app, client) {
 						}
 					});
 				}
+				
+				//Send reload message to Kafka
+				var msg = [
+					{ topic: 'reload', messages: 'company added', partition: 0 },
+				];
+				producer.send(msg, function (err, data) {
+					console.log(data);
+				});
+				
 				return res.status(204).send();
 			});
 		});
