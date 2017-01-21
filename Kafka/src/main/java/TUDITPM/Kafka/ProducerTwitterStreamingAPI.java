@@ -1,11 +1,10 @@
 package TUDITPM.Kafka;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -36,12 +35,15 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
 public class ProducerTwitterStreamingAPI extends Thread {
 
 	private boolean reload = false;
-	
+
 	/**
 	 * Gets called on start of the Thread
 	 */
 	@Override
 	public void run() {
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+				"Thread started");
+
 		// set configs for kafka
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
@@ -88,11 +90,11 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		try {
 			producer = new KafkaProducer<String, String>(props);
 
-			LinkedList<String> companiesWithLegalForms = PropertyLoader.getCompanies();
+			LinkedList<String> companiesWithLegalForms = PropertyLoader
+					.getCompanies();
 			LinkedList<String> legalForms = PropertyLoader.getLegalForms();
-			LinkedList<String> companies = removeLegalForms(companiesWithLegalForms, legalForms);
-			
-			System.out.println("starting search...");
+			LinkedList<String> companies = removeLegalForms(
+					companiesWithLegalForms, legalForms);
 
 			// Fetches Tweets that contain specified keywords
 			hosebirdEndpoint.trackTerms(companies);
@@ -103,7 +105,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 
 			// Stop at abort size
 			for (int i = 0; i < abortSize; i++) {
-				
+
 				try {
 					String tweet = msgQueue.take().trim();
 					JSONObject JSONrawdata = new JSONObject(tweet);
@@ -115,19 +117,23 @@ public class ProducerTwitterStreamingAPI extends Thread {
 						if (solr.search("\"" + company + "\"", id)) {
 							companyFound = true;
 							json.put("company", company);
-							
+
 							json.put("source", "twitter");
 							json.put("text", text);
-							json.put("date", JSONrawdata.getString("created_at"));
+							json.put("date",
+									JSONrawdata.getString("created_at"));
 							json.put("link", "https://twitter.com/statuses/"
 									+ JSONrawdata.getString("id_str"));
 							json.put("id", id);
-							
+
+							LoggingWrapper.log(this.getClass().getName(),
+									Level.INFO, json.toString());
+
 							producer.send(new ProducerRecord<String, String>(
 									"twitter", json.toString()));
 						}
 					}
-					if(!companyFound)
+					if (!companyFound)
 						solr.delete(id);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -146,18 +152,22 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			builder.stop();
 		}
 	}
-	
+
 	/**
 	 * Removes the legal forms of every Company from the list
-	 * @param companies - list of companies
-	 * @param legalForms - list of legal forms possible
+	 * 
+	 * @param companies
+	 *            - list of companies
+	 * @param legalForms
+	 *            - list of legal forms possible
 	 * @return - list of companies with their legal form removed
 	 */
-	private LinkedList<String> removeLegalForms(LinkedList<String> companies, LinkedList<String> legalForms){
+	private LinkedList<String> removeLegalForms(LinkedList<String> companies,
+			LinkedList<String> legalForms) {
 		LinkedList<String> removed = new LinkedList<>();
-		
-		for(String company : companies){
-			for(String legalForm : legalForms){
+
+		for (String company : companies) {
+			for (String legalForm : legalForms) {
 				company = company.replace(legalForm, "").trim();
 			}
 			removed.add(company);

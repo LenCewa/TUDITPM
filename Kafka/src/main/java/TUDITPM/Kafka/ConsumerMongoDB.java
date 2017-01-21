@@ -2,6 +2,7 @@ package TUDITPM.Kafka;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -41,6 +42,9 @@ public class ConsumerMongoDB extends Thread {
 	 */
 	@Override
 	public void run() {
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+				"Thread started");
+
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "bootstrap.servers"));

@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -51,6 +52,9 @@ public class Consumer extends Thread {
 	 */
 	@Override
 	public void run() {
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+				"Thread started");
+
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "bootstrap.servers"));
@@ -87,7 +91,7 @@ public class Consumer extends Thread {
 				for (String keyword : keywords) {
 					if (solr.search("\"" + json.getString("company") + " "
 							+ keyword + "\"" + "~" + PROXIMITY, id)) {
-						
+
 						Document mongoDBdoc = new Document("text",
 								json.getString("text"))
 								.append("link", json.getString("link"))
