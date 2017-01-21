@@ -13,10 +13,15 @@ Author Arne Schmidt
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="dist/js/app.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <style>
         body { padding-top: 50px; }
+		body { margin-right: 100px; }
+		body { margin-left: 100px; }
 	</style>
 </head>
 
@@ -45,11 +50,7 @@ Author Arne Schmidt
                     <li><a href="/admin">Administration</a></li>
                 </ul>
                 
-                <form class="navbar-form navbar-right">
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="searchInput" placeholder="Suchen">
-                    </div>
-                </form>
+                
 
 			</div>
 			
@@ -60,37 +61,8 @@ Author Arne Schmidt
 	
     <div ID="middle">
         <p style="margin-bottom: 40px">
-            
-        <div class="container">
-            <div class="col-md-1"></div>
-            <div class="col-md-10">
-                <table class="table table-hover" ID="resultTable">
-                    <thead>
-                        <tr>
-                            <th>PLZ</th>
-                            <th>Unternehmen</th>
-                            <th>Kategorie</th>
-                            <th>Schlagwörter</th>
-                            <th>Textvorschau</th>
-                            <th>Datum</th>
-                            <th>Quellenlink</th>                            
-                        </tr>
-                    </thead>
-                    <tbody ID="resultTableBody">
-                        <tr>
-                            <td>65201</td>
-                            <td>Raifeisen</td>
-                            <td>Standort</td>
-                            <td>Arbeitsplätze</td>
-                            <td>Die Firma Raifeisen hat 10 neue Mitarbeiter eingestellt ...</td>
-                            <td>25.12.2016</td>
-                            <td><a href="http://www.spiegel.de">spiegel.de</a></td>                            
-                        </tr>  
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-1"></div>         
-        </div> 
+
+                <div ID="jsGrid"></div>
         
         <p style="margin-bottom: 40px">
         
@@ -147,9 +119,51 @@ function showCompaniesStart(data) {
 
     
 $.get("api/news/TestKey", function(data) {   
-    showKeywordStart(data);
+	readData(data);
 });
 
+var db = {
+
+        loadData: function(filter) {
+            return $.grep(this.clients, function(client) {
+                return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
+                    && (!filter.ID || client.ID === filter.ID);
+            });
+        },
+
+    };
+
+function readData(data) {
+
+        db.clients = [];
+        for (var i = 0; i < data.length; i++) {
+            var element = {};
+            element.Unternehmen = data[i];
+            db.clients.push(element);
+        }
+$("#jsGrid").jsGrid({
+        height: 300,
+        width: "100%",
+ 
+        filtering: true,
+        sorting: true,
+        autoload: true,
+
+ 
+        controller: db,
+ 
+        fields: [
+			{ name: "PLZ", type: "number", width: 25,  },
+			{ name: "Unternehmen", type: "text", width: 50,  },
+			{ name: "Kategorie", type: "text", width: 25,  },
+		    { name: "Schlagwörter", type: "text", width: 50,  },
+            { name: "Inhalt", type: "text", width: 150, validate: "required" },
+            { name: "Datum", type: "number", width: 25,  },
+			{ name: "Quelle", type: "text", width: 25,  },
+			{ type: "control" },
+        ]
+    });
+}
     
 /**
  * Displays the keywords in a table
@@ -173,73 +187,8 @@ function showKeywordStart(data) {
 } 
 
 
-// no Refresh if you press enter 
-$('#searchInput').keypress(function(event) { 
-    return event.keyCode != 13;
-}); 
+  
 
-    
-// start searching if you press any key   
-$('#searchInput').on('keyup', function (e) {
-        search();
-});
-    
-    
- /**
- * allows to search the tables of the homepage
- */   
-function search() {
-    //read userinput 
-    var inputValue = $('#searchInput').val();
-    
-    //iterate through the whole table
-    $('#companyStartTableBody tr').each(function() {
-        //save content of current row
-        var tableValue = $(this).text();
-        
-        //edit current row
-        if(tableValue.toLowerCase().includes(inputValue.toLowerCase()) && inputValue != ""){
-            $(this).html('<td class="success" >' + tableValue + '</td>')
-        } else{
-            $(this).html('<td>' + tableValue + '</td>') 
-        }
-        
-        
-    });
-    
-    $('#keywordStartTableBody tr').each(function() {
-        //save content of current row
-        var tableValue = $(this).text();
-        
-        //edit current row
-        if(tableValue.includes(inputValue) && inputValue != ""){
-            $(this).html('<td class="success" >' + tableValue + '</td>')
-        } else{
-            $(this).html('<td>' + tableValue + '</td>') 
-        }
-        
-    });
-    
-    /*$('#resultTableBody tr').each(function() {
-        //save content of current row
-        var tableValue = $(this).text();
-        
-        //edit current row
-        if(tableValue.includes(inputValue) && inputValue != ""){
-            $(this).html('<td class="success" >' + tableValue + '</td>')
-        } else{
-            $(this).html('<td>' + tableValue + '</td>') 
-        }       
-
-    });*/    
-}
-/*
-$('#companyStartTable').on('click', 'td', function() {
-    var inhalt = $(this).text();
-    $(this).html('<tr class="success"><td> xx </td></tr>');
-    
-});    
-*/   
     
 </script>
 
