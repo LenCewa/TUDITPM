@@ -7,9 +7,6 @@ import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.bson.Document;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
@@ -40,7 +37,7 @@ public class ConsumerReload extends Thread {
 		producerTwitter = new ProducerTwitterStreamingAPI();
 		producerTwitter.start();
 		
-		producerRss = new ProducerRSSatOM();
+		producerRss = new ProducerRSSatOM("checkeddata_dev");
 		producerRss.start();
 	}
 	
@@ -87,7 +84,7 @@ public class ConsumerReload extends Thread {
 					producerRss.interrupt();
 					
 					producerTwitter = new ProducerTwitterStreamingAPI();
-					producerRss = new ProducerRSSatOM();
+					producerRss = new ProducerRSSatOM("checkeddata_dev");
 					
 					producerTwitter.start();
 					producerRss.start();
@@ -102,7 +99,7 @@ public class ConsumerReload extends Thread {
 				else if(record.value().equals("rss url added")){
 					producerRss.interrupt();
 					
-					producerRss = new ProducerRSSatOM();
+					producerRss = new ProducerRSSatOM("checkeddata_dev");
 					
 					producerRss.start();
 				}

@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -16,6 +17,7 @@ import java.util.logging.Level;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.bson.Document;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
@@ -36,10 +38,24 @@ import com.rometools.rome.io.XmlReader;
  * @version 5.0
  */
 public class ProducerRSSatOM extends Thread {
+	private String dbname;
+
+	public ProducerRSSatOM(String dbname) {
+		this.dbname = dbname;
+	}
+
 	@Override
 	public void run() {
 		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
 				"Thread started");
+
+		MongoDBConnector mongo = new MongoDBConnector(dbname);
+
+		HashSet<String> visited = new HashSet<>();
+
+		for (Document doc : mongo.getCollection("rss").find()) {
+			visited.add(doc.getString("link"));
+		}
 
 		// set configs for kafka
 		Properties props = new Properties();
@@ -76,7 +92,6 @@ public class ProducerRSSatOM extends Thread {
 		try {
 			producer = new KafkaProducer<>(props);
 
-			// TODO: while schleife oder Timer drumherum fuer Dauerbetrieb..
 			for (int i = 0; i < allFeeds.size(); i++) {
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
 						"Reading RSS: " + allFeeds.get(i));
@@ -86,7 +101,9 @@ public class ProducerRSSatOM extends Thread {
 
 				for (SyndEntry entry : feed.getEntries()) {
 					String title = entry.getTitle();
-					if (entry.getDescription() != null) {
+					String link = entry.getLink();
+					if (!visited.contains(link)
+							&& entry.getDescription() != null) {
 						String text = entry.getDescription().getValue();
 						String id = solr.add(title + " " + text);
 
@@ -104,9 +121,8 @@ public class ProducerRSSatOM extends Thread {
 							if (solr.search("\"" + company + "\"", id)) {
 								companyFound = true;
 								json.put("company", company);
-
 								json.put("source", "rss");
-								json.put("link", entry.getLink());
+								json.put("link", link);
 								json.put("title", title);
 								json.put("text", text);
 								json.put("id", id);
@@ -122,8 +138,11 @@ public class ProducerRSSatOM extends Thread {
 										"rss", json.toString()));
 							}
 						}
-						if (!companyFound)
+						if (!companyFound) {
 							solr.delete(id);
+						}
+						visited.add(link);
+						mongo.writeToDb(new Document("link", link), "rss");
 					}
 				}
 			}
