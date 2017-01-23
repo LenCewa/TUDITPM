@@ -22,6 +22,7 @@ Author Arne Schmidt
         body { padding-top: 50px; }
 		body { margin-right: 100px; }
 		body { margin-left: 100px; }
+        body { padding-bottom:50px; }
 	</style>
 </head>
 
@@ -32,7 +33,7 @@ Author Arne Schmidt
 		<nav class="navbar navbar-default navbar-fixed-top">
 		  <div class="container-fluid">
 			<div class="navbar-header">
-			 <a class="navbar-brand" href="/">Start</a>
+			 <a class="navbar-brand" href="/" style="color:#4169e1">Start</a>
 			</div>
 
 			<div class="collapse navbar-collapse">
@@ -43,17 +44,16 @@ Author Arne Schmidt
                         <ul class="dropdown-menu">
                             <li><a href="/addcompany">Unternehmensnamen</a></li>
                             <li><a href="/keywords">Schlagwörter</a></li>
-                            <li><a href="/rss">RSS/Atom</a></li>
+                            <li><a href="/rss">Rss & Atom</a></li>
                         </ul>
                     </li>
                     
                     <li><a href="/admin">Administration</a></li>
                 </ul>
-                
-                
-
-			</div>
-			
+                <ul class="nav navbar-nav navbar-right">
+                    <li><p class="navbar-text" style="color:#4169e1">Startseite</p></li>
+                </ul>
+            </div>
 		  </div>
 		</nav>
 
@@ -62,7 +62,7 @@ Author Arne Schmidt
     <div ID="middle">
         <p style="margin-bottom: 40px">
 
-                <div ID="jsGrid"></div>
+        <div ID="jsGrid"></div>
         
         <p style="margin-bottom: 40px">
         
@@ -142,13 +142,24 @@ function readData(data) {
             db.clients.push(element);
         }
 $("#jsGrid").jsGrid({
-        height: 300,
+        height: "auto",
         width: "100%",
  
         filtering: true,
         sorting: true,
         autoload: true,
-
+    
+        paging: true, 
+        pageIndex: 1,
+        pageSize: 20,
+        pageButtonCount: 5,
+        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
+        pagePrevText: "Zurück",
+        pageNextText: "Weiter",
+        pageFirstText: "Erste",
+        pageLastText: "Letzte",
+        pageNavigatorNextText: "...",
+        pageNavigatorPrevText: "...",
  
         controller: db,
  
