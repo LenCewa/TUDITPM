@@ -58,7 +58,7 @@ public class Consumer extends Thread {
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "bootstrap.servers"));
-		props.put("group.id", "group-1");
+		props.put("group.id", "group-2");
 		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "enable.auto.commit"));
 		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(
@@ -85,7 +85,14 @@ public class Consumer extends Thread {
 			for (ConsumerRecord<String, String> record : records) {
 				System.out.println("CONSUMER_ENHANCEDDATA: " + record.value());
 				// decode JSON String
-				JSONObject json = new JSONObject(record.value());
+				JSONObject json = null;
+				try{
+				json = new JSONObject(record.value());
+				}
+				catch (JSONException e){
+					System.err.println("Not a valid JSON Object, continuing...");
+					continue;
+				}
 				String id = json.getString("id");
 
 				for (String keyword : keywords) {

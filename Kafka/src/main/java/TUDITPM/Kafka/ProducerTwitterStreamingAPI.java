@@ -1,5 +1,6 @@
 package TUDITPM.Kafka;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -172,7 +173,6 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			}
 			removed.add(company);
 		}
-		System.out.println(removed);
 		return removed;
 	}
 }
