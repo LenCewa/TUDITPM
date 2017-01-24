@@ -42,6 +42,25 @@ var client = redis.createClient(connections.redis.port, connections.redis.addres
 //Create a mongoDB client
 var mongoClient = mongodb.MongoClient;
 
+//Kafka Producer
+var kafka = require('kafka-node');
+var Producer = kafka.Producer;
+var kafkaClient = new kafka.Client();
+var producer = new Producer(kafkaClient);
+var payloads = [
+        { topic: 'reload', messages: 'hi', partition: 0 },
+	];
+	
+// Kafka ready to send messages	
+producer.on('ready', function () {
+    console.log("kafka ready");
+});
+
+// Kafka error
+producer.on('error', function () {
+    console.log("kafka error");
+});
+
 //Import mongoDB collection to Redis
 //Connect to mongoDB
 mongodb.connect(connections.mongodb.news, function(err, db) {
@@ -130,9 +149,9 @@ app.get('/admin', function routeIndex(req, res) {
 
 
 // API routing
-require('./app/companies')(app);
-require('./app/rss')(app);
-require('./app/keywords')(app);
+require('./app/companies')(app, producer);
+require('./app/rss')(app, producer);
+require('./app/keywords')(app, producer);
 require('./app/news')(app, client);
 
 // Start Express server.
