@@ -96,9 +96,16 @@ public class ProducerRSSatOM extends Thread {
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
 						"Reading RSS: " + allFeeds.get(i));
 				SyndFeedInput input = new SyndFeedInput();
-				SyndFeed feed = input.build(new XmlReader(new URL(allFeeds
+				SyndFeed feed = null;
+				try{
+					feed = input.build(new XmlReader(new URL(allFeeds
 						.get(i))));
-
+				}
+				catch (IOException e){
+					LoggingWrapper.log(getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: http://www.allgemeine-zeitung.de/lokales/oppenheim/index.rss, continuing with next url");
+					continue;
+				}
+				
 				for (SyndEntry entry : feed.getEntries()) {
 					String title = entry.getTitle();
 					String link = entry.getLink();
@@ -136,6 +143,7 @@ public class ProducerRSSatOM extends Thread {
 
 								producer.send(new ProducerRecord<String, String>(
 										"rss", json.toString()));
+								System.out.println(json);
 							}
 						}
 						if (!companyFound) {

@@ -2,6 +2,7 @@ package TUDITPM.Kafka;
 
 import java.io.IOException;
 
+import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
@@ -22,7 +23,8 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		new ConsumerMongoDB("rawdata_dev").start();
+		if(Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata")))
+				new ConsumerMongoDB("rawdata_dev").start();
 		new ConsumerReload("enhanceddata_dev").start();
 	}
 }

@@ -47,9 +47,6 @@ var kafka = require('kafka-node');
 var Producer = kafka.Producer;
 var kafkaClient = new kafka.Client();
 var producer = new Producer(kafkaClient);
-var payloads = [
-        { topic: 'reload', messages: 'hi', partition: 0 },
-	];
 	
 // Kafka ready to send messages	
 producer.on('ready', function () {

@@ -20,19 +20,19 @@ public class LoggingWrapper {
 				System.out.println("Log directory Created");
 			}
 		} catch (SecurityException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
 
 	public static void log(String classname, Level level, String msg) {
-		FileHandler fh;
+		Logger classLogger = null;
+		FileHandler fh = null;
 		try {
 			String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 			ensureFileExists(date);
 			// This block configure the logger with handler and formatter
 			fh = new FileHandler("logs/" + date + "/" + classname + ".log");
-			Logger classLogger;
 			if(loggers.get(classname) == null){
 				classLogger = Logger.getLogger(classname);
 				classLogger.addHandler(fh);
@@ -47,6 +47,12 @@ public class LoggingWrapper {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		finally {
+			if(classLogger != null && fh != null){
+				classLogger.removeHandler(fh);
+				fh.close();
+			}
 		}
 	}
 }
