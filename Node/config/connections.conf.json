@@ -7,7 +7,8 @@
 		},
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_dev",
-			"news": "mongodb://localhost:27017/enhanceddata_dev"
+			"news": "mongodb://localhost:27017/enhanceddata_dev",
+			"config": "mongodb://localhost:27017/config"
 		}
 	},
 	"test": {
@@ -18,7 +19,8 @@
 		},
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_test",
-			"news": "mongodb://localhost:27017/dbtest"
+			"news": "mongodb://localhost:27017/dbtest",
+			"config": "mongodb://localhost:27017/config"
 		}
 	},
 	"prod": {
