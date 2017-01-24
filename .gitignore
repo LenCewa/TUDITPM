@@ -22,3 +22,4 @@ Node/public/dist/
 RemoteSystemsTempFiles/.project
 Spark/.cache-main
 Spark/target/
+node_modules/
