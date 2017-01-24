@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -19,6 +21,7 @@ import java.util.Properties;
 public class PropertyLoader {
 	private static HashMap<PropertyFile, Properties> propertyMap = new HashMap<PropertyFile, Properties>();
 	private static LinkedList<String> companyList = new LinkedList<String>();
+	private static LinkedList<String> legalForms = new LinkedList<String>();
 	private static boolean loaded = false;
 
 	/**
@@ -37,6 +40,7 @@ public class PropertyLoader {
 			propertyMap.put(file, properties);
 		}
 
+		// read all companies
 		FileInputStream in = new FileInputStream(new File(
 				"properties/companies"));
 		BufferedReader br = new BufferedReader(new InputStreamReader(in,
@@ -48,6 +52,33 @@ public class PropertyLoader {
 		}
 		br.close();
 		in.close();
+		
+		// read all legal forms
+		FileInputStream in2 = new FileInputStream(new File(
+				"properties/legal_forms"));
+		BufferedReader br2 = new BufferedReader(new InputStreamReader(in2,
+				"UTF-8"));
+
+		String line2 = null;
+		while ((line2 = br2.readLine()) != null) {
+			legalForms.add(line2);
+		}
+		br2.close();
+		in2.close();
+		
+		// sorts legal forms by word length, so e.g GmbH & Co. KG comes before GmbH
+		Collections.sort(legalForms, new Comparator<String>() {
+
+			@Override
+			public int compare(String o1, String o2) {
+				// TODO Auto-generated method stub
+				if(o1.length() < o2.length())
+					return 1;
+				else if(o1.length() > o2.length())
+					return -1;
+				return 0;
+			}
+		});
 
 		loaded = true;
 
@@ -92,5 +123,13 @@ public class PropertyLoader {
 			throw new RuntimeException("Property files where not loaded.");
 		}
 		return companyList;
+	}
+
+	public static LinkedList<String> getLegalForms() {
+		// TODO Auto-generated method stub
+		if (!loaded) {
+			throw new RuntimeException("Property files where not loaded.");
+		}
+		return legalForms;
 	}
 }

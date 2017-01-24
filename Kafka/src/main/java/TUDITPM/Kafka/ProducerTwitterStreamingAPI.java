@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -33,11 +34,16 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
  */
 public class ProducerTwitterStreamingAPI extends Thread {
 
+	private boolean reload = false;
+
 	/**
 	 * Gets called on start of the Thread
 	 */
 	@Override
 	public void run() {
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+				"Thread started");
+
 		// set configs for kafka
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
@@ -84,8 +90,11 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		try {
 			producer = new KafkaProducer<String, String>(props);
 
-			LinkedList<String> companies = PropertyLoader.getCompanies();
-			System.out.println("starting search...");
+			LinkedList<String> companiesWithLegalForms = PropertyLoader
+					.getCompanies();
+			LinkedList<String> legalForms = PropertyLoader.getLegalForms();
+			LinkedList<String> companies = removeLegalForms(
+					companiesWithLegalForms, legalForms);
 
 			// Fetches Tweets that contain specified keywords
 			hosebirdEndpoint.trackTerms(companies);
@@ -94,8 +103,9 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			final int abortSize = Integer.parseInt(PropertyLoader
 					.getPropertyValue(PropertyFile.kafka, "abort.size"));
 
-			// Stop at 100 tweets
+			// Stop at abort size
 			for (int i = 0; i < abortSize; i++) {
+
 				try {
 					String tweet = msgQueue.take().trim();
 					JSONObject JSONrawdata = new JSONObject(tweet);
@@ -103,26 +113,28 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					String text = JSONrawdata.getString("text");
 					String id = solr.add(text);
 					boolean companyFound = false;
-					for (String company : PropertyLoader.getCompanies()) {
+					for (String company : companies) {
 						if (solr.search("\"" + company + "\"", id)) {
-							json.put("company", company);
 							companyFound = true;
-							break;
+							json.put("company", company);
+
+							json.put("source", "twitter");
+							json.put("text", text);
+							json.put("date",
+									JSONrawdata.getString("created_at"));
+							json.put("link", "https://twitter.com/statuses/"
+									+ JSONrawdata.getString("id_str"));
+							json.put("id", id);
+
+							LoggingWrapper.log(this.getClass().getName(),
+									Level.INFO, json.toString());
+
+							producer.send(new ProducerRecord<String, String>(
+									"twitter", json.toString()));
 						}
 					}
-
-					if (companyFound) {
-						json.put("source", "twitter");
-						json.put("text", text);
-						json.put("date", JSONrawdata.getString("created_at"));
-						json.put("link", "https://twitter.com/statuses/"
-								+ JSONrawdata.getString("id_str"));
-						json.put("id", id);
-						producer.send(new ProducerRecord<String, String>(
-								"twitter", json.toString()));
-					} else {
+					if (!companyFound)
 						solr.delete(id);
-					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					System.out.println("Couldnt fetch tweets.");
@@ -139,5 +151,28 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			producer.close();
 			builder.stop();
 		}
+	}
+
+	/**
+	 * Removes the legal forms of every Company from the list
+	 * 
+	 * @param companies
+	 *            - list of companies
+	 * @param legalForms
+	 *            - list of legal forms possible
+	 * @return - list of companies with their legal form removed
+	 */
+	private LinkedList<String> removeLegalForms(LinkedList<String> companies,
+			LinkedList<String> legalForms) {
+		LinkedList<String> removed = new LinkedList<>();
+
+		for (String company : companies) {
+			for (String legalForm : legalForms) {
+				company = company.replace(legalForm, "").trim();
+			}
+			removed.add(company);
+		}
+		System.out.println(removed);
+		return removed;
 	}
 }
