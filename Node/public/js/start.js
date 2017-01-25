@@ -8,7 +8,6 @@
  * 
  * @version      5.0
  */
-
 var selectedCompanies = Cookies.get('selectedCompanies');
 if (!selectedCompanies) {
 	selectedCompanies = {};
@@ -27,10 +26,10 @@ var db = {
 };
 
 function readData(data) {
-	if (!data.isArray) {
+	if (!data.length) {
 		data = [data];
 	}
-
+	
 	db.clients = [];
 	for (var i = 0; i < data.length; i++) {
 		var element = {
@@ -97,22 +96,11 @@ function readData(data) {
 	});
 }
 
-/**
- * Displays the keywords in a table
- * @param {[type]} data         [description]
- */
-function showKeywordStart(data) {
-	// Fills the table row by row
-	for (var i = 0; i < data.length; i++) {
-		$('#keywordStartTable').append('<tr><td>' + data[i].text + '</td></tr>');
-	}
-}
-
 function reloadCompanyList() {
 	$('#companyStartTableBody').empty();
 	// Fills the table row by row
 	for (var i = 0; i < companies.length; i++) {
-		var companySelected = selectedCompanies[companies[i]];
+		var companySelected = selectedCompanies[companies[i].stripped];
 		var btnType;
 		if (companySelected || showAllCompanies) {
 			if (companySelected) {
@@ -120,7 +108,30 @@ function reloadCompanyList() {
 			} else {
 				btnType = 'default';
 			}
-			$('#companyStartTableBody').append('<tr><td>' + companies[i] + '</td><td>' + '<button id="' + companies[i] + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i] + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+			$('#companyStartTableBody').append('<tr><td>' + companies[i].name + '</td><td>' + '<button id="' + companies[i].stripped + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i].stripped + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+		}
+	}
+}
+
+function reloadData() {
+	var queries = [];
+	var completeData = [];
+	var name;
+	var count = 0;
+	for (name in selectedCompanies) {
+		if (selectedCompanies[name]) {
+			count++;
+		}
+	}
+	for (name in selectedCompanies) {
+		if (selectedCompanies[name]) {
+			queries.push($.get("/api/news/" + name, function(data) { // jshint ignore:line
+				completeData = completeData.concat(data);
+				count--;
+				if(count === 0){
+					readData(completeData);
+				}
+			}));
 		}
 	}
 }
@@ -134,6 +145,7 @@ function selectCompany(name) {
 		selectedCompanies[name] = true;
 	}
 	Cookies.set('selectedCompanies', selectedCompanies);
+	reloadData();
 }
 
 function showAll() {
@@ -171,23 +183,6 @@ function searchCompany() {
 			}
 		}
 	}
-}
-
-/**
- * Sends the company given in the input field "companyName" to the server.
- */
-function postCompany() {
-	$.ajax({
-		type: 'POST',
-		url: '/api/company',
-		data: '{"company":"' + $('#companyName').val() + '"}',
-		success: function(data) {
-			$.get("/api/company", function(data) {
-				showCompaniesStart(data);
-			});
-		},
-		contentType: 'application/json'
-	});
 }
 
 function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {

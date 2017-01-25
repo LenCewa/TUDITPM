@@ -40,7 +40,12 @@ module.exports = function(app, client) {
 					}
 				});
 			}
-			var newsArray = JSON.parse(reply);
+			var newsArray;
+			try{
+				newsArray = JSON.parse(reply);
+			} catch (err){
+				newsArray = [];
+			}
 			if (newsArray === undefined){
 				return res.status(500).send({
 						err: {

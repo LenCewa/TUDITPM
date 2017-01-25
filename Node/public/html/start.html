@@ -61,10 +61,7 @@ $.get("/api/company", function(data) {
     showCompaniesStart(data);
 });
 
-$.get("api/news/AHA", function(data) {
-    showKeywordStart(data)
-    readData(data);
-});
+reloadData();
 </script>
 
 </html>

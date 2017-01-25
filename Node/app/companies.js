@@ -17,7 +17,7 @@ var fs = require('fs-extra');
  * Helper function to read the company list
  * @param callback callback function, gets an error as first element and data as second
  */
-exports.getCompanies = function(mongodb, legalForms, callback) {
+exports.getCompanies = function(mongodb, callback) {
 	var i;
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
@@ -31,20 +31,20 @@ exports.getCompanies = function(mongodb, legalForms, callback) {
 			for (i = 0; i < items.length; i++) {
 				docs.push(items[i].company);
 			}
-			if (legalForms) {
-				callback(null, docs);
-			} else {
-				var forms = require('../config/legalForms.json');
-				var removed = [];
-				for (i = 0; i < docs.length; i++) {
-					var doc = docs[i];
-					for (var j = 0; j < forms.length; j++) {
-						doc = doc.replace(forms[j], "").trim();
-					}
-					removed.push(doc);
+			var forms = require('../config/legalForms.json');
+			var removed = [];
+			for (i = 0; i < docs.length; i++) {
+				var doc = docs[i];
+				for (var j = 0; j < forms.length; j++) {
+					doc = doc.replace(forms[j], '').trim();
+					doc = doc.replace(/\./g).trim();
 				}
-				callback(null, removed);
+				removed.push({
+					name: docs[i],
+					stripped: doc
+				});
 			}
+			callback(null, removed);
 		});
 	});
 };
@@ -104,7 +104,7 @@ exports.init = function(app, producer, mongodb) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/company', function(req, res) {
-		exports.getCompanies(mongodb, true, function(err, data) {
+		exports.getCompanies(mongodb, function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
