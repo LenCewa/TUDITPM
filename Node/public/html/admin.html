@@ -9,13 +9,14 @@ Author Arne Schmidt
 <head>
     <Title> Startseite </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script src="dist/js/app.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
-	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+    <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
+    <script src="/libs/socket.io/socket.io.min.js"></script>
+    <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
+   
+    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
+    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
+    <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <style>
@@ -30,7 +31,7 @@ Author Arne Schmidt
 		<nav class="navbar navbar-default navbar-fixed-top">
 		  <div class="container-fluid">
 			<div class="navbar-header">
-			  <a class="navbar-brand" href="http://localhost:8888">Start</a>
+			  <a class="navbar-brand" href=/">Start</a>
 			</div>
 
 			<div class="collapse navbar-collapse">
@@ -39,12 +40,12 @@ Author Arne Schmidt
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="http://localhost:8888/addcompany">Unternehmensnamen</a></li>
-                            <li><a href="http://localhost:8888/keywords">Schlagwörter</a></li>
+                            <li><a href="/addcompany">Unternehmensnamen</a></li>
+                            <li><a href="/keywords">Schlagwörter</a></li>
                         </ul>
                     </li>
                     
-                    <li class="active"><a href="http://localhost:8888/admin">Administration</a></li>
+                    <li class="active"><a href="/admin">Administration</a></li>
                 </ul>
                 
                 <form class="navbar-form navbar-right">

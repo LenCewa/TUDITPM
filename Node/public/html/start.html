@@ -9,14 +9,17 @@ Author Arne Schmidt
 <head>
     <Title> Startseite </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
+    <script src="/libs/socket.io/socket.io.min.js"></script>
+    <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
+   
+    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
+	<script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
+	
     <script src="dist/js/app.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
-	<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
-	<!-- set charset to utf-8 -->
+    <!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <style>
         body { padding-top: 50px; }
@@ -118,7 +121,7 @@ function showCompaniesStart(data) {
 }    
 
     
-$.get("api/news/TestKey", function(data) {  
+$.get("api/news/AHA", function(data) {  
 	showKeywordStart(data) 
 	readData(data);
 });
@@ -139,26 +142,31 @@ var db = {
     };
 
 function readData(data) {
+    console.log('readData');
+    console.log(data);
 
-        db.clients = [];
-        for (var i = 0; i < data.length; i++) {
-			meldungen = data[i];
-			//Array with all keys of the given object
-			newskey = Object.keys(meldungen);
-			//required key is the second one "_text"
-            var element = {"Inhalt": meldungen[newskey[1]], "Quelle": meldungen[newskey[2]],
-			"Datum": meldungen[newskey[3]], "Unternehmen": meldungen[newskey[4]], "Schlagwörter":meldungen[newskey[5]]};
-            db.clients.push(element);
-        }
-$("#jsGrid").jsGrid({
+    if(!data.isArray){
+        data = [data];
+    }
+
+    console.log(data);
+
+    db.clients = [];
+    for (var i = 0; i < data.length; i++) {
+		var element = {"Inhalt": data[i].text, "Quelle": data[i].link,
+		"Datum": data[i].date, "Unternehmen": data[i].company, "Schlagwörter": data[i].keyword};
+        db.clients.push(element);
+    }
+
+    $("#jsGrid").jsGrid({
         height: "auto",
         width: "100%",
  
         filtering: true,
         sorting: true,
         autoload: true,
-    
-        paging: true, 
+
+        paging: true,
         pageIndex: 1,
         pageSize: 20,
         pageButtonCount: 5,
@@ -190,19 +198,9 @@ $("#jsGrid").jsGrid({
  * @param {[type]} data         [description]
  */    
 function showKeywordStart(data) {
-    var meldungen;
-    var newskey;
-    var textkey;
-    
     // Fills the table row by row
     for (var i = 0; i < data.length; i++) {
-        meldungen = data[i];
-        //Array with all keys of the given object
-        newskey = Object.keys(meldungen);
-        //required key is the second one "_text"
-        textkey = newskey[1];
-    
-        $('#keywordStartTable').append('<tr><td>' + meldungen[textkey] + '</td></tr>');
+       $('#keywordStartTable').append('<tr><td>' + data[i].text + '</td></tr>');
     }
 } 
 
