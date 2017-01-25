@@ -45,11 +45,13 @@ Author Tobias Mahncke
         </div>
         <div class="col-md-10">
             <div ID="jsGrid"></div>
+            <button class='gen_btn' onClick="exportCSV()">Tabelle Exportieren</button>
         </div>
     </div>
     <div ID="bottom">
     </div>
 </body>
+
 <script type="text/javascript">
 $(function() {
     $("#navbar").load("html/navbar.html");
@@ -62,7 +64,7 @@ $.get("/api/company", function(data) {
 $.get("api/news/AHA", function(data) {
     showKeywordStart(data)
     readData(data);
-});
+});  
 </script>
 
 </html>

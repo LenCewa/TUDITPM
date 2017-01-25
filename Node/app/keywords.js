@@ -118,3 +118,49 @@ module.exports = function(app, producer, mongodb) {
 		});
 	});
 };
+
+function deleteKeywords(app, mongodb, producer) {
+	app.post('/api/delete', function(req, res) {
+		// Check if the request is correctly formed
+		if (req.body === undefined || req.body === null || req.body === '') {
+			return res.status(400).send({
+				err: {
+					de: 'Es wurde kein Schlagwort angegeben.',
+					en: 'The keyword cannot be empty.',
+					err: null
+				}
+			});
+		}
+		
+		mongodb.connect(connections.mongodb.config, function(err, db) {
+			if (err) { 
+				return res.status(500).send({
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: null
+					}
+				});
+			}
+			//Open collection
+			var collection = db.collection('Keywords', function(err, collcetion){
+				collcetion.remove({keyword: req.body}, function(err, result) {
+					if (err) {
+						console.log(err);
+					}
+					console.log(result);
+					db.close();
+				});
+			});
+			
+			var msg = [
+					{ topic: 'reload', messages: 'keyword added', partition: 0 },
+				];
+			producer.send(msg, function (err, data) {
+				console.log(data);
+			});
+			
+			return res.status(204).send();
+		});
+	});
+}
