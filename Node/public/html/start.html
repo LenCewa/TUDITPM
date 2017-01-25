@@ -1,213 +1,68 @@
 <!DOCTYPE html>
 <!--
 public/html/start.html
-Version 2.0
+Version 5.0
 Author Arne Schmidt
+Author Tobias Mahncke
 -->
 <html>
 
 <head>
-    <Title> Startseite </Title>
+    <Title>Startseite</Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
     <script src="/libs/socket.io/socket.io.min.js"></script>
     <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
-   
     <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
-	<link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
-	<script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
-	
-    <script src="dist/js/app.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
+    <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
+    <script type="text/javascript" src="/libs/cookies/cookies.js"></script>
+    <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
+    <script type="text/javascript" src="js/start.js"></script>
     <!-- set charset to utf-8 -->
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <style>
-        body { padding-top: 50px; }
-		body { margin-right: 100px; }
-		body { margin-left: 100px; }
-        body { padding-bottom:50px; }
-	</style>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
 </head>
 
-<!-- standard größe navbars sind 50px -->
 <body>
-    <div ID="header">
-		
-		<nav class="navbar navbar-default navbar-fixed-top">
-		  <div class="container-fluid">
-			<div class="navbar-header">
-			 <a class="navbar-brand" href="/" style="color:#4169e1">Start</a>
-			</div>
-
-			<div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="/addcompany">Unternehmensnamen</a></li>
-                            <li><a href="/keywords">Schlagwörter</a></li>
-                            <li><a href="/rss">Rss & Atom</a></li>
-                        </ul>
-                    </li>
-                    
-                    <li><a href="/admin">Administration</a></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><p class="navbar-text" style="color:#4169e1">Startseite</p></li>
-                </ul>
-            </div>
-		  </div>
-		</nav>
-
-    </div>
-	
+    <div ID="navbar"></div>
     <div ID="middle">
-        <p style="margin-bottom: 40px">
-
-        <div ID="jsGrid"></div>
-        
-        <p style="margin-bottom: 40px">
-        
-        <div class="container">
-            <div class="col-md-1"></div>
-            <div class="col-md-4">
-                <table class="table table-hover" ID="companyStartTable">
-                    <thead>
-                        <tr>
-                            <th>Eingegebene Unternehmen</th>
-                        </tr>
-                    </thead>
-                    <tbody ID="companyStartTableBody">
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-1"></div>
-            <div class="col-md-5">
-                <table class="table table-hover" ID="keywordStartTable">
-                    <thead>
-                        <tr>
-                            <th>Gefundene Schlagwörter</th>
-                        </tr>
-                    </thead>
-                    <tbody ID="keywordStartTableBody">
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-1"></div>         
+        <div class="col-md-2">
+            <table class="table table-hover" ID="companyStartTable">
+                <thead>
+                    <tr>
+                        <th>
+                            <input class="form-control" ID="companyName" type="text" placeholder="Unternehmensname">
+                        </th>
+                        <th>
+                            <button id="showAllBtn" class="btn btn-success" onClick="showAll()"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody ID="companyStartTableBody">
+                </tbody>
+            </table>
         </div>
-            
+        <div class="col-md-10">
+            <div ID="jsGrid"></div>
+        </div>
     </div>
-    
-    
     <div ID="bottom">
     </div>
 </body>
 <script type="text/javascript">
-    
-$.get("/api/company", function(data) {   
+$(function() {
+    $("#navbar").load("html/navbar.html");
+});
+
+$.get("/api/company", function(data) {
     showCompaniesStart(data);
 });
-    
-/**
- * Displays the companylist in a table
- * @param {[type]} data         [description]
- */ 
-function showCompaniesStart(data) {
-    // Fills the table row by row
-    for (var i = 0; i < data.length; i++) {
-        $('#companyStartTable').append('<tr><td>' + data[i] + '</td></tr>');
-    }
-}    
 
-    
-$.get("api/news/AHA", function(data) {  
-	showKeywordStart(data) 
-	readData(data);
+$.get("api/news/AHA", function(data) {
+    showKeywordStart(data)
+    readData(data);
 });
-
-var db = {
-
-        loadData: function(filter) {
-            return $.grep(this.clients, function(client) {
-                return (!filter.Inhalt || client.Inhalt.indexOf(filter.Inhalt) > -1)
-				    && (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
-					&& (!filter.Schlagwörter || client.Schlagwörter.indexOf(filter.Schlagwörter) > -1)
-					&& (!filter.Quelle || client.Quelle.indexOf(filter.Quelle) > -1)
-					&& (!filter.Datum || client.Datum.indexOf(filter.Datum) > -1);
-       
-            });
-        },
-
-    };
-
-function readData(data) {
-    console.log('readData');
-    console.log(data);
-
-    if(!data.isArray){
-        data = [data];
-    }
-
-    console.log(data);
-
-    db.clients = [];
-    for (var i = 0; i < data.length; i++) {
-		var element = {"Inhalt": data[i].text, "Quelle": data[i].link,
-		"Datum": data[i].date, "Unternehmen": data[i].company, "Schlagwörter": data[i].keyword};
-        db.clients.push(element);
-    }
-
-    $("#jsGrid").jsGrid({
-        height: "auto",
-        width: "100%",
- 
-        filtering: true,
-        sorting: true,
-        autoload: true,
-
-        paging: true,
-        pageIndex: 1,
-        pageSize: 20,
-        pageButtonCount: 5,
-        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
-        pagePrevText: "Zurück",
-        pageNextText: "Weiter",
-        pageFirstText: "Erste",
-        pageLastText: "Letzte",
-        pageNavigatorNextText: "...",
-        pageNavigatorPrevText: "...",
- 
-        controller: db,
- 
-        fields: [
-			{ name: "PLZ", type: "number", width: 25,  },
-			{ name: "Unternehmen", type: "text", width: 50,  },
-			{ name: "Kategorie", type: "text", width: 25,  },
-		    { name: "Schlagwörter", type: "text", width: 50,  },
-            { name: "Inhalt", type: "text", width: 150, validate: "required" },
-            { name: "Datum", type: "number", width: 25,  },
-			{ name: "Quelle", type: "text", width: 25,  },
-			{ type: "control" },
-        ]
-    });
-}
-    
-/**
- * Displays the keywords in a table
- * @param {[type]} data         [description]
- */    
-function showKeywordStart(data) {
-    // Fills the table row by row
-    for (var i = 0; i < data.length; i++) {
-       $('#keywordStartTable').append('<tr><td>' + data[i].text + '</td></tr>');
-    }
-} 
-
-
-  
-
-    
 </script>
 
 </html>

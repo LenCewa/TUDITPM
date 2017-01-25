@@ -14,7 +14,7 @@
 var fs = require('fs-extra');
 
 // load configuration
-var connections = require('../config/connections.conf.json')['dev'];
+var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
 
 /**
  * Helper function to read the url list
@@ -22,20 +22,22 @@ var connections = require('../config/connections.conf.json')['dev'];
  */
 function readKeywords(mongodb, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
-	if(err) { return console.dir(err); }
-	//Open collection
-	var collection = db.collection('Keywords', function(err, collcetion){});
-	//Store collection in array
-	collection.find().toArray(function(err, items) {
-		//Build JSONObject with array in it
-		var doc = [];
-		for (var i = 0; i < items.length; i++) {
-            var keywords = items[i];
-			//Array with all keys of the given object
-			var element = keywords['keyword'];
-            doc.push(element);
-        }
-		callback(null,doc);
+		if (err) {
+			return console.dir(err);
+		}
+		//Open collection
+		var collection = db.collection('Keywords', function(err, collcetion) {});
+		//Store collection in array
+		collection.find().toArray(function(err, items) {
+			//Build JSONObject with array in it
+			var doc = [];
+			for (var i = 0; i < items.length; i++) {
+				var keywords = items[i];
+				//Array with all keys of the given object
+				var element = keywords.keyword;
+				doc.push(element);
+			}
+			callback(null, doc);
 		});
 	});
 }
@@ -59,43 +61,47 @@ module.exports = function(app, producer, mongodb) {
 				}
 			});
 		}
-		
+
 		mongodb.connect(connections.mongodb.config, function(err, db) {
-			if(err) { 
+			if (err) {
 				return res.status(500).send({
-				err: {
-					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-					en: 'MongoDB connection could not be established',
-					err: null
-					}
-				});
-			}
-			//Open collection
-			var collection = db.collection('Keywords', function(err, collcetion){});
-			//Store collection in array
-			var document = {keyword: req.body.keyword};
-			collection.insert(document, function(err, records){
-				if(err){
-					return res.status(500).send({
 					err: {
 						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 						en: 'MongoDB connection could not be established',
 						err: null
 					}
 				});
+			}
+			//Open collection
+			var collection = db.collection('Keywords', function(err, collcetion) {});
+			//Store collection in array
+			var document = {
+				keyword: req.body.keyword
+			};
+			collection.insert(document, function(err, records) {
+				if (err) {
+					return res.status(500).send({
+						err: {
+							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+							en: 'MongoDB connection could not be established',
+							err: null
+						}
+					});
 				}
 			});
-			
-			var msg = [
-					{ topic: 'reload', messages: 'keyword added', partition: 0 },
-				];
-			producer.send(msg, function (err, data) {
+
+			var msg = [{
+				topic: 'reload',
+				messages: 'keyword added',
+				partition: 0
+			}, ];
+			producer.send(msg, function(err, data) {
 				console.log(data);
 			});
-			
+
 			return res.status(204).send();
 		});
-		
+
 	});
 
 	/**

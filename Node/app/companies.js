@@ -9,7 +9,7 @@
  */
 
 // load configuration
-var connections = require('../config/connections.conf.json').dev;
+var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
 
 var fs = require('fs-extra');
 
@@ -18,6 +18,7 @@ var fs = require('fs-extra');
  * @param callback callback function, gets an error as first element and data as second
  */
 exports.getCompanies = function(mongodb, legalForms, callback) {
+	var i;
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
 			return console.dir(err);
@@ -27,7 +28,7 @@ exports.getCompanies = function(mongodb, legalForms, callback) {
 		//Store collection in array
 		collection.find().toArray(function(err, items) {
 			var docs = [];
-			for (var i = 0; i < items.length; i++) {
+			for (i = 0; i < items.length; i++) {
 				docs.push(items[i].company);
 			}
 			if (legalForms) {
@@ -35,7 +36,7 @@ exports.getCompanies = function(mongodb, legalForms, callback) {
 			} else {
 				var forms = require('../config/legalForms.json');
 				var removed = [];
-				for (var i = 0; i < docs.length; i++) {
+				for (i = 0; i < docs.length; i++) {
 					var doc = docs[i];
 					for (var j = 0; j < forms.length; j++) {
 						doc = doc.replace(forms[j], "").trim();
@@ -46,7 +47,7 @@ exports.getCompanies = function(mongodb, legalForms, callback) {
 			}
 		});
 	});
-}
+};
 
 exports.init = function(app, producer, mongodb) {
 	console.log('company routes loading');

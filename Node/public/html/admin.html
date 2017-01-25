@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--
-public/html/start.html
-Version 1.0
+public/html/admin.html
+Version 5.0
 Author Arne Schmidt
+Author Tobias Mahncke
 -->
 <html>
 
@@ -13,134 +14,121 @@ Author Arne Schmidt
     <script src="/libs/socket.io/socket.io.min.js"></script>
     <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
-   
     <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
     <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
     <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
-	<!-- set charset to utf-8 -->
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <style>
-        body { padding-top: 50px; }
-	</style>
+    
+    <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
+    <!-- set charset to utf-8 -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
 </head>
 
-<!-- standard größe navbars sind 50px -->
 <body>
-    <div ID="header">
-		
-		<nav class="navbar navbar-default navbar-fixed-top">
-		  <div class="container-fluid">
-			<div class="navbar-header">
-			  <a class="navbar-brand" href=/">Start</a>
-			</div>
-
-			<div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Konfiguration <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="/addcompany">Unternehmensnamen</a></li>
-                            <li><a href="/keywords">Schlagwörter</a></li>
-                        </ul>
-                    </li>
-                    
-                    <li class="active"><a href="/admin">Administration</a></li>
-                </ul>
-                
-                <form class="navbar-form navbar-right">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Suchen">
-                    </div>
-                    <button id="searchbutton" type="button" class="btn btn-default">Los</button>
-                </form>
-
-			</div>
-			
-		  </div>
-		</nav>
-
-    </div>
-	
+    <div ID="navbar"></div>
     <div ID="middle">
-	<div ID="jsGrid"></div>
-            
-        
+        <div ID="jsGrid"></div>
     </div>
     <div ID="bottom">
     </div>
 </body>
 <script>
-$.get("/api/company", function(data) {   
+$(function() {
+    $("#navbar").load("html/navbar.html");
+});
+
+$.get("/api/company", function(data) {
     readData(data);
 });
 
- var db = {
+var db = {
 
-        loadData: function(filter) {
-            return $.grep(this.clients, function(client) {
-                return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
-                    && (!filter.ID || client.ID === filter.ID);
-            });
-        },
+    loadData: function(filter) {
+        return $.grep(this.clients, function(client) {
+            return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1) && (!filter.ID || client.ID === filter.ID);
+        });
+    },
 
-    };
+};
 
-    window.db = db;
+window.db = db;
 
 
 function readData(data) {
 
-        db.clients = [];
-        for (var i = 0; i < data.length; i++) {
-            var element = {};
-            element.Unternehmen = data[i];
-            element.ID = i + 1;
-            db.clients.push(element);
-        }
-$("#jsGrid").jsGrid({
+    db.clients = [];
+    for (var i = 0; i < data.length; i++) {
+        var element = {};
+        element.Unternehmen = data[i];
+        element.ID = i + 1;
+        db.clients.push(element);
+    }
+    $("#jsGrid").jsGrid({
         height: 300,
         width: "100%",
- 
+
         filtering: true,
         sorting: true,
         autoload: true,
- 
+
         deleteConfirm: "Do you really want to delete the client?",
- 
+
         controller: db,
- 
-        fields: [
-			{ name: "PLZ", type: "number", width: 25,  },
-			{ name: "Unternehmen", type: "text", width: 50,  },
-			{ name: "Kategorie", type: "text", width: 25,  },
-		    { name: "Schlagwörter", type: "text", width: 50,  },
-            { name: "Inhalt", type: "text", width: 150, validate: "required" },
-            { name: "Datum", type: "number", width: 25,  },
-			{ name: "Quelle", type: "text", width: 25,  },
-			{ type: "control" },
-        ]
+
+        fields: [{
+            name: "PLZ",
+            type: "number",
+            width: 25,
+        }, {
+            name: "Unternehmen",
+            type: "text",
+            width: 50,
+        }, {
+            name: "Kategorie",
+            type: "text",
+            width: 25,
+        }, {
+            name: "Schlagwörter",
+            type: "text",
+            width: 50,
+        }, {
+            name: "Inhalt",
+            type: "text",
+            width: 150,
+            validate: "required"
+        }, {
+            name: "Datum",
+            type: "number",
+            width: 25,
+        }, {
+            name: "Quelle",
+            type: "text",
+            width: 25,
+        }, {
+            type: "control"
+        }, ]
     });
 
-var gridSettings = JSON.parse(localStorage.getItem("gridSettings"));
-var grid = $("#jsGrid").data("JSGrid");
+    var gridSettings = JSON.parse(localStorage.getItem("gridSettings"));
+    var grid = $("#jsGrid").data("JSGrid");
 
-grid.search(gridSettings.filter).done(function() {
-    grid.sort({
-    	field: gridSettings.sorting.sortField,
-        order: gridSettings.sorting.sortOrder
-    }).done(function() {
-        grid.option("pageIndex", gridSettings.pageIndex);
+    grid.search(gridSettings.filter).done(function() {
+        grid.sort({
+            field: gridSettings.sorting.sortField,
+            order: gridSettings.sorting.sortOrder
+        }).done(function() {
+            grid.option("pageIndex", gridSettings.pageIndex);
+        });
     });
-});
 }
 
 $("#saveSettings").on("click", function() {
     localStorage.setItem("gridSettings", JSON.stringify({
-    	sorting: grid._sortingParams(),
+        sorting: grid._sortingParams(),
         pageIndex: grid.option("pageIndex"),
         filter: grid.getFilter()
     }));
 });
 </script>
+
 </html>

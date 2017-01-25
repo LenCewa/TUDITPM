@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-public/html/konfig.html
-Version 4.0
+public/html/keywords.html
+Version 5.0
 Author Tobias Mahncke
 Author Yannick Pferr
 Author Arne Schmidt
@@ -19,52 +19,16 @@ Author Arne Schmidt
     <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
     <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
     <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
-	<!-- set charset to utf-8 -->
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <style>
-        body { padding-top: 50px; }
-        body { margin-left:100px; }
-        body { margin-right:100px; }
-        body { padding-bottom:50px; }
-	</style>
+    
+    <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
+    <!-- set charset to utf-8 -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
 </head>
 
 <body>
-    <div ID="header">
-		
-		<nav class="navbar navbar-default navbar-fixed-top">
-		  <div class="container-fluid">
-			<div class="navbar-header">
-			  <a class="navbar-brand" href="/">Start</a>
-			</div>
-
-			<div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-
-                    <li class="dropdown">
-                        <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="color:#4169e1">Konfiguration <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="/addcompany">Unternehmensnamen</a></li>
-                            <li><a href="/keywords">Schlagwörter</a></li>
-                            <li><a href="/rss">Rss & Atom</a></li>
-                        </ul>
-                    </li>
-                    
-                    <li><a href="/admin">Administration</a></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><p class="navbar-text" style="color:#4169e1">Konfiguration / Schlagwörter</p></li>
-                </ul>
-			</div>
-			
-		  </div>
-		</nav>
-
-    </div>
-	
+    <div ID="navbar"></div>
+    
     <div ID="middle">
-		<p style="margin-bottom: 40px">
-		
         <div class="container">
             <div class="col-md-2"></div>
             <div class="form-group col-md-6">
@@ -83,7 +47,9 @@ Author Arne Schmidt
     </div>
 </body>
 <script type="text/javascript">
-    
+$(function() {
+    $("#navbar").load("html/navbar.html");
+});
     
 $.get("/api/keywords", function(data) {   
     readData(data);
@@ -134,7 +100,7 @@ $("#jsGrid").jsGrid({
         controller: db,
  
         fields: [
-			{ name: "ID", type: "number", width: 50 },
+            { name: "ID", type: "number", width: 50 },
             { name: "Keywords", type: "textarea", width: 150 },
             { type: "control" }
         ]
@@ -146,19 +112,19 @@ $("#jsGrid").jsGrid({
  * Sends the keyword given in the input field "keywordName" to the server.
  */
 function postUrls() {
-	//inhalt= $('#keywordName').val()
+    //inhalt= $('#keywordName').val()
    
     $.ajax({
-		type: 'POST',
-		url: '/api/keywords',
-		data: '{"keyword":"' + $('#keywordName').val() + '"}',
-		success: function(data) {
-			$.get("/api/keywords", function(data) {
-				readData(data);
-			});
-		},
-		contentType: 'application/json'
-	});
+        type: 'POST',
+        url: '/api/keywords',
+        data: '{"keyword":"' + $('#keywordName').val() + '"}',
+        success: function(data) {
+            $.get("/api/keywords", function(data) {
+                readData(data);
+            });
+        },
+        contentType: 'application/json'
+    });
     
 }
 
