@@ -11,6 +11,7 @@ import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -73,7 +74,14 @@ public class ConsumerMongoDB extends Thread {
 			for (ConsumerRecord<String, String> record : records) {
 				System.out.println("CONSUMER_RAWDATA: " + record.value());
 				// decode JSON String
-				JSONObject json = new JSONObject(record.value());
+				JSONObject json = null;
+				try{
+				json = new JSONObject(record.value());
+				}
+				catch (JSONException e){
+					System.err.println("Not a valid JSON Object, continuing...");
+					continue;
+				}
 
 				Document mongoDBdoc = new Document("text",
 						json.getString("text")).append("link",

@@ -33,13 +33,13 @@ public class LoggingWrapper {
 			ensureFileExists(date);
 			// This block configure the logger with handler and formatter
 			fh = new FileHandler("logs/" + date + "/" + classname + ".log");
-			if(loggers.get(classname) == null){
+			if (loggers.get(classname) == null) {
 				classLogger = Logger.getLogger(classname);
-				classLogger.addHandler(fh);
 				loggers.put(classname, classLogger);
 			} else {
 				classLogger = loggers.get(classname);
 			}
+			classLogger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();
 			fh.setFormatter(formatter);
 			classLogger.log(level, msg);
@@ -47,9 +47,8 @@ public class LoggingWrapper {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		finally {
-			if(classLogger != null && fh != null){
+		} finally {
+			if (classLogger != null && fh != null) {
 				classLogger.removeHandler(fh);
 				fh.close();
 			}

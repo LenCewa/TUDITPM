@@ -20,6 +20,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bson.Document;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
+import TUDITPM.Kafka.Loading.LegalFormHelper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -31,7 +33,6 @@ import com.rometools.rome.io.XmlReader;
 /**
  * Gets RSS and atOM feeds into a Kafka producer. a single feed of the specified
  * type.
- * 
  * 
  * @author Christian Zendo
  * @author Tobias Mahncke
@@ -50,6 +51,9 @@ public class ProducerRSSatOM extends Thread {
 				"Thread started");
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
+		MongoDBConnector config = new MongoDBConnector(
+				PropertyLoader.getPropertyValue(PropertyFile.database,
+						"config.name"));
 
 		HashSet<String> visited = new HashSet<>();
 
@@ -79,10 +83,13 @@ public class ProducerRSSatOM extends Thread {
 		// Create the producer
 		Producer<String, String> producer = null;
 
-		LinkedList<String> companiesWithLegalForms = PropertyLoader
-				.getCompanies();
+		LinkedList<String> companiesWithLegalForms = new LinkedList<>();
+		for (Document doc : config.getCollection("companies").find()) {
+			companiesWithLegalForms.add(doc.getString("company"));
+		}
+		
 		LinkedList<String> legalForms = PropertyLoader.getLegalForms();
-		LinkedList<String> companies = removeLegalForms(
+		LinkedList<String[]> companies = LegalFormHelper.removeLegalForms(
 				companiesWithLegalForms, legalForms);
 
 		Solr solr = new Solr();
@@ -97,20 +104,24 @@ public class ProducerRSSatOM extends Thread {
 						"Reading RSS: " + allFeeds.get(i));
 				SyndFeedInput input = new SyndFeedInput();
 				SyndFeed feed = null;
-				try{
-					feed = input.build(new XmlReader(new URL(allFeeds
-						.get(i))));
-				}
-				catch (IOException e){
-					LoggingWrapper.log(getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: http://www.allgemeine-zeitung.de/lokales/oppenheim/index.rss, continuing with next url");
+				try {
+					feed = input.build(new XmlReader(new URL(allFeeds.get(i))));
+				} catch (IOException e) {
+					LoggingWrapper.log(getName(), Level.WARNING,
+							"Server returned HTTP response code: 403 for URL: "
+									+ allFeeds.get(i)
+									+ ", continuing with next url");
 					continue;
 				}
-				
+				int found = 0;
+				int skipped = 0;
+
 				for (SyndEntry entry : feed.getEntries()) {
 					String title = entry.getTitle();
 					String link = entry.getLink();
 					if (!visited.contains(link)
 							&& entry.getDescription() != null) {
+						found++;
 						String text = entry.getDescription().getValue();
 						String id = solr.add(title + " " + text);
 
@@ -124,10 +135,11 @@ public class ProducerRSSatOM extends Thread {
 
 						JSONObject json = new JSONObject();
 						boolean companyFound = false;
-						for (String company : companies) {
-							if (solr.search("\"" + company + "\"", id)) {
+						for (String[] company : companies) {
+							if (solr.search("\"" + company[1] + "\"", id)) {
 								companyFound = true;
-								json.put("company", company);
+								json.put("companyStripped", company[1]);
+								json.put("company", company[0]);
 								json.put("source", "rss");
 								json.put("link", link);
 								json.put("title", title);
@@ -151,8 +163,13 @@ public class ProducerRSSatOM extends Thread {
 						}
 						visited.add(link);
 						mongo.writeToDb(new Document("link", link), "rss");
+					} else {
+						skipped++;
 					}
 				}
+				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+						"Scanned " + found + " entries, skipped " + skipped
+								+ " entries");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -180,28 +197,5 @@ public class ProducerRSSatOM extends Thread {
 		System.out.println("Loaded " + l.size() + " feed sources.");
 
 		return l;
-	}
-
-	/**
-	 * Removes the legal forms of every Company from the list
-	 * 
-	 * @param companies
-	 *            - list of companies
-	 * @param legalForms
-	 *            - list of legal forms possible
-	 * @return - list of companies with their legal form removed
-	 */
-	private LinkedList<String> removeLegalForms(LinkedList<String> companies,
-			LinkedList<String> legalForms) {
-		LinkedList<String> removed = new LinkedList<>();
-
-		for (String company : companies) {
-			for (String legalForm : legalForms) {
-				company = company.replace(legalForm, "").trim();
-			}
-			removed.add(company);
-		}
-
-		return removed;
 	}
 }

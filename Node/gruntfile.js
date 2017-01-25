@@ -22,7 +22,8 @@ module.exports = function(grunt) {
 				latedef: true,
 				globals: {
 					'$': false,
-					'io': false
+					'io': false,
+					'Cookies': false
 				}
 			},
 			all: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js', 'app/**/*.js', 'Gruntfile.js']
@@ -38,24 +39,11 @@ module.exports = function(grunt) {
 			}
 		},
 
-		// take all the js files and minify them into app.min.js
-		uglify: {
-			options: {
-				mangle: false,
-				beautify: true
-			},
-			build: {
-				files: {
-					'public/dist/js/app.min.js': ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js']
-				}
-			}
-		},
-
 		// take the processed style.css file and minify
 		cssmin: {
 			build: {
 				files: {
-					'public/dist/css/style.min.css': 'public/dist/css/style.css'
+					'public/dist/css/style.min.css': ['public/css/*.css', '!public/libs/**/*.*']
 				}
 			}
 		},
@@ -63,18 +51,27 @@ module.exports = function(grunt) {
 		// watch css and js files and process the above tasks
 		watch: {
 			css: {
-				files: ['public/**/css/*.less', '!public/libs/**/*.*'],
-				tasks: ['less', 'cssmin'],
+				files: ['public/css/*.css', '!public/libs/**/*.*'],
+				tasks: ['cssmin'],
 				options: {
 					livereload: true
 				}
 			},
 			js: {
 				files: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js'],
-				tasks: ['jshint', 'uglify'],
+				tasks: ['jshint'],
 				options: {
 					livereload: true
 				}
+			}
+		},
+
+		env: {
+			dev: {
+				NODE_ENV: 'dev'
+			},
+			build: {
+				NODE_ENV: 'prod'
 			}
 		},
 
@@ -111,15 +108,15 @@ module.exports = function(grunt) {
 	// Load all needed grunt dependencies
 	grunt.loadNpmTasks('grunt-jscs');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-concurrent');
 	grunt.loadNpmTasks('grunt-nodemon');
 	grunt.loadNpmTasks('grunt-mocha-test');
+	grunt.loadNpmTasks('grunt-env');
 
 	// Task to run the server
-	grunt.registerTask('default', ['jshint', 'jscs', 'cssmin', 'uglify', 'concurrent']);
+	grunt.registerTask('default', ['env:dev', 'jshint', 'jscs', 'cssmin', 'concurrent']);
 	// Test task
 	grunt.registerTask('test', ['jshint', 'jscs', 'mochaTest']);
 };

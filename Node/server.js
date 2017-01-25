@@ -33,8 +33,7 @@ var server = http.Server(app);
 
 // load configuration
 var config = require('./config/server.conf.json');
-//TODO: use NODE_ENV instead of hardcoded string
-var connections = require('./config/connections.conf.json')['dev'];
+var connections = require('./config/connections.conf.json')[process.env.NODE_ENV];
 
 // Create a redis client
 var client = redis.createClient(connections.redis.port, connections.redis.address);
@@ -42,53 +41,85 @@ var client = redis.createClient(connections.redis.port, connections.redis.addres
 //Create a mongoDB client
 var mongoClient = mongodb.MongoClient;
 
+// Dependencies
+var company = require('./app/companies');
+
 //Kafka Producer
 var kafka = require('kafka-node');
 var Producer = kafka.Producer;
 var kafkaClient = new kafka.Client();
 var producer = new Producer(kafkaClient);
-	
+
 // Kafka ready to send messages	
-producer.on('ready', function () {
-    console.log("kafka ready");
+producer.on('ready', function() {
+	console.log("Kafka ready");
 });
 
 // Kafka error
-producer.on('error', function () {
-    console.log("kafka error");
+producer.on('error', function() {
+	console.log("kafka error");
 });
 
-//Import mongoDB collection to Redis
-//Connect to mongoDB
+// Import mongoDB collections to Redis
+// Connect to mongoDB
 mongodb.connect(connections.mongodb.news, function(err, db) {
-	if(err) { return console.dir(err); }
-	//Open collection
-	var collection = db.collection('Obama', function(err, collcetion){});
-	//Store collection in array
-	collection.find().toArray(function(err, items) {
-		//Build JSONObject with array in it
-		var doc = {'Meldungen': items};
-		//Convert to JSONString
-		var result = JSON.stringify(doc);
-		//Save to Redis
-		client.set("TestKey", result);
+	if (err) {
+		return console.dir(err);
+	}
+
+	client.flushall(function(err) {
+		if (err) {
+			console.log(err);
+		}
+		company.getCompanies(mongodb, false, function(err, companies) {
+			var readCollection = function(collections) {
+				var name = collections.pop().replace(/\./g, "");
+				//Open collections
+				var collection = db.collection(name, function(err, collection) {
+					if (err) {
+						console.log(err);
+					}
+				});
+				//Store collection in array
+				collection.find().toArray(function(err, items) {
+					if (items.length > 0) {
+						for (var i = 0; i < items.length; i++) {
+							items[i] = JSON.stringify(items[i]);
+						}
+						items = [name].concat(items);
+						client.send_command("lpush", items, function(err) {
+							if (err) {
+								console.log(err);
+							}
+							if (connections.length > 0) {
+								readCollection(collections);
+							}
+						});
+					} else {
+						readCollection(collections);
+					}
+				});
+			}
+			readCollection(companies);
+		});
 	});
 });
+
 // Socket connections
 var io = socket(server);
-io.on('connection', function(socket){
-  console.log('a user connected');
-  socket.on('disconnect', function(){
-	console.log('a user disconnected');  
-  });
+io.on('connection', function(socket) {
+	console.log('a user connected');
+	socket.on('disconnect', function() {
+		console.log('a user disconnected');
+	});
 });
 
-client.on('error', function (err) {
-    console.log('Error ' + err);
+client.on('error', function(err) {
+	console.log('Error ' + err);
 	io.emit('redis', 'Redis unavailable');
 });
 
-client.on('connect', function(){
+client.on('connect', function() {
 	io.emit('redis', 'Redis available');
 });
 
@@ -143,10 +174,8 @@ app.get('/admin', function routeIndex(req, res) {
 
 
 
-
-
 // API routing
-require('./app/companies')(app, producer, mongodb);
+company.init(app, producer, mongodb);
 require('./app/rss')(app, producer);
 require('./app/keywords')(app, producer, mongodb);
 require('./app/news')(app, client);
