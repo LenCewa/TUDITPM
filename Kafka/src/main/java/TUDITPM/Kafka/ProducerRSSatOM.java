@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
+import TUDITPM.Kafka.Loading.LegalFormHelper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -88,7 +89,7 @@ public class ProducerRSSatOM extends Thread {
 		}
 		
 		LinkedList<String> legalForms = PropertyLoader.getLegalForms();
-		LinkedList<String> companies = removeLegalForms(
+		LinkedList<String[]> companies = LegalFormHelper.removeLegalForms(
 				companiesWithLegalForms, legalForms);
 
 		Solr solr = new Solr();
@@ -134,10 +135,11 @@ public class ProducerRSSatOM extends Thread {
 
 						JSONObject json = new JSONObject();
 						boolean companyFound = false;
-						for (String company : companies) {
-							if (solr.search("\"" + company + "\"", id)) {
+						for (String[] company : companies) {
+							if (solr.search("\"" + company[1] + "\"", id)) {
 								companyFound = true;
-								json.put("company", company);
+								json.put("companyStripped", company[1]);
+								json.put("company", company[0]);
 								json.put("source", "rss");
 								json.put("link", link);
 								json.put("title", title);
@@ -195,28 +197,5 @@ public class ProducerRSSatOM extends Thread {
 		System.out.println("Loaded " + l.size() + " feed sources.");
 
 		return l;
-	}
-
-	/**
-	 * Removes the legal forms of every Company from the list
-	 * 
-	 * @param companies
-	 *            - list of companies
-	 * @param legalForms
-	 *            - list of legal forms possible
-	 * @return - list of companies with their legal form removed
-	 */
-	private LinkedList<String> removeLegalForms(LinkedList<String> companies,
-			LinkedList<String> legalForms) {
-		LinkedList<String> removed = new LinkedList<>();
-
-		for (String company : companies) {
-			for (String legalForm : legalForms) {
-				company = company.replace(legalForm, "").trim();
-			}
-			removed.add(company);
-		}
-
-		return removed;
 	}
 }

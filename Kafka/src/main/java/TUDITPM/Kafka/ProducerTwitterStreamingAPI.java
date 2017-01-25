@@ -9,9 +9,12 @@ import java.util.logging.Level;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
+import TUDITPM.Kafka.Loading.LegalFormHelper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -87,14 +90,26 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		try {
 			producer = new KafkaProducer<String, String>(props);
 
-			LinkedList<String> companiesWithLegalForms = PropertyLoader
-					.getCompanies();
+			MongoDBConnector config = new MongoDBConnector(
+					PropertyLoader.getPropertyValue(PropertyFile.database,
+							"config.name"));
+			
+			LinkedList<String> companiesWithLegalForms = new LinkedList<>();
+			for (Document doc : config.getCollection("companies").find()) {
+				companiesWithLegalForms.add(doc.getString("company"));
+			}
+			
 			LinkedList<String> legalForms = PropertyLoader.getLegalForms();
-			LinkedList<String> companies = removeLegalForms(
+			LinkedList<String[]> companies = LegalFormHelper.removeLegalForms(
 					companiesWithLegalForms, legalForms);
+			
+			LinkedList<String> strippedCompanies = new LinkedList<String>();
+			for(String[] company : companies){
+				strippedCompanies.add(company[1]);
+			}
 
 			// Fetches Tweets that contain specified keywords
-			hosebirdEndpoint.trackTerms(companies);
+			hosebirdEndpoint.trackTerms(strippedCompanies);
 			builder.connect();
 
 			final int abortSize = Integer.parseInt(PropertyLoader
@@ -110,11 +125,11 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					String text = JSONrawdata.getString("text");
 					String id = solr.add(text);
 					boolean companyFound = false;
-					for (String company : companies) {
-						if (solr.search("\"" + company + "\"", id)) {
+					for (String[] company : companies) {
+						if (solr.search("\"" + company[1] + "\"", id)) {
 							companyFound = true;
-							json.put("company", company);
-
+							json.put("company", company[0]);
+							json.put("companyStripped", company[1]);
 							json.put("source", "twitter");
 							json.put("text", text);
 							json.put("date",
@@ -148,27 +163,5 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			producer.close();
 			builder.stop();
 		}
-	}
-
-	/**
-	 * Removes the legal forms of every Company from the list
-	 * 
-	 * @param companies
-	 *            - list of companies
-	 * @param legalForms
-	 *            - list of legal forms possible
-	 * @return - list of companies with their legal form removed
-	 */
-	private LinkedList<String> removeLegalForms(LinkedList<String> companies,
-			LinkedList<String> legalForms) {
-		LinkedList<String> removed = new LinkedList<>();
-
-		for (String company : companies) {
-			for (String legalForm : legalForms) {
-				company = company.replace(legalForm, "").trim();
-			}
-			removed.add(company);
-		}
-		return removed;
 	}
 }

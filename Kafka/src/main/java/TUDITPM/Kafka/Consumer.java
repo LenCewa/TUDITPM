@@ -100,8 +100,9 @@ public class Consumer extends Thread {
 				String id = json.getString("id");
 
 				for (String keyword : keywords) {
-					if (solr.search("\"" + json.getString("company") + " "
-							+ keyword + "\"" + "~" + PROXIMITY, id)) {
+
+					if (solr.search("\"" + json.getString("companyStripped")
+							+ " " + keyword + "\"" + "~" + PROXIMITY, id)) {
 						String text = json.getString("text");
 						String link = json.getString("link");
 						String date = json.getString("date");
@@ -130,9 +131,15 @@ public class Consumer extends Thread {
 							// available
 						}
 						// Write to DB
-						mongo.writeToDb(mongoDBdoc, json.getString("company"));
-						redis.appendJSONToList(json.getString("company"),
-								redisJson);
+						// Remove points for the collection name, because
+						// they are not permitted in MongoDB
+						mongo.writeToDb(
+								mongoDBdoc,
+								json.getString("companyStripped").replaceAll(
+										"\\.", ""));
+						redis.appendJSONToList(
+								json.getString("companyStripped").replaceAll(
+										"\\.", ""), redisJson);
 					}
 				}
 				solr.delete(id);
