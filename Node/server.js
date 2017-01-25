@@ -71,9 +71,9 @@ mongodb.connect(connections.mongodb.news, function(err, db) {
 		if (err) {
 			console.log(err);
 		}
-		company.getCompanies(mongodb, false, function(err, companies) {
+		company.getCompanies(mongodb, function(err, companies) {
 			var readCollection = function(collections) {
-				var name = collections.pop().replace(/\./g, "");
+				var name = collections.pop().stripped;
 				//Open collections
 				var collection = db.collection(name, function(err, collection) {
 					if (err) {
