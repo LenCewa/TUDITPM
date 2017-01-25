@@ -146,11 +146,11 @@ $("#jsGrid").jsGrid({
  */
 function postUrls() {
 	//inhalt= $('#keywordName').val()
-    
+   
     $.ajax({
 		type: 'POST',
 		url: '/api/keywords',
-		data: '{"company":"' + $('#keywordName').val() + '"}',
+		data: '{"keyword":"' + $('#keywordName').val() + '"}',
 		success: function(data) {
 			$.get("/api/keywords", function(data) {
 				readData(data);

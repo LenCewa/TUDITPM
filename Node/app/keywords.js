@@ -14,42 +14,33 @@
 var fs = require('fs-extra');
 
 // load configuration
-var connections = require('../config/connections.conf.json').keys;
+var connections = require('../config/connections.conf.json')['dev'];
 
 /**
  * Helper function to read the url list
  * @param callback callback function, gets an error as first element and data as second
  */
-function readKeywords(callback) {
-	fs.ensureFile(connections.kafka, function(err) {
-		// if the file cannot be created the server isn't set up right
-		if (err) {
-			callback({
-				err: {
-					de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-					en: 'Accessing the companies file failed. Please contact an adminstrator.',
-					err: err
-				}
-			}, null);
-		}
-		// file has now been created, including the directory it is to be placed in
-		fs.readFile(connections.kafka, 'utf8', function(err, data) {
-			// if the file cannot be read the user has to contact a adminstrator
-			if (err) {
-				callback({
-					err: {
-						de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-						en: 'Accessing the companies file failed. Please contact an adminstrator.',
-						err: err
-					}
-				}, null);
-			}
-			callback(null, data);
+function readKeywords(mongodb, callback) {
+	mongodb.connect(connections.mongodb.config, function(err, db) {
+	if(err) { return console.dir(err); }
+	//Open collection
+	var collection = db.collection('Keywords', function(err, collcetion){});
+	//Store collection in array
+	collection.find().toArray(function(err, items) {
+		//Build JSONObject with array in it
+		var doc = [];
+		for (var i = 0; i < items.length; i++) {
+            var keywords = items[i];
+			//Array with all keys of the given object
+			var element = keywords['keyword'];
+            doc.push(element);
+        }
+		callback(null,doc);
 		});
 	});
 }
 
-module.exports = function(app, producer) {
+module.exports = function(app, producer, mongodb) {
 	console.log('keywords routes loading');
 	/**
 	 *  Takes a keyword and appends it to the kafka list of keywords.
@@ -59,7 +50,7 @@ module.exports = function(app, producer) {
 	 */
 	app.post('/api/keywords', function(req, res) {
 		// Check if the request is correctly formed
-		if (req.body.company === undefined || req.body.company === null || req.body.company === '') {
+		if (req.body.keyword === undefined || req.body.keyword === null || req.body.keyword === '') {
 			return res.status(400).send({
 				err: {
 					de: 'Es wurde kein Schlagwort angegeben.',
@@ -68,39 +59,43 @@ module.exports = function(app, producer) {
 				}
 			});
 		}
-		readKeywords(function(err, data) {
-			if (err) {
-				return res.status(500).send(err);
+		
+		mongodb.connect(connections.mongodb.config, function(err, db) {
+			if(err) { 
+				return res.status(500).send({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: null
+					}
+				});
 			}
-			// Append the data to existing data
-			if (data !== '') {
-				data = data + '\n' + req.body.company;
-			} else {
-				data = req.body.company;
-			}
-			fs.writeFile(connections.kafka, data, function(err) {
-				if (err) {
-					// if the file cannot be written the user has to contact an adminstrator
+			//Open collection
+			var collection = db.collection('Keywords', function(err, collcetion){});
+			//Store collection in array
+			var document = {keyword: req.body.keyword};
+			collection.insert(document, function(err, records){
+				if(err){
 					return res.status(500).send({
-						err: {
-							de: 'Fehler beim Zugriff auf die Schlagwortliste. Bitte informieren Sie einen Administrator.',
-							en: 'Accessing the keyword file failed. Please contact an adminstrator.',
-							err: err
-						}
-					});
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: null
+					}
+				});
 				}
-				
-				//Send reload message to Kafka
-				var msg = [
+			});
+			
+			var msg = [
 					{ topic: 'reload', messages: 'keyword added', partition: 0 },
 				];
-				producer.send(msg, function (err, data) {
-					console.log(data);
-				});
-				
-				return res.status(204).send();
+			producer.send(msg, function (err, data) {
+				console.log(data);
 			});
+			
+			return res.status(204).send();
 		});
+		
 	});
 
 	/**
@@ -109,12 +104,11 @@ module.exports = function(app, producer) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/keywords', function(req, res) {
-		readKeywords(function(err, data) {
+		readKeywords(mongodb, function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
-			var array = data.split('\n');
-			return res.json(array);
+			return res.json(data);
 		});
 	});
 };

@@ -21,36 +21,27 @@ var connections = require('../config/connections.conf.json').dev;
  * Helper function to read the company list
  * @param callback callback function, gets an error as first element and data as second
  */
-function readCompanies(callback) {
-	fs.ensureFile(connections.kafka, function(err) {
-		// if the file cannot be created the server isn't set up right
-		if (err) {
-			callback({
-				err: {
-					de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-					en: 'Accessing the companies file failed. Please contact an adminstrator.',
-					err: err
-				}
-			}, null);
-		}
-		// file has now been created, including the directory it is to be placed in
-		fs.readFile(connections.kafka, 'utf8', function(err, data) {
-			// if the file cannot be read the user has to contact a adminstrator
-			if (err) {
-				callback({
-					err: {
-						de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-						en: 'Accessing the companies file failed. Please contact an adminstrator.',
-						err: err
-					}
-				}, null);
-			}
-			callback(null, data);
+function readCompanies(mongodb, callback) {
+	mongodb.connect(connections.mongodb.config, function(err, db) {
+	if(err) { return console.dir(err); }
+	//Open collection
+	var collection = db.collection('Companies', function(err, collcetion){});
+	//Store collection in array
+	collection.find().toArray(function(err, items) {
+		//Build JSONObject with array in it
+		var doc = [];
+		for (var i = 0; i < items.length; i++) {
+            var companies = items[i];
+			//Array with all keys of the given object
+			var element = companies['company'];
+            doc.push(element);
+        }
+		callback(null,doc);
 		});
 	});
 }
 
-module.exports = function(app, producer) {
+module.exports = function(app, producer, mongodb) {
 	console.log('company routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
@@ -69,38 +60,30 @@ module.exports = function(app, producer) {
 				}
 			});
 		}
-		readCompanies(function(err, data) {
-			if (err) {
-				return res.status(500).send(err);
+			mongodb.connect(connections.mongodb.config, function(err, db) {
+			if(err) { 
+				return res.status(500).send({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: null
+					}
+				});
 			}
-			// Append the data to existing data
-			if (data !== '') {
-				data = data + '\n' + req.body.company;
-			} else {
-				data = req.body.company;
-			}
-			fs.writeFile(connections.kafka, data, function(err) {
-				if (err) {
-					// if the file cannot be written the user has to contact an adminstrator
-					return res.status(500).send({
-						err: {
-							de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-							en: 'Accessing the companies file failed. Please contact an adminstrator.',
-							err: err
-						}
-					});
-				}
-				
-				//Send reload message to Kafka
-				var msg = [
+			//Open collection
+			var collection = db.collection('Companies', function(err, collcetion){});
+			//Store collection in array
+			var document = {company: req.body.company};
+			collection.insert(document, function(err, records){
+			});
+			var msg = [
 					{ topic: 'reload', messages: 'company added', partition: 0 },
 				];
-				producer.send(msg, function (err, data) {
+			producer.send(msg, function (err, data) {
 					console.log(data);
-				});
-				
-				return res.status(204).send();
 			});
+			
+			return res.status(204).send();
 		});
 	});
 
@@ -110,12 +93,11 @@ module.exports = function(app, producer) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/company', function(req, res) {
-		readCompanies(function(err, data) {
+		readCompanies(mongodb,function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
-			var array = data.split('\n');
-			return res.json(array);
+			return res.json(data);
 		});
 	});
 };

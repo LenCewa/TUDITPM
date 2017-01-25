@@ -149,6 +149,7 @@ function postUrls() {
 		url: '/api/company',
 		data: '{"company":"' + $('#companyName').val() + '"}',
 		success: function(data) {
+		console.log('success');
 			$.get("/api/company", function(data) {
 				readData(data);
 			});
