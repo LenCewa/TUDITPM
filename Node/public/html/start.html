@@ -19,10 +19,10 @@ Author Arne Schmidt
 	<!-- set charset to utf-8 -->
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
     <style>
-        body { padding-top: 50px; }
-		body { margin-right: 100px; }
-		body { margin-left: 100px; }
-        body { padding-bottom:50px; }
+        body { padding-top: 30px; }
+		body { margin-right: 30px; }
+		body { margin-left: 30px; }
+        body { padding-bottom:30px; }
 	</style>
 </head>
 
@@ -51,7 +51,7 @@ Author Arne Schmidt
                     <li><a href="/admin">Administration</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><p class="navbar-text" style="color:#4169e1">Startseite</p></li>
+                    <li><p class="navbar-text" style="color:#4169e1;">Startseite</p></li>
                 </ul>
             </div>
 		  </div>
@@ -63,34 +63,16 @@ Author Arne Schmidt
         <p style="margin-bottom: 40px">
 
         <div ID="jsGrid"></div>
+		<button class='gen_btn'>Tabelle Exportieren</button>
         
         <p style="margin-bottom: 40px">
         
         <div class="container">
             <div class="col-md-1"></div>
             <div class="col-md-4">
-                <table class="table table-hover" ID="companyStartTable">
-                    <thead>
-                        <tr>
-                            <th>Eingegebene Unternehmen</th>
-                        </tr>
-                    </thead>
-                    <tbody ID="companyStartTableBody">
-                    </tbody>
-                </table>
             </div>
             <div class="col-md-1"></div>
-            <div class="col-md-5">
-                <table class="table table-hover" ID="keywordStartTable">
-                    <thead>
-                        <tr>
-                            <th>Gefundene Schlagwörter</th>
-                        </tr>
-                    </thead>
-                    <tbody ID="keywordStartTableBody">
-                    </tbody>
-                </table>
-            </div>
+  
             <div class="col-md-1"></div>         
         </div>
             
@@ -100,26 +82,10 @@ Author Arne Schmidt
     <div ID="bottom">
     </div>
 </body>
-<script type="text/javascript">
-    
-$.get("/api/company", function(data) {   
-    showCompaniesStart(data);
-});
-    
-/**
- * Displays the companylist in a table
- * @param {[type]} data         [description]
- */ 
-function showCompaniesStart(data) {
-    // Fills the table row by row
-    for (var i = 0; i < data.length; i++) {
-        $('#companyStartTable').append('<tr><td>' + data[i] + '</td></tr>');
-    }
-}    
+<script type="text/javascript"> 
 
     
 $.get("api/news/TestKey", function(data) {  
-	showKeywordStart(data) 
 	readData(data);
 });
 
@@ -146,8 +112,16 @@ function readData(data) {
 			//Array with all keys of the given object
 			newskey = Object.keys(meldungen);
 			//required key is the second one "_text"
-            var element = {"Inhalt": meldungen[newskey[1]], "Quelle": meldungen[newskey[2]],
-			"Datum": meldungen[newskey[3]], "Unternehmen": meldungen[newskey[4]], "Schlagwörter":meldungen[newskey[5]]};
+			var Quelle = meldungen[newskey[2]];
+			var Datum = meldungen[newskey[3]].substring(0, 10);
+			/*if (meldungen[newskey[2]].includes('twitter')){
+				Quelle = 'Twitter';
+			}
+			else {
+				Quelle = RSS;
+			}*/
+            var element = {"Inhalt": meldungen[newskey[1]], "Quelle": Quelle,
+			"Datum": Datum, "Unternehmen": meldungen[newskey[4]], "Schlagwörter":meldungen[newskey[5]]};
             db.clients.push(element);
         }
 $("#jsGrid").jsGrid({
@@ -157,12 +131,14 @@ $("#jsGrid").jsGrid({
         filtering: true,
         sorting: true,
         autoload: true,
+		editable: false,
+		altrows: true,
     
         paging: true, 
         pageIndex: 1,
-        pageSize: 20,
+        pageSize: 10,
         pageButtonCount: 5,
-        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
+        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} von {pageCount}",
         pagePrevText: "Zurück",
         pageNextText: "Weiter",
         pageFirstText: "Erste",
@@ -173,39 +149,98 @@ $("#jsGrid").jsGrid({
         controller: db,
  
         fields: [
-			{ name: "PLZ", type: "number", width: 25,  },
-			{ name: "Unternehmen", type: "text", width: 50,  },
-			{ name: "Kategorie", type: "text", width: 25,  },
-		    { name: "Schlagwörter", type: "text", width: 50,  },
-            { name: "Inhalt", type: "text", width: 150, validate: "required" },
-            { name: "Datum", type: "number", width: 25,  },
-			{ name: "Quelle", type: "text", width: 25,  },
-			{ type: "control" },
+			{ name: "PLZ", type: "number", width: 25, },
+			{ name: "Unternehmen", type: "text", width: 40,  },
+			{ name: "Kategorie", type: "text", width: 30,  },
+		    { name: "Schlagwörter", type: "text", width: 40,  },
+            { name: "Inhalt", type: "textarea", width: 150, validate: "required" },
+            { name: "Datum", type: "textarea", width: 25,  },
+			{ name: "Quelle", type: "text", width: 50,  },
         ]
     });
 }
     
-/**
- * Displays the keywords in a table
- * @param {[type]} data         [description]
- */    
-function showKeywordStart(data) {
-    var meldungen;
-    var newskey;
-    var textkey;
-    
-    // Fills the table row by row
-    for (var i = 0; i < data.length; i++) {
-        meldungen = data[i];
-        //Array with all keys of the given object
-        newskey = Object.keys(meldungen);
-        //required key is the second one "_text"
-        textkey = newskey[1];
-    
-        $('#keywordStartTable').append('<tr><td>' + meldungen[textkey] + '</td></tr>');
-    }
-} 
 
+function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
+    //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+    var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+
+    var CSV = '';    
+    //Set Report title in first row or line
+
+    CSV += ReportTitle + '\r\n\n';
+
+    //This condition will generate the Label/Header
+    if (ShowLabel) {
+        var row = "";
+
+        //This loop will extract the label from 1st index of on array
+        for (var index in arrData[0]) {
+
+            //Now convert each value to string and comma-seprated
+            row += index + ',';
+        }
+
+        row = row.slice(0, -1);
+
+        //append Label row with line break
+        CSV += row + '\r\n';
+    }
+
+    //1st loop is to extract each row
+    for (var i = 0; i < arrData.length; i++) {
+        var row = "";
+
+        //2nd loop will extract each column and convert it in string comma-seprated
+        for (var index in arrData[i]) {
+            row += '"' + arrData[i][index] + '",';
+        }
+
+        row.slice(0, row.length - 1);
+
+        //add a line break after each row
+        CSV += row + '\r\n';
+    }
+
+    if (CSV == '') {        
+        alert("Invalid data");
+        return;
+    }   
+
+    //Generate a file name
+    var fileName = "Newsfeed ";
+    //this will remove the blank-spaces from the title and replace it with an underscore
+    fileName += ReportTitle.replace(/ /g,"_");   
+
+    //Initialize file format you want csv or xls
+    var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+
+    // Now the little tricky part.
+    // you can use either>> window.open(uri);
+    // but this will not work in some browsers
+    // or you will not get the correct file extension    
+
+    //this trick will generate a temp <a /> tag
+    var link = document.createElement("a");    
+    link.href = uri;
+
+    //set the visibility hidden so it will not effect on your web-layout
+    link.style = "visibility:hidden";
+    link.download = fileName + ".csv";
+
+    //this part will append the anchor tag and remove it after automatic click
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+$(function () {
+       $('button').click(function () {
+           var data = $('#jsGrid').jsGrid('option', 'data');
+		   var utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
+           JSONToCSVConvertor(data, utc, true);
+       })
+   });
 
   
 

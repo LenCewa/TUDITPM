@@ -23,20 +23,20 @@ var connections = require('../config/connections.conf.json').dev;
  */
 function readCompanies(mongodb, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
-	if(err) { return console.dir(err); }
-	//Open collection
-	var collection = db.collection('Companies', function(err, collcetion){});
-	//Store collection in array
-	collection.find().toArray(function(err, items) {
-		//Build JSONObject with array in it
-		var doc = [];
-		for (var i = 0; i < items.length; i++) {
-            var companies = items[i];
-			//Array with all keys of the given object
-			var element = companies['company'];
-            doc.push(element);
-        }
-		callback(null,doc);
+		if (err) { return console.dir(err); }
+		//Open collection
+		var collection = db.collection('Companies', function(err, collcetion){});
+		//Store collection in array
+		collection.find().toArray(function(err, items) {
+			//Build JSONObject with array in it
+			var doc = [];
+			for (var i = 0; i < items.length; i++) {
+				var companies = items[i];
+				//Array with all keys of the given object
+				var element = companies.company;
+				doc.push(element);
+			}
+			callback(null,doc);
 		});
 	});
 }
@@ -60,13 +60,13 @@ module.exports = function(app, producer, mongodb) {
 				}
 			});
 		}
-			mongodb.connect(connections.mongodb.config, function(err, db) {
-			if(err) { 
+		mongodb.connect(connections.mongodb.config, function(err, db) {
+			if (err) { 
 				return res.status(500).send({
-				err: {
-					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-					en: 'MongoDB connection could not be established',
-					err: null
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: null
 					}
 				});
 			}
@@ -74,13 +74,12 @@ module.exports = function(app, producer, mongodb) {
 			var collection = db.collection('Companies', function(err, collcetion){});
 			//Store collection in array
 			var document = {company: req.body.company};
-			collection.insert(document, function(err, records){
-			});
+			collection.insert(document, function(err, records){});
 			var msg = [
 					{ topic: 'reload', messages: 'company added', partition: 0 },
 				];
 			producer.send(msg, function (err, data) {
-					console.log(data);
+				console.log(data);
 			});
 			
 			return res.status(204).send();

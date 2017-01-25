@@ -62,84 +62,12 @@ Author Arne Schmidt
     </div>
 	
     <div ID="middle">
-	<div ID="jsGrid"></div>
-            
-        
-    </div>
+	<div class='mydiv'>    
+</div>
     <div ID="bottom">
     </div>
 </body>
 <script>
-$.get("/api/company", function(data) {   
-    readData(data);
-});
 
- var db = {
-
-        loadData: function(filter) {
-            return $.grep(this.clients, function(client) {
-                return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1)
-                    && (!filter.ID || client.ID === filter.ID);
-            });
-        },
-
-    };
-
-    window.db = db;
-
-
-function readData(data) {
-
-        db.clients = [];
-        for (var i = 0; i < data.length; i++) {
-            var element = {};
-            element.Unternehmen = data[i];
-            element.ID = i + 1;
-            db.clients.push(element);
-        }
-$("#jsGrid").jsGrid({
-        height: 300,
-        width: "100%",
- 
-        filtering: true,
-        sorting: true,
-        autoload: true,
- 
-        deleteConfirm: "Do you really want to delete the client?",
- 
-        controller: db,
- 
-        fields: [
-			{ name: "PLZ", type: "number", width: 25,  },
-			{ name: "Unternehmen", type: "text", width: 50,  },
-			{ name: "Kategorie", type: "text", width: 25,  },
-		    { name: "Schlagwörter", type: "text", width: 50,  },
-            { name: "Inhalt", type: "text", width: 150, validate: "required" },
-            { name: "Datum", type: "number", width: 25,  },
-			{ name: "Quelle", type: "text", width: 25,  },
-			{ type: "control" },
-        ]
-    });
-
-var gridSettings = JSON.parse(localStorage.getItem("gridSettings"));
-var grid = $("#jsGrid").data("JSGrid");
-
-grid.search(gridSettings.filter).done(function() {
-    grid.sort({
-    	field: gridSettings.sorting.sortField,
-        order: gridSettings.sorting.sortOrder
-    }).done(function() {
-        grid.option("pageIndex", gridSettings.pageIndex);
-    });
-});
-}
-
-$("#saveSettings").on("click", function() {
-    localStorage.setItem("gridSettings", JSON.stringify({
-    	sorting: grid._sortingParams(),
-        pageIndex: grid.option("pageIndex"),
-        filter: grid.getFilter()
-    }));
-});
 </script>
 </html>

@@ -97,6 +97,12 @@ var db = {
                     && (!filter.ID || client.ID === filter.ID);
             });
         },
+		
+		deleteItem: function(deletingClient) {
+            var clientIndex = $.inArray(deletingClient, this.clients);
+            this.clients.splice(clientIndex, 1);
+			itemToDelete('Fusion');
+        }
 
     };
 
@@ -122,7 +128,7 @@ $("#jsGrid").jsGrid({
         pageIndex: 1,
         pageSize: 20,
         pageButtonCount: 5,
-        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
+        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} von {pageCount}",
         pagePrevText: "Zurück",
         pageNextText: "Weiter",
         pageFirstText: "Erste",
@@ -135,7 +141,6 @@ $("#jsGrid").jsGrid({
         fields: [
 			{ name: "ID", type: "number", width: 50 },
             { name: "Keywords", type: "textarea", width: 150 },
-            { type: "control" }
         ]
     });
 }
@@ -145,12 +150,24 @@ $("#jsGrid").jsGrid({
  * Sends the keyword given in the input field "keywordName" to the server.
  */
 function postUrls() {
-	//inhalt= $('#keywordName').val()
-   
     $.ajax({
 		type: 'POST',
 		url: '/api/keywords',
 		data: '{"keyword":"' + $('#keywordName').val() + '"}',
+		success: function(data) {
+			$.get("/api/keywords", function(data) {
+				readData(data);
+			});
+		},
+		contentType: 'application/json'
+	});
+    
+}
+
+function itemToDelete(data) {
+    $.ajax({
+		type: 'POST',
+		url: '/api/delete',
 		success: function(data) {
 			$.get("/api/keywords", function(data) {
 				readData(data);
