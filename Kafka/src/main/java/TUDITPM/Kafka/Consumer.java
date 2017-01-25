@@ -20,6 +20,8 @@ import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
+import TUDITPM.Kafka.DBConnectors.RedisConnector;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -77,6 +79,8 @@ public class Consumer extends Thread {
 		kafkaConsumer.subscribe(Arrays.asList("twitter", "rss"));
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
+		RedisConnector redis = new RedisConnector();
+
 		LinkedList<String> keywords = readKeywords();
 		Solr solr = new Solr();
 
@@ -86,11 +90,11 @@ public class Consumer extends Thread {
 				System.out.println("CONSUMER_ENHANCEDDATA: " + record.value());
 				// decode JSON String
 				JSONObject json = null;
-				try{
-				json = new JSONObject(record.value());
-				}
-				catch (JSONException e){
-					System.err.println("Not a valid JSON Object, continuing...");
+				try {
+					json = new JSONObject(record.value());
+				} catch (JSONException e) {
+					System.err
+							.println("Not a valid JSON Object, continuing...");
 					continue;
 				}
 				String id = json.getString("id");
@@ -98,22 +102,36 @@ public class Consumer extends Thread {
 				for (String keyword : keywords) {
 					if (solr.search("\"" + json.getString("company") + " "
 							+ keyword + "\"" + "~" + PROXIMITY, id)) {
+						String text = json.getString("text");
+						String link = json.getString("link");
+						String date = json.getString("date");
+						String company = json.getString("company");
 
-						Document mongoDBdoc = new Document("text",
-								json.getString("text"))
-								.append("link", json.getString("link"))
-								.append("date", json.getString("date"))
-								.append("company", json.getString("company"))
+						// Create JSON object to store in redis
+						JSONObject redisJson = new JSONObject();
+						redisJson.append("id", id);
+						redisJson.append("text", text);
+						redisJson.append("link", link);
+						redisJson.append("date", date);
+						redisJson.append("company", company);
+						redisJson.append("keyword", keyword);
+
+						// Create mongoDB document to store in mongoDB
+						Document mongoDBdoc = new Document("text", text)
+								.append("link", link).append("date", date)
+								.append("company", company)
 								.append("keyword", keyword);
 						try {
 							String title = json.getString("title");
 							mongoDBdoc.append("title", title);
+							redisJson.append("title", title);
 						} catch (JSONException e) {
 							// title field is optional and not saved if not
 							// available
 						}
 						// Write to DB
 						mongo.writeToDb(mongoDBdoc, json.getString("company"));
+						redis.appendJSONToList(json.getString("company"), redisJson);
 					}
 				}
 				solr.delete(id);

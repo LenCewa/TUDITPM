@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
 import com.mongodb.client.MongoCollection;

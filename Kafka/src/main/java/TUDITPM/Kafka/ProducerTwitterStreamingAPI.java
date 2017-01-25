@@ -1,6 +1,5 @@
 package TUDITPM.Kafka;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -34,9 +33,6 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
  * @version 5.0
  */
 public class ProducerTwitterStreamingAPI extends Thread {
-
-	private boolean reload = false;
-
 	/**
 	 * Gets called on start of the Thread
 	 */

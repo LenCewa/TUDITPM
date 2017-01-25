@@ -20,6 +20,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bson.Document;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -97,20 +98,24 @@ public class ProducerRSSatOM extends Thread {
 						"Reading RSS: " + allFeeds.get(i));
 				SyndFeedInput input = new SyndFeedInput();
 				SyndFeed feed = null;
-				try{
-					feed = input.build(new XmlReader(new URL(allFeeds
-						.get(i))));
-				}
-				catch (IOException e){
-					LoggingWrapper.log(getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: http://www.allgemeine-zeitung.de/lokales/oppenheim/index.rss, continuing with next url");
+				try {
+					feed = input.build(new XmlReader(new URL(allFeeds.get(i))));
+				} catch (IOException e) {
+					LoggingWrapper.log(getName(), Level.WARNING,
+							"Server returned HTTP response code: 403 for URL: "
+									+ allFeeds.get(i)
+									+ ", continuing with next url");
 					continue;
 				}
-				
+				int found = 0;
+				int skipped = 0;
+
 				for (SyndEntry entry : feed.getEntries()) {
 					String title = entry.getTitle();
 					String link = entry.getLink();
 					if (!visited.contains(link)
 							&& entry.getDescription() != null) {
+						found++;
 						String text = entry.getDescription().getValue();
 						String id = solr.add(title + " " + text);
 
@@ -151,8 +156,12 @@ public class ProducerRSSatOM extends Thread {
 						}
 						visited.add(link);
 						mongo.writeToDb(new Document("link", link), "rss");
+					} else {
+						skipped++;
 					}
 				}
+				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+						"Scanned " + found + " entries, skipped " + skipped + " entries");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

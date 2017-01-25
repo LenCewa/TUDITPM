@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.DBConnectors;
 
 import org.bson.Document;
 
