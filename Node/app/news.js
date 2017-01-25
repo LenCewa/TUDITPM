@@ -22,7 +22,7 @@ module.exports = function(app, client) {
 	app.get('/api/news/:key', function(req, res) {
 		server.io.emit('get', {for: 'everyone'});
 		// Gets a key from redis, returns null if key is not found
-		client.lrange([req.params.key, 0, 20], function(err, reply) {	
+		client.lrange([req.params.key, req.headers.offset, req.headers.length], function(err, reply) {	
 			if (err) {
 				return res.status(500).send({
 					err: {

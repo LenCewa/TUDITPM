@@ -29,7 +29,7 @@ function readData(data) {
 	if (!data.length) {
 		data = [data];
 	}
-	
+
 	db.clients = [];
 	for (var i = 0; i < data.length; i++) {
 		var element = {
@@ -125,13 +125,21 @@ function reloadData() {
 	}
 	for (name in selectedCompanies) {
 		if (selectedCompanies[name]) {
-			queries.push($.get("/api/news/" + name, function(data) { // jshint ignore:line
-				completeData = completeData.concat(data);
-				count--;
-				if(count === 0){
-					readData(completeData);
+			$.ajax({
+				url: "/api/news/" + name,
+				type: 'GET',
+				beforeSend: function(xhr) { // jshint ignore:line
+					xhr.setRequestHeader('offset', 0);
+					xhr.setRequestHeader('length', 20);
+				},
+				success: function(data) { // jshint ignore:line
+					completeData = completeData.concat(data);
+					count--;
+					if (count === 0) {
+						readData(completeData);
+					}
 				}
-			}));
+			});
 		}
 	}
 }
