@@ -10,7 +10,7 @@ public class RedisConnector {
 	private Jedis jedis;
 	
 	public RedisConnector(){
-		jedis = new Jedis(PropertyLoader.getPropertyValue(PropertyFile.database, "REDIS_HOST"));
+		jedis = new Jedis(PropertyLoader.getPropertyValue(PropertyFile.database, "redis.host"));
 		jedis.ping();
 	}
 	

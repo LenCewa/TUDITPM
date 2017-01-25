@@ -1,13 +1,5 @@
 package TUDITPM.Kafka;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -79,9 +71,17 @@ public class Consumer extends Thread {
 		kafkaConsumer.subscribe(Arrays.asList("twitter", "rss"));
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
+		MongoDBConnector config = new MongoDBConnector(
+				PropertyLoader.getPropertyValue(PropertyFile.database,
+						"config.name"));
+
+		LinkedList<String> keywords = new LinkedList<>();
+		for (Document doc : config.getCollection("keywords").find()) {
+			keywords.add(doc.getString("keyword"));
+		}
+
 		RedisConnector redis = new RedisConnector();
 
-		LinkedList<String> keywords = readKeywords();
 		Solr solr = new Solr();
 
 		while (true) {
@@ -131,42 +131,12 @@ public class Consumer extends Thread {
 						}
 						// Write to DB
 						mongo.writeToDb(mongoDBdoc, json.getString("company"));
-						redis.appendJSONToList(json.getString("company"), redisJson);
+						redis.appendJSONToList(json.getString("company"),
+								redisJson);
 					}
 				}
 				solr.delete(id);
 			}
 		}
-	}
-
-	public LinkedList<String> readKeywords() {
-		String keywordList = "properties/keywords";
-		File file = new File(Paths.get(keywordList).toString());
-		BufferedReader reader = null;
-
-		try {
-			reader = new BufferedReader(new InputStreamReader(
-					new FileInputStream(file), "UTF-8"));
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-			return null;
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return null;
-		}
-
-		String line = null;
-		LinkedList<String> list = new LinkedList<String>();
-
-		try {
-			while ((line = reader.readLine()) != null) {
-				list.add(line);
-			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return list;
 	}
 }

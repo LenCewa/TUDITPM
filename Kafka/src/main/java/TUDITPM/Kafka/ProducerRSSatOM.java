@@ -33,7 +33,6 @@ import com.rometools.rome.io.XmlReader;
  * Gets RSS and atOM feeds into a Kafka producer. a single feed of the specified
  * type.
  * 
- * 
  * @author Christian Zendo
  * @author Tobias Mahncke
  * @version 5.0
@@ -51,6 +50,9 @@ public class ProducerRSSatOM extends Thread {
 				"Thread started");
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
+		MongoDBConnector config = new MongoDBConnector(
+				PropertyLoader.getPropertyValue(PropertyFile.database,
+						"config.name"));
 
 		HashSet<String> visited = new HashSet<>();
 
@@ -80,8 +82,11 @@ public class ProducerRSSatOM extends Thread {
 		// Create the producer
 		Producer<String, String> producer = null;
 
-		LinkedList<String> companiesWithLegalForms = PropertyLoader
-				.getCompanies();
+		LinkedList<String> companiesWithLegalForms = new LinkedList<>();
+		for (Document doc : config.getCollection("companies").find()) {
+			companiesWithLegalForms.add(doc.getString("company"));
+		}
+		
 		LinkedList<String> legalForms = PropertyLoader.getLegalForms();
 		LinkedList<String> companies = removeLegalForms(
 				companiesWithLegalForms, legalForms);
@@ -161,7 +166,8 @@ public class ProducerRSSatOM extends Thread {
 					}
 				}
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-						"Scanned " + found + " entries, skipped " + skipped + " entries");
+						"Scanned " + found + " entries, skipped " + skipped
+								+ " entries");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -16,11 +16,11 @@ import java.util.Properties;
  * into java property objects.
  * 
  * @author Tobias Mahncke
- * @version 1.2
+ * @author Yannick Pferr
+ * @version 5.0
  */
 public class PropertyLoader {
 	private static HashMap<PropertyFile, Properties> propertyMap = new HashMap<PropertyFile, Properties>();
-	private static LinkedList<String> companyList = new LinkedList<String>();
 	private static LinkedList<String> legalForms = new LinkedList<String>();
 	private static boolean loaded = false;
 
@@ -40,19 +40,6 @@ public class PropertyLoader {
 			propertyMap.put(file, properties);
 		}
 
-		// read all companies
-		FileInputStream in = new FileInputStream(new File(
-				"properties/companies"));
-		BufferedReader br = new BufferedReader(new InputStreamReader(in,
-				"UTF-8"));
-
-		String line = null;
-		while ((line = br.readLine()) != null) {
-			companyList.add(line);
-		}
-		br.close();
-		in.close();
-		
 		// read all legal forms
 		FileInputStream in2 = new FileInputStream(new File(
 				"properties/legal_forms"));
@@ -65,16 +52,15 @@ public class PropertyLoader {
 		}
 		br2.close();
 		in2.close();
-		
-		// sorts legal forms by word length, so e.g GmbH & Co. KG comes before GmbH
-		Collections.sort(legalForms, new Comparator<String>() {
 
+		// sorts legal forms by word length, so e.g GmbH & Co. KG comes before
+		// GmbH
+		Collections.sort(legalForms, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
-				// TODO Auto-generated method stub
-				if(o1.length() < o2.length())
+				if (o1.length() < o2.length())
 					return 1;
-				else if(o1.length() > o2.length())
+				else if (o1.length() > o2.length())
 					return -1;
 				return 0;
 			}
@@ -114,15 +100,6 @@ public class PropertyLoader {
 	 */
 	public static String getPropertyValue(PropertyFile propertyFile, String key) {
 		return getProperties(propertyFile).getProperty(key);
-	}
-
-	public static LinkedList<String> getCompanies() {
-		// If the constructor was not called before using this method throw a
-		// runtime exception -> developer mistake
-		if (!loaded) {
-			throw new RuntimeException("Property files where not loaded.");
-		}
-		return companyList;
 	}
 
 	public static LinkedList<String> getLegalForms() {

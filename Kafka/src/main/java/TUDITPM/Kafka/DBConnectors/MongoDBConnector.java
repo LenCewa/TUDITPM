@@ -14,7 +14,7 @@ import com.mongodb.client.MongoDatabase;
  * 
  * @author Ludwig Koch
  * @author Tobias Mahncke
- * @version 1.3
+ * @version 5.0
  */
 public class MongoDBConnector {
 	private String dbname;
@@ -30,9 +30,9 @@ public class MongoDBConnector {
 	public MongoDBConnector(String dbname) {
 		this.dbname = dbname;
 		mongo = new MongoClient(PropertyLoader.getPropertyValue(
-				PropertyFile.database, "ADRESS"),
+				PropertyFile.database, "adress"),
 				Integer.parseInt(PropertyLoader.getPropertyValue(
-						PropertyFile.database, "PORT")));
+						PropertyFile.database, "port")));
 		database = mongo.getDatabase(dbname);
 	}
 
@@ -59,7 +59,7 @@ public class MongoDBConnector {
 	public MongoCollection<Document> getCollection(String name) {
 		return database.getCollection(name);
 	}
-
+	
 	/**
 	 * Drops the connected database.
 	 */
