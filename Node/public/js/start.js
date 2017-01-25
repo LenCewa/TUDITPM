@@ -12,6 +12,8 @@
 var selectedCompanies = Cookies.get('selectedCompanies');
 if (!selectedCompanies) {
 	selectedCompanies = {};
+} else {
+	selectedCompanies = JSON.parse(selectedCompanies);
 }
 var companies;
 var showAllCompanies = false;
@@ -28,8 +30,6 @@ function readData(data) {
 	if (!data.isArray) {
 		data = [data];
 	}
-
-	console.log(data);
 
 	db.clients = [];
 	for (var i = 0; i < data.length; i++) {
@@ -120,9 +120,20 @@ function reloadCompanyList() {
 			} else {
 				btnType = 'default';
 			}
-			$('#companyStartTableBody').append('<tr><td>' + companies[i] + '</td><td>' + '<button class="btn btn-' + btnType + '" onClick="postUrls()""><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+			$('#companyStartTableBody').append('<tr><td>' + companies[i] + '</td><td>' + '<button id="' + companies[i] + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i] + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
 		}
 	}
+}
+
+function selectCompany(name) {
+	$('[id="' + name + '-btn"]').toggleClass('btn-default');
+	$('[id="' + name + '-btn"]').toggleClass('btn-success');
+	if (selectedCompanies[name]) {
+		selectedCompanies[name] = false;
+	} else {
+		selectedCompanies[name] = true;
+	}
+	Cookies.set('selectedCompanies', selectedCompanies);
 }
 
 function showAll() {
@@ -139,6 +150,27 @@ function showAll() {
 function showCompaniesStart(data) {
 	companies = data;
 	reloadCompanyList();
+}
+
+function searchCompany() {
+	// Declare variables
+	var input, filter, table, tr, td, i;
+	input = document.getElementById("companyName");
+	filter = input.value.toUpperCase();
+	table = document.getElementById("companyStartTableBody");
+	tr = table.getElementsByTagName("tr");
+
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < tr.length; i++) {
+		td = tr[i].getElementsByTagName("td")[0];
+		if (td) {
+			if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+				tr[i].style.display = "";
+			} else {
+				tr[i].style.display = "none";
+			}
+		}
+	}
 }
 
 /**

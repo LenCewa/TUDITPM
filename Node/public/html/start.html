@@ -32,7 +32,7 @@ Author Tobias Mahncke
                 <thead>
                     <tr>
                         <th>
-                            <input class="form-control" ID="companyName" type="text" placeholder="Unternehmensname">
+                            <input class="form-control" ID="companyName" type="text" onkeyup="searchCompany()" placeholder="Unternehmensname">
                         </th>
                         <th>
                             <button id="showAllBtn" class="btn btn-success" onClick="showAll()"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
@@ -45,7 +45,7 @@ Author Tobias Mahncke
         </div>
         <div class="col-md-10">
             <div ID="jsGrid"></div>
-            <button class='gen_btn' onClick="exportCSV()">Tabelle Exportieren</button>
+            <button class="btn btn-info pull-right" onClick="exportCSV()">Tabelle Exportieren</button>
         </div>
     </div>
     <div ID="bottom">
@@ -64,7 +64,7 @@ $.get("/api/company", function(data) {
 $.get("api/news/AHA", function(data) {
     showKeywordStart(data)
     readData(data);
-});  
+});
 </script>
 
 </html>
