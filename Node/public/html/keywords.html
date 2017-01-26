@@ -30,7 +30,10 @@ Author Arne Schmidt
     <div ID="middle">
         <div class="container">
             <div class="col-md-2"></div>
-            <div class="form-group col-md-6">
+			<div class="form-group col-md-3">
+                    <input class="form-control" ID="category" type="text" placeholder="Kategorie">
+            </div>
+			<div class="form-group col-md-3">
                 <input class="form-control" ID="keywordName" type="text" placeholder="Schlagwort">
             </div>
             <input class="btn btn-primary col-md-2" type="button" value="Schlagwort hinzufügen" onClick='postUrls()'>
@@ -77,7 +80,14 @@ function readData(data) {
         db.clients = [];
         for (var i = 0; i < data.length; i++) {
             var element = {};
-            element.Keywords = data[i];
+			element.Schlagwörter = "";
+			for (var j = 0; j < data[i].keywords.length; j++) {
+				element.Schlagwörter += data[i].keywords[j];
+				if (j + 1 != data[i].keywords.length){
+					element.Schlagwörter += ", ";
+				}
+			}
+            element.Kategorien = data[i].category;
             element.ID = i + 1;
             db.clients.push(element);
         }
@@ -106,7 +116,8 @@ $("#jsGrid").jsGrid({
  
         fields: [
             { name: "ID", type: "number", width: 50 },
-            { name: "Keywords", type: "textarea", width: 150 },
+            { name: "Kategorien", type: "textarea", width: 150 },
+			{ name: "Schlagwörter", type: "textarea", width: 150 }
         ]
     });
 }
@@ -119,7 +130,7 @@ function postUrls() {
     $.ajax({
         type: 'POST',
         url: '/api/keywords',
-        data: '{"keyword":"' + $('#keywordName').val() + '"}',
+        data: '{"keyword":"' + $('#keywordName').val() + '", "category":"' + $('#category').val() + '"}',
         success: function(data) {
             $.get("/api/keywords", function(data) {
                 readData(data);

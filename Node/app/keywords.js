@@ -26,18 +26,10 @@ function readKeywords(mongodb, callback) {
 			return console.dir(err);
 		}
 		//Open collection
-		var collection = db.collection('Keywords', function(err, collcetion) {});
+		var collection = db.collection('keywords', function(err, collcetion) {});
 		//Store collection in array
 		collection.find().toArray(function(err, items) {
-			//Build JSONObject with array in it
-			var doc = [];
-			for (var i = 0; i < items.length; i++) {
-				var keywords = items[i];
-				//Array with all keys of the given object
-				var element = keywords.keyword;
-				doc.push(element);
-			}
-			callback(null, doc);
+			callback(null, items);
 		});
 	});
 }
@@ -52,11 +44,11 @@ module.exports = function(app, producer, mongodb) {
 	 */
 	app.post('/api/keywords', function(req, res) {
 		// Check if the request is correctly formed
-		if (req.body.keyword === undefined || req.body.keyword === null || req.body.keyword === '') {
+		if (req.body.keyword === undefined || req.body.keyword === null || req.body.keyword === '' || req.body.category === undefined || req.body.category === null || req.body.category === '') {
 			return res.status(400).send({
 				err: {
-					de: 'Es wurde kein Schlagwort angegeben.',
-					en: 'The keyword cannot be empty.',
+					de: 'Es wurde kein Schlagwort und/oder Kategorie angegeben.',
+					en: 'The keyword and/or category cannot be empty.',
 					err: null
 				}
 			});
@@ -73,12 +65,9 @@ module.exports = function(app, producer, mongodb) {
 				});
 			}
 			//Open collection
-			var collection = db.collection('Keywords', function(err, collcetion) {});
-			//Store collection in array
-			var document = {
-				keyword: req.body.keyword
-			};
-			collection.insert(document, function(err, records) {
+			var collection = db.collection('keywords', function(err, collcetion) {});
+			
+			collection.update({ category: req.body.category }, { $push: { keywords: req.body.keyword } }, { upsert: true }, function(err, records) {
 				if (err) {
 					return res.status(500).send({
 						err: {
@@ -143,7 +132,7 @@ function deleteKeywords(app, mongodb, producer) {
 				});
 			}
 			//Open collection
-			var collection = db.collection('Keywords', function(err, collcetion){
+			var collection = db.collection('keywords', function(err, collcetion){
 				collcetion.remove({keyword: req.body}, function(err, result) {
 					if (err) {
 						console.log(err);
