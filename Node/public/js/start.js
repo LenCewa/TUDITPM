@@ -25,6 +25,16 @@ var db = {
 	}
 };
 
+function getCompanyObject(name) {
+	if (companies) {
+		for (var i = 0; i < companies.length; i++) {
+			if (companies[i].name === name) {
+				return companies[i];
+			}
+		}
+	}
+}
+
 function readData(data) {
 	if (!data.length) {
 		data = [data];
@@ -32,7 +42,13 @@ function readData(data) {
 
 	db.clients = [];
 	for (var i = 0; i < data.length; i++) {
+		var zip;
+		var companyObj = getCompanyObject(data[i].company);
+		if(companyObj){
+			zip = companyObj.zipCode;
+		}
 		var element = {
+			"PLZ": zip,
 			"Inhalt": data[i].text,
 			"Quelle": data[i].link,
 			"Datum": data[i].date,
@@ -169,6 +185,7 @@ function showAll() {
  */
 function showCompaniesStart(data) {
 	companies = data;
+	reloadData();
 	reloadCompanyList();
 }
 
