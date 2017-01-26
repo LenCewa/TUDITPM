@@ -1,7 +1,7 @@
 'use strict';
 // public/js/alerts.js
 /**
- * Javascript file for all the funtions used in the company configruation page.
+ * Javascript file to display notifications
  * 
  * @author       Yannick Pferr
  * 
