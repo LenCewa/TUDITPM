@@ -78,7 +78,6 @@ module.exports = function(app, producer, mongodb) {
 					});
 				}
 			});
-
 			var msg = [{
 				topic: 'reload',
 				messages: 'keyword added',
@@ -106,9 +105,7 @@ module.exports = function(app, producer, mongodb) {
 			return res.json(data);
 		});
 	});
-};
 
-function deleteKeywords(app, mongodb, producer) {
 	app.post('/api/delete', function(req, res) {
 		// Check if the request is correctly formed
 		if (req.body === undefined || req.body === null || req.body === '') {
@@ -152,4 +149,4 @@ function deleteKeywords(app, mongodb, producer) {
 			return res.status(204).send();
 		});
 	});
-}
+};
