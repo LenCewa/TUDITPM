@@ -27,20 +27,17 @@ exports.getCompanies = function(mongodb, callback) {
 		var collection = db.collection('companies', function(err, collection) {});
 		//Store collection in array
 		collection.find().toArray(function(err, items) {
-			var docs = [];
-			for (i = 0; i < items.length; i++) {
-				docs.push(items[i].company);
-			}
+			
 			var forms = require('../config/legalForms.json');
 			var removed = [];
-			for (i = 0; i < docs.length; i++) {
-				var doc = docs[i];
+			for (i = 0; i < items.length; i++) {
+				var doc = items[i];
 				for (var j = 0; j < forms.length; j++) {
-					doc = doc.replace(forms[j], '').trim();
-					doc = doc.replace(/\./g).trim();
+					doc.company = doc.company.replace(forms[j], '').trim();
+					doc.company = doc.company.replace(/\./g).trim();
 				}
 				removed.push({
-					name: docs[i],
+					name: items[i],
 					stripped: doc
 				});
 			}
@@ -59,11 +56,11 @@ exports.init = function(app, producer, mongodb) {
 	 */
 	app.post('/api/company', function(req, res) {
 		// Check if the request is correctly formed
-		if (req.body.company === undefined || req.body.company === null || req.body.company === '') {
+		if (req.body.company === undefined || req.body.company === null || req.body.company === '' || req.body.zipCode === undefined || req.body.zipCode === null || req.body.zipCode === '') {
 			return res.status(400).send({
 				err: {
-					de: 'Der Firmenname wurde nicht angegeben.',
-					en: 'The company name cannot be empty.',
+					de: 'Der Firmenname und/oder Postleitzahl wurde nicht angegeben.',
+					en: 'The company name and/or zip-code cannot be empty.',
 					err: null
 				}
 			});
@@ -79,10 +76,11 @@ exports.init = function(app, producer, mongodb) {
 				});
 			}
 			//Open collection
-			var collection = db.collection('Companies', function(err, collcetion) {});
+			var collection = db.collection('companies', function(err, collcetion) {});
 			//Store collection in array
 			var document = {
-				company: req.body.company
+				company: req.body.company,
+				zipCode: req.body.zipCode
 			};
 			collection.insert(document, function(err, records) {});
 			var msg = [{

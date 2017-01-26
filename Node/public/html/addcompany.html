@@ -30,8 +30,11 @@ Author Arne Schmidt
         <p style="margin-bottom: 40px">
             <div class="container">
                 <div class="col-md-2"></div>
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-3">
                     <input class="form-control" ID="companyName" type="text" placeholder="Unternehmensname">
+                </div>
+				<div class="form-group col-md-3">
+                    <input class="form-control" ID="zipCode" type="text" placeholder="Postleitzahl">
                 </div>
                 <input class="btn btn-primary col-md-2" type="button" value="Unternehmen hinzufügen" onClick='postUrls()'>
                 <div class="col-md-2"></div>
@@ -66,7 +69,8 @@ function readData(data) {
     db.clients = [];
     for (var i = 0; i < data.length; i++) {
         var element = {};
-        element.Unternehmen = data[i];
+		element.Postleitzahl = data[i].zipCode;
+        element.Unternehmen = data[i].company;
         element.ID = i + 1;
         db.clients.push(element);
     }
@@ -101,6 +105,10 @@ function readData(data) {
             type: "textarea",
             width: 150
         }, {
+            name: "Postleitzahl",
+            type: "textarea",
+            width: 150
+        }, {
             type: "control"
         }]
     });
@@ -110,15 +118,17 @@ function readData(data) {
 
 
 /**
- * Sends the keyword given in the input field "keywordName" to the server.
+ * Sends the company and zip-code given in the input fields to the server.
  */
 function postUrls() {
+
+	var data = {"company": $('#companyName').val(), "zipCode": $('#zipCode').val()};
+
     $.ajax({
         type: 'POST',
         url: '/api/company',
-        data: '{"company":"' + $('#companyName').val() + '"}',
+        data: '{"company":"' + $('#companyName').val() + '", "zipCode":"' + $('#zipCode').val() + '"}',
         success: function(data) {
-            console.log('success');
             $.get("/api/company", function(data) {
                 readData(data);
             });
