@@ -1,5 +1,6 @@
 package TUDITPM.Kafka;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -77,7 +78,7 @@ public class Consumer extends Thread {
 
 		LinkedList<String> keywords = new LinkedList<>();
 		for (Document doc : config.getCollection("keywords").find()) {
-			keywords.add(doc.getString("keyword"));
+			keywords.addAll((ArrayList<String>)doc.get("keywords"));
 		}
 
 		RedisConnector redis = new RedisConnector();

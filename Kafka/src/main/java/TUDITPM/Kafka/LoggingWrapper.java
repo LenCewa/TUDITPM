@@ -32,7 +32,7 @@ public class LoggingWrapper {
 			String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 			ensureFileExists(date);
 			// This block configure the logger with handler and formatter
-			fh = new FileHandler("logs/" + date + "/" + classname + ".log");
+			fh = new FileHandler("logs/" + date + "/" + classname + ".log", true);
 			if (loggers.get(classname) == null) {
 				classLogger = Logger.getLogger(classname);
 				loggers.put(classname, classLogger);

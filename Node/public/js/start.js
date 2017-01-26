@@ -44,7 +44,7 @@ function readData(data) {
 	for (var i = 0; i < data.length; i++) {
 		var zip;
 		var companyObj = getCompanyObject(data[i].company);
-		if(companyObj){
+		if (companyObj){
 			zip = companyObj.zipCode;
 		}
 		var element = {
