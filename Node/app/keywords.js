@@ -67,6 +67,19 @@ module.exports = function(app, producer, mongodb) {
 			//Open collection
 			var collection = db.collection('keywords', function(err, collcetion) {});
 			
+			// checks if doc already exists
+			collection.findOne({category: req.body.category}, function(err, document) {
+				if (document !== null){
+					return res.status(404).send({
+					err: {
+						de: 'Dokument ist bereits enthalten',
+						en: 'Document already exists',
+						err: null
+					}
+				});
+				}
+			});
+			
 			collection.update({ category: req.body.category }, { $push: { keywords: req.body.keyword } }, { upsert: true }, function(err, records) {
 				if (err) {
 					return res.status(500).send({
@@ -93,7 +106,7 @@ module.exports = function(app, producer, mongodb) {
 	});
 
 	/**
-	 *  Returns all the listed keywords vie HTTP get.
+	 *  Returns all the listed keywords via HTTP get.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
@@ -106,20 +119,24 @@ module.exports = function(app, producer, mongodb) {
 		});
 	});
 
-	app.post('/api/delete', function(req, res) {
-		// Check if the request is correctly formed
-		if (req.body === undefined || req.body === null || req.body === '') {
+	/**
+	 *  Deletes a keyword via HTTP delete.
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
+	app.delete('/api/deleteKeyword', function(req, res) {
+		if (req.body.keyword === undefined || req.body.keyword === null || req.body.keyword === '' || req.body.category === undefined || req.body.category === null || req.body.category === '') {
 			return res.status(400).send({
 				err: {
-					de: 'Es wurde kein Schlagwort angegeben.',
-					en: 'The keyword cannot be empty.',
+					de: 'Es wurde kein Schlagwort und/oder Kategorie angegeben.',
+					en: 'The keyword and/or category cannot be empty.',
 					err: null
 				}
 			});
 		}
-		
+
 		mongodb.connect(connections.mongodb.config, function(err, db) {
-			if (err) { 
+			if (err) {
 				return res.status(500).send({
 					err: {
 						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
@@ -129,24 +146,85 @@ module.exports = function(app, producer, mongodb) {
 				});
 			}
 			//Open collection
-			var collection = db.collection('keywords', function(err, collcetion){
-				collcetion.remove({keyword: req.body}, function(err, result) {
-					if (err) {
-						console.log(err);
-					}
-					console.log(result);
-					db.close();
-				});
-			});
+			var collection = db.collection('keywords', function(err, collcetion) {});
 			
-			var msg = [
-					{ topic: 'reload', messages: 'keyword added', partition: 0 },
-				];
-			producer.send(msg, function (err, data) {
+			collection.update({ category: req.body.category }, { $pull: { keywords: req.body.keyword } }, { upsert: true }, function(err, records) {
+				if (err) {
+					return res.status(500).send({
+						err: {
+							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+							en: 'MongoDB connection could not be established',
+							err: null
+						}
+					});
+				}
+			});
+			var msg = [{
+				topic: 'reload',
+				messages: 'keyword removed',
+				partition: 0
+			}, ];
+			producer.send(msg, function(err, data) {
 				console.log(data);
 			});
-			
+
 			return res.status(204).send();
 		});
+		
+	});
+	
+	
+	/**
+	 *  Deletes a category via HTTP delete.
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
+	app.delete('/api/deleteCategory', function(req, res) {
+		if (req.body.category === undefined || req.body.category === null || req.body.category === '') {
+			return res.status(400).send({
+				err: {
+					de: 'Es wurde kein Schlagwort und/oder Kategorie angegeben.',
+					en: 'The keyword and/or category cannot be empty.',
+					err: null
+				}
+			});
+		}
+
+		mongodb.connect(connections.mongodb.config, function(err, db) {
+			if (err) {
+				return res.status(500).send({
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: null
+					}
+				});
+			}
+			//Open collection
+			var collection = db.collection('keywords', function(err, collcetion) {});
+			
+			collection.remove({category: req.body.category}, function(err, result) {
+				if (err) {
+					return res.status(500).send({
+						err: {
+							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+							en: 'MongoDB connection could not be established',
+							err: null
+						}
+					});
+				}
+			});
+			var msg = [{
+				topic: 'reload',
+				messages: 'category removed',
+				partition: 0
+			}, ];
+			producer.send(msg, function(err, data) {
+				console.log(data);
+			});
+
+			return res.status(204).send();
+		});
+		
 	});
 };

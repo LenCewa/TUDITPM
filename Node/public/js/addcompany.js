@@ -8,7 +8,6 @@
  * 
  * @version      5.0
  */
-
 var db = {
 	loadData: function(filter) {
 		return $.grep(this.clients, function(client) {
@@ -74,8 +73,28 @@ function postUrls() {
 		success: function(data) {
 			$.get("/api/company", function(data) {
 				readData(data);
+				showAlert($('#companyName').val() + " added!", Level.Success, 2000);
 			});
+		},
+		statusCode: {
+			404: function() {
+				showAlert($('#companyName').val() + " already exists!", Level.Warning, 4000);
+			}
 		},
 		contentType: 'application/json'
 	});
 }
+
+function deleteCompany() {
+	$.ajax({
+		type: 'DELETE',
+		url: '/api/company',
+		data: '',
+		success: function(data) {
+			$.get("/api/company", function(data) {
+				readData(data);
+				showAlert(" deleted!", Level.Danger, 5000);
+			});
+		},
+		contentType: 'application/json'
+	});

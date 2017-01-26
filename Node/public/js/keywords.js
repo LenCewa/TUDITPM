@@ -72,9 +72,15 @@ function postKeyword(category) {
 		data: '{"keyword":"' + $('#' + category).val() + '", "category":"' + category + '"}',
 		success: function(data) {
 			$.get("/api/keywords", function(data) {
+				showAlert($('#' + category).val() + " added!", Level.Success, 2000);
 				localData = data;
 				reloadKeywords();
 			});
+		},
+		statusCode: {
+			404: function() {
+				showAlert($('#' + category).val() + " already exists!", Level.Warning, 4000);
+			}
 		},
 		contentType: 'application/json'
 	});
@@ -94,10 +100,12 @@ function addCategory() {
 
 function itemToDelete(data) {
 	$.ajax({
-		type: 'POST',
-		url: '/api/delete',
+		type: 'DELETE',
+		url: '/api/keywords',
+		data: '',
 		success: function(data) {
 			$.get("/api/keywords", function(data) {
+				showAlert(" deleted!", Level.Danger);
 				reloadKeywords(data);
 			});
 		},

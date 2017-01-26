@@ -77,6 +77,20 @@ exports.init = function(app, producer, mongodb) {
 				key: key,
 				zipCode: req.body.zipCode
 			};
+			
+			// checks if doc already exists
+			collection.findOne({name: req.body.name}, function(err, document) {
+				if (document !== null){
+					return res.status(404).send({
+					err: {
+						de: 'Dokument ist bereits enthalten',
+						en: 'Document already exists',
+						err: null
+					}
+				});
+				}
+			});
+			
 			collection.insert(document, function(err, records) {});
 			var msg = [{
 				topic: 'reload',
@@ -103,5 +117,59 @@ exports.init = function(app, producer, mongodb) {
 			}
 			return res.json(data);
 		});
+	});
+	
+	/**
+	 *  Deletes a company via HTTP delete.
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
+	app.delete('/api/company', function(req, res) {
+		if (req.body.name === undefined || req.body.name === null || req.body.name === '' || req.body.zipCode === undefined || req.body.zipCode === null || req.body.zipCode === '') {
+			return res.status(400).send({
+				err: {
+					de: 'Der Firmenname und/oder Postleitzahl wurde nicht angegeben.',
+					en: 'The company name and/or zip-code cannot be empty.',
+					err: null
+				}
+			});
+		}
+
+		mongodb.connect(connections.mongodb.config, function(err, db) {
+			if (err) {
+				return res.status(500).send({
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: null
+					}
+				});
+			}
+			//Open collection
+			var collection = db.collection('companies', function(err, collection) {});
+			
+			collection.remove({name: req.body.name}, function(err, result) {
+				if (err) {
+					return res.status(500).send({
+						err: {
+							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+							en: 'MongoDB connection could not be established',
+							err: null
+						}
+					});
+				}
+			});
+			var msg = [{
+				topic: 'reload',
+				messages: 'company removed',
+				partition: 0
+			}, ];
+			producer.send(msg, function(err, data) {
+				console.log(data);
+			});
+
+			return res.status(204).send();
+		});
+		
 	});
 };
