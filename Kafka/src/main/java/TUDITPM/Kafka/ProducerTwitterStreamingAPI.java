@@ -14,7 +14,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
-import TUDITPM.Kafka.Loading.LegalFormHelper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -33,7 +32,7 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 5.0
+ * @version 5.1
  */
 public class ProducerTwitterStreamingAPI extends Thread {
 	/**
@@ -94,22 +93,15 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					PropertyLoader.getPropertyValue(PropertyFile.database,
 							"config.name"));
 			
-			LinkedList<String> companiesWithLegalForms = new LinkedList<>();
+			LinkedList<Document> companies = new LinkedList<>();
+			LinkedList<String> searchNames = new LinkedList<>();
 			for (Document doc : config.getCollection("companies").find()) {
-				companiesWithLegalForms.add(doc.getString("company"));
-			}
-			
-			LinkedList<String> legalForms = PropertyLoader.getLegalForms();
-			LinkedList<String[]> companies = LegalFormHelper.removeLegalForms(
-					companiesWithLegalForms, legalForms);
-			
-			LinkedList<String> strippedCompanies = new LinkedList<String>();
-			for(String[] company : companies){
-				strippedCompanies.add(company[1]);
+				companies.add(doc);
+				searchNames.add(doc.getString("searchName"));
 			}
 
 			// Fetches Tweets that contain specified keywords
-			hosebirdEndpoint.trackTerms(strippedCompanies);
+			hosebirdEndpoint.trackTerms(searchNames);
 			builder.connect();
 
 			final int abortSize = Integer.parseInt(PropertyLoader
@@ -125,11 +117,12 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					String text = JSONrawdata.getString("text");
 					String id = solr.add(text);
 					boolean companyFound = false;
-					for (String[] company : companies) {
-						if (solr.search("\"" + company[1] + "\"", id)) {
+					for (Document company : companies) {
+						if (solr.search("\"" + company.getString("searchName") + "\"", id)) {
 							companyFound = true;
-							json.put("company", company[0]);
-							json.put("companyStripped", company[1]);
+							json.put("searchName", company.getString("searchName"));
+							json.put("companyKey", company.getString("key"));
+							json.put("company", company.getString("name"));
 							json.put("source", "twitter");
 							json.put("text", text);
 							json.put("date",

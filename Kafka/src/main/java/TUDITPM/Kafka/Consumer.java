@@ -23,7 +23,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 1.2
+ * @version 5.1
  */
 public class Consumer extends Thread {
 
@@ -101,7 +101,7 @@ public class Consumer extends Thread {
 
 				for (String keyword : keywords) {
 
-					if (solr.search("\"" + json.getString("companyStripped")
+					if (solr.search("\"" + json.getString("searchName")
 							+ " " + keyword + "\"" + "~" + PROXIMITY, id)) {
 						String text = json.getString("text");
 						String link = json.getString("link");
@@ -133,13 +133,10 @@ public class Consumer extends Thread {
 						// Write to DB
 						// Remove points for the collection name, because
 						// they are not permitted in MongoDB
-						mongo.writeToDb(
-								mongoDBdoc,
-								json.getString("companyStripped").replaceAll(
-										"\\.", ""));
-						redis.appendJSONToList(
-								json.getString("companyStripped").replaceAll(
-										"\\.", ""), redisJson);
+						mongo.writeToDb(mongoDBdoc,
+								json.getString("companyKey"));
+						redis.appendJSONToList(json.getString("companyKey"),
+								redisJson);
 					}
 				}
 				solr.delete(id);

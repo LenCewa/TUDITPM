@@ -18,7 +18,6 @@ var fs = require('fs-extra');
  * @param callback callback function, gets an error as first element and data as second
  */
 exports.getCompanies = function(mongodb, callback) {
-	var i;
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
 			return console.dir(err);
@@ -26,22 +25,8 @@ exports.getCompanies = function(mongodb, callback) {
 		//Open collection
 		var collection = db.collection('companies', function(err, collection) {});
 		//Store collection in array
-		collection.find().toArray(function(err, items) {
-			
-			var forms = require('../config/legalForms.json');
-			var removed = [];
-			for (i = 0; i < items.length; i++) {
-				var doc = items[i];
-				for (var j = 0; j < forms.length; j++) {
-					doc.company = doc.company.replace(forms[j], '').trim();
-					doc.company = doc.company.replace(/\./g).trim();
-				}
-				removed.push({
-					name: items[i],
-					stripped: doc
-				});
-			}
-			callback(null, removed);
+		collection.find().toArray(function(err, companies) {
+			callback(null, companies);
 		});
 	});
 };
@@ -56,7 +41,7 @@ exports.init = function(app, producer, mongodb) {
 	 */
 	app.post('/api/company', function(req, res) {
 		// Check if the request is correctly formed
-		if (req.body.company === undefined || req.body.company === null || req.body.company === '' || req.body.zipCode === undefined || req.body.zipCode === null || req.body.zipCode === '') {
+		if (req.body.name === undefined || req.body.name === null || req.body.name === '' || req.body.zipCode === undefined || req.body.zipCode === null || req.body.zipCode === '') {
 			return res.status(400).send({
 				err: {
 					de: 'Der Firmenname und/oder Postleitzahl wurde nicht angegeben.',
@@ -77,9 +62,19 @@ exports.init = function(app, producer, mongodb) {
 			}
 			//Open collection
 			var collection = db.collection('companies', function(err, collcetion) {});
+
+			var forms = require('../config/legalForms.json');
+			var searchName = req.body.name;
+			for (var j = 0; j < forms.length; j++) {
+				searchName = searchName.replace(forms[j], '').trim();
+			}
+			var key = searchName.replace(/\./g).trim();
+
 			//Store collection in array
 			var document = {
-				company: req.body.company,
+				name: req.body.name,
+				searchName: searchName,
+				key: key,
 				zipCode: req.body.zipCode
 			};
 			collection.insert(document, function(err, records) {});

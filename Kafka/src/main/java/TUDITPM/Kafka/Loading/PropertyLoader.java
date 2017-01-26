@@ -40,32 +40,6 @@ public class PropertyLoader {
 			propertyMap.put(file, properties);
 		}
 
-		// read all legal forms
-		FileInputStream in2 = new FileInputStream(new File(
-				"properties/legal_forms"));
-		BufferedReader br2 = new BufferedReader(new InputStreamReader(in2,
-				"UTF-8"));
-
-		String line2 = null;
-		while ((line2 = br2.readLine()) != null) {
-			legalForms.add(line2);
-		}
-		br2.close();
-		in2.close();
-
-		// sorts legal forms by word length, so e.g GmbH & Co. KG comes before
-		// GmbH
-		Collections.sort(legalForms, new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				if (o1.length() < o2.length())
-					return 1;
-				else if (o1.length() > o2.length())
-					return -1;
-				return 0;
-			}
-		});
-
 		loaded = true;
 
 	}
@@ -100,13 +74,5 @@ public class PropertyLoader {
 	 */
 	public static String getPropertyValue(PropertyFile propertyFile, String key) {
 		return getProperties(propertyFile).getProperty(key);
-	}
-
-	public static LinkedList<String> getLegalForms() {
-		// TODO Auto-generated method stub
-		if (!loaded) {
-			throw new RuntimeException("Property files where not loaded.");
-		}
-		return legalForms;
 	}
 }

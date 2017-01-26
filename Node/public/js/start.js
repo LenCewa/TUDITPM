@@ -100,7 +100,7 @@ function reloadCompanyList() {
 	$('#companyStartTableBody').empty();
 	// Fills the table row by row
 	for (var i = 0; i < companies.length; i++) {
-		var companySelected = selectedCompanies[companies[i].stripped];
+		var companySelected = selectedCompanies[companies[i].key];
 		var btnType;
 		if (companySelected || showAllCompanies) {
 			if (companySelected) {
@@ -108,7 +108,7 @@ function reloadCompanyList() {
 			} else {
 				btnType = 'default';
 			}
-			$('#companyStartTableBody').append('<tr><td>' + companies[i].name + '</td><td>' + '<button id="' + companies[i].stripped + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i].stripped + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+			$('#companyStartTableBody').append('<tr><td>' + companies[i].name + '</td><td>' + '<button id="' + companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
 		}
 	}
 }

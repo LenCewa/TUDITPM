@@ -41,7 +41,7 @@ module.exports = function(app, client) {
 				});
 			}
 			var newsArray;
-			try{
+			try {
 				newsArray = JSON.parse(reply);
 			} catch (err){
 				newsArray = [];

@@ -73,32 +73,37 @@ mongodb.connect(connections.mongodb.news, function(err, db) {
 		}
 		company.getCompanies(mongodb, function(err, companies) {
 			var readCollection = function(collections) {
-				var name = collections.pop().stripped;
-				//Open collections
-				var collection = db.collection(name, function(err, collection) {
-					if (err) {
-						console.log(err);
-					}
-				});
-				//Store collection in array
-				collection.find().toArray(function(err, items) {
-					if (items.length > 0) {
-						for (var i = 0; i < items.length; i++) {
-							items[i] = JSON.stringify(items[i]);
+				var company = collections.pop();
+				if (company) {
+					// Get company key
+					var key = company.key;
+					//Open company collection
+					var collection = db.collection(key, function(err, collection) {
+						if (err) {
+							console.log(err);
 						}
-						items = [name].concat(items);
-						client.send_command("lpush", items, function(err) {
-							if (err) {
-								console.log(err);
+					});
+					//Store collection in array
+					collection.find().toArray(function(err, news) {
+						if (news.length > 0) {
+							for (var i = 0; i < news.length; i++) {
+								news[i] = JSON.stringify(news[i]);
 							}
-							if (connections.length > 0) {
-								readCollection(collections);
-							}
-						});
-					} else {
-						readCollection(collections);
-					}
-				});
+							// Create array for redis. Contains the redis key as first item and then the news.
+							news = [key].concat(news);
+							client.send_command("lpush", news, function(err) {
+								if (err) {
+									console.log(err);
+								}
+								if (connections.length > 0) {
+									readCollection(collections);
+								}
+							});
+						} else {
+							readCollection(collections);
+						}
+					});
+				}
 			}
 			readCollection(companies);
 		});

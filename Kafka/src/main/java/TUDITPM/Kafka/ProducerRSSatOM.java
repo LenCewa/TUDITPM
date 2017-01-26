@@ -21,7 +21,6 @@ import org.bson.Document;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
-import TUDITPM.Kafka.Loading.LegalFormHelper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -36,7 +35,7 @@ import com.rometools.rome.io.XmlReader;
  * 
  * @author Christian Zendo
  * @author Tobias Mahncke
- * @version 5.0
+ * @version 5.1
  */
 public class ProducerRSSatOM extends Thread {
 	private String dbname;
@@ -83,14 +82,10 @@ public class ProducerRSSatOM extends Thread {
 		// Create the producer
 		Producer<String, String> producer = null;
 
-		LinkedList<String> companiesWithLegalForms = new LinkedList<>();
+		LinkedList<Document> companies = new LinkedList<>();
 		for (Document doc : config.getCollection("companies").find()) {
-			companiesWithLegalForms.add(doc.getString("company"));
+			companies.add(doc);
 		}
-		
-		LinkedList<String> legalForms = PropertyLoader.getLegalForms();
-		LinkedList<String[]> companies = LegalFormHelper.removeLegalForms(
-				companiesWithLegalForms, legalForms);
 
 		Solr solr = new Solr();
 
@@ -135,11 +130,12 @@ public class ProducerRSSatOM extends Thread {
 
 						JSONObject json = new JSONObject();
 						boolean companyFound = false;
-						for (String[] company : companies) {
-							if (solr.search("\"" + company[1] + "\"", id)) {
+						for (Document company : companies) {
+							if (solr.search("\"" + company.getString("searchName") + "\"", id)) {
 								companyFound = true;
-								json.put("companyStripped", company[1]);
-								json.put("company", company[0]);
+								json.put("searchName", company.getString("searchName"));
+								json.put("companyKey", company.getString("key"));
+								json.put("company", company.getString("name"));
 								json.put("source", "rss");
 								json.put("link", link);
 								json.put("title", title);
