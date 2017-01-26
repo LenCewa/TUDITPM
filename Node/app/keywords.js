@@ -66,41 +66,50 @@ module.exports = function(app, producer, mongodb) {
 			}
 			//Open collection
 			var collection = db.collection('keywords', function(err, collcetion) {});
-			
+
 			// checks if doc already exists
-			collection.findOne({category: req.body.category}, function(err, document) {
-				if (document !== null){
-					return res.status(404).send({
-					err: {
-						de: 'Dokument ist bereits enthalten',
-						en: 'Document already exists',
-						err: null
-					}
-				});
-				}
-			});
-			
-			collection.update({ category: req.body.category }, { $push: { keywords: req.body.keyword } }, { upsert: true }, function(err, records) {
-				if (err) {
-					return res.status(500).send({
+			collection.findOne({
+				category: req.body.category
+			}, function(err, document) {
+				if (document !== null) {
+					return res.status(400).send({
 						err: {
-							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-							en: 'MongoDB connection could not be established',
+							de: 'Dokument ist bereits enthalten',
+							en: 'Document already exists',
 							err: null
 						}
 					});
 				}
-			});
-			var msg = [{
-				topic: 'reload',
-				messages: 'keyword added',
-				partition: 0
-			}, ];
-			producer.send(msg, function(err, data) {
-				console.log(data);
-			});
+				collection.update({
+					category: req.body.category
+				}, {
+					$push: {
+						keywords: req.body.keyword
+					}
+				}, {
+					upsert: true
+				}, function(err, records) {
+					if (err) {
+						return res.status(500).send({
+							err: {
+								de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+								en: 'MongoDB connection could not be established',
+								err: null
+							}
+						});
+					}
+				});
+				var msg = [{
+					topic: 'reload',
+					messages: 'keyword added',
+					partition: 0
+				}, ];
+				producer.send(msg, function(err, data) {
+					console.log(data);
+				});
 
-			return res.status(204).send();
+				return res.status(204).send();
+			});
 		});
 
 	});
@@ -147,8 +156,16 @@ module.exports = function(app, producer, mongodb) {
 			}
 			//Open collection
 			var collection = db.collection('keywords', function(err, collcetion) {});
-			
-			collection.update({ category: req.body.category }, { $pull: { keywords: req.body.keyword } }, { upsert: true }, function(err, records) {
+
+			collection.update({
+				category: req.body.category
+			}, {
+				$pull: {
+					keywords: req.body.keyword
+				}
+			}, {
+				upsert: true
+			}, function(err, records) {
 				if (err) {
 					return res.status(500).send({
 						err: {
@@ -170,10 +187,10 @@ module.exports = function(app, producer, mongodb) {
 
 			return res.status(204).send();
 		});
-		
+
 	});
-	
-	
+
+
 	/**
 	 *  Deletes a category via HTTP delete.
 	 *  @param req The HTTP request object
@@ -202,8 +219,10 @@ module.exports = function(app, producer, mongodb) {
 			}
 			//Open collection
 			var collection = db.collection('keywords', function(err, collcetion) {});
-			
-			collection.remove({category: req.body.category}, function(err, result) {
+
+			collection.remove({
+				category: req.body.category
+			}, function(err, result) {
 				if (err) {
 					return res.status(500).send({
 						err: {
@@ -225,6 +244,6 @@ module.exports = function(app, producer, mongodb) {
 
 			return res.status(204).send();
 		});
-		
+
 	});
 };

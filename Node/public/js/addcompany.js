@@ -77,8 +77,8 @@ function postUrls() {
 			});
 		},
 		statusCode: {
-			404: function() {
-				showAlert($('#companyName').val() + " already exists!", Level.Warning, 4000);
+			400: function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
 			}
 		},
 		contentType: 'application/json'
@@ -98,3 +98,4 @@ function deleteCompany() {
 		},
 		contentType: 'application/json'
 	});
+}

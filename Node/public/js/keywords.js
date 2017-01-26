@@ -17,11 +17,13 @@ function reloadKeywords() {
 	var total = 0;
 	var mapping = [];
 	var header = '<tr>';
+	var searchBar = '<tr>';
 	var i, j;
 	var maxEntries = 0;
 	if (localData) {
 		for (i = 0; i < localData.length; i++) {
 			header += '<th>' + localData[i].category + '</th>';
+			searchBar += '<td><div class="input-group"><input class="form-control" type="text" ID="' + localData[i].category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + localData[i].category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
 			if (localData[i].keywords) {
 				if (localData[i].keywords.length > maxEntries) {
 					maxEntries = localData[i].keywords.length;
@@ -29,20 +31,17 @@ function reloadKeywords() {
 			}
 		}
 		header += '<th><div class="input-group"><input class="form-control" type="text" ID="newCategory" placeholder="Neue Kategorie"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="addCategory()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></tr>';
+		searchBar += '</tr>';
 
 		for (i = 0; i < localData.length; i++) {
 			var category = localData[i];
 			if (category.keywords) {
-				for (j = 0; j < maxEntries + 1; j++) {
+				for (j = 0; j < maxEntries ; j++) {
 					if (!mapping[j]) {
 						mapping[j] = '<tr>';
 					}
-					console.log(category.keywords[j]);
 					if (category.keywords[j]) {
-						console.log(category.keywords[j]);
 						mapping[j] += '<td>' + category.keywords[j] + '</td>';
-					} else if (j === category.keywords.length) {
-						mapping[j] += '<td><div class="input-group"><input class="form-control" type="text" ID="' + category.category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + category.category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
 					} else {
 						mapping[j] += '<td></td>';
 					}
@@ -54,6 +53,7 @@ function reloadKeywords() {
 		}
 
 		$('#keywordTableHead').append(header);
+		$('#keywordTableHead').append(searchBar);
 
 		// Fills the table row by row
 		for (i = 0; i < mapping.length; i++) {
@@ -78,8 +78,8 @@ function postKeyword(category) {
 			});
 		},
 		statusCode: {
-			404: function() {
-				showAlert($('#' + category).val() + " already exists!", Level.Warning, 4000);
+			400: function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
 			}
 		},
 		contentType: 'application/json'

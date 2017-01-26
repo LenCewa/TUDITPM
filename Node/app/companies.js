@@ -77,31 +77,33 @@ exports.init = function(app, producer, mongodb) {
 				key: key,
 				zipCode: req.body.zipCode
 			};
-			
-			// checks if doc already exists
-			collection.findOne({name: req.body.name}, function(err, document) {
-				if (document !== null){
-					return res.status(404).send({
-					err: {
-						de: 'Dokument ist bereits enthalten',
-						en: 'Document already exists',
-						err: null
-					}
-				});
-				}
-			});
-			
-			collection.insert(document, function(err, records) {});
-			var msg = [{
-				topic: 'reload',
-				messages: 'company added',
-				partition: 0
-			}, ];
-			producer.send(msg, function(err, data) {
-				console.log(data);
-			});
 
-			return res.status(204).send();
+			// checks if doc already exists
+			collection.findOne({
+				name: req.body.name,
+				zipCode: req.body.zipCode
+			}, function(err, document) {
+				if (document !== null) {
+					return res.status(400).send({
+						err: {
+							de: 'Firma ist bereits vorhanden',
+							en: 'Company already exists',
+							err: null
+						}
+					});
+				}
+				collection.insert(document, function(err, records) {});
+				var msg = [{
+					topic: 'reload',
+					messages: 'company added',
+					partition: 0
+				}, ];
+				producer.send(msg, function(err, data) {
+					console.log(data);
+				});
+
+				return res.status(204).send();
+			});
 		});
 	});
 
@@ -118,7 +120,7 @@ exports.init = function(app, producer, mongodb) {
 			return res.json(data);
 		});
 	});
-	
+
 	/**
 	 *  Deletes a company via HTTP delete.
 	 *  @param req The HTTP request object
@@ -147,8 +149,10 @@ exports.init = function(app, producer, mongodb) {
 			}
 			//Open collection
 			var collection = db.collection('companies', function(err, collection) {});
-			
-			collection.remove({name: req.body.name}, function(err, result) {
+
+			collection.remove({
+				name: req.body.name
+			}, function(err, result) {
 				if (err) {
 					return res.status(500).send({
 						err: {
@@ -170,6 +174,6 @@ exports.init = function(app, producer, mongodb) {
 
 			return res.status(204).send();
 		});
-		
+
 	});
 };
