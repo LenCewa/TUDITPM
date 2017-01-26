@@ -69,7 +69,8 @@ module.exports = function(app, producer, mongodb) {
 
 			// checks if doc already exists
 			collection.findOne({
-				category: req.body.category
+				category: req.body.category,
+				keywords: req.body.keyword
 			}, function(err, document) {
 				if (document !== null) {
 					return res.status(400).send({
