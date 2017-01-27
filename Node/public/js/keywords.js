@@ -80,7 +80,14 @@ function postKeyword(category) {
 		statusCode: {
 			400: function(error) {
 				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-			}
+			},
+			204: function() {
+				$.get("/api/keywords", function(data) {
+					localData = data;
+					reloadKeywords();
+					showAlert($('#' + category).val() + " hinzugefügt!", Level.Success, 2000);
+				});
+			},
 		},
 		contentType: 'application/json'
 	});

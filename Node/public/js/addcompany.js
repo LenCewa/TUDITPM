@@ -27,14 +27,7 @@ function createTable() {
 		}
 	}
 
-	if (firstDataLoad) {
-		$('#table').bootstrapTable({
-			data: data
-		});
-		firstDataLoad = false;
-	} else {
-		$('#table').bootstrapTable('load', data);
-	}
+	$('#table').bootstrapTable('load', data);
 }
 
 function companyDataLoaded() {

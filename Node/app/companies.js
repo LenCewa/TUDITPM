@@ -25,7 +25,9 @@ exports.getCompanies = function(mongodb, callback) {
 		//Open collection
 		var collection = db.collection('companies', function(err, collection) {});
 		//Store collection in array
-		collection.find().toArray(function(err, companies) {
+		collection.find().sort({
+			name: 1
+		}).toArray(function(err, companies) {
 			callback(null, companies);
 		});
 	});

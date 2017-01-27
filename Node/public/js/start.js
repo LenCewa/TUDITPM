@@ -23,19 +23,27 @@ function createTable() {
 	var data = [];
 
 	// Declare variables
-	var filter, i, show;
-	filter = $('#newsSearch').val().toUpperCase().trim();
+	var filter, i, j, show;
+	// Split search entry to search for each word alone
+	filter = $('#newsSearch').val().toUpperCase().trim().split(' ');
 
-	if (filter && filter !== '') {
-		// Loop through all table rows, and hide those who don't match the search query
+	if (filter && (filter.length > 1 || filter[0] !== '')) {
+		// Loop through all data and remove those who don't match the search query
 		for (i = 0; i < news.length; i++) {
-			if ((news[i].zipCode && news[i].zipCode.toUpperCase().indexOf(filter) > -1) ||
-				(news[i].company && news[i].company.toUpperCase().indexOf(filter) > -1) ||
-				(news[i].category && news[i].category.toUpperCase().indexOf(filter) > -1) ||
-				(news[i].keyword && news[i].keyword.toUpperCase().indexOf(filter) > -1) ||
-				(news[i].text && news[i].text.toUpperCase().indexOf(filter) > -1) ||
-				(news[i].link && news[i].link.toUpperCase().indexOf(filter) > -1) ||
-				(news[i].date && news[i].date.toUpperCase().indexOf(filter) > -1)) {
+			show = true;
+			// Check if each filter entry is contained in one of the fields
+			for (j = 0; j < filter.length; j++) {
+				if ((news[i].zipCode && news[i].zipCode.toUpperCase().indexOf(filter[j]) > -1) ||
+					(news[i].company && news[i].company.toUpperCase().indexOf(filter[j]) > -1) ||
+					(news[i].category && news[i].category.toUpperCase().indexOf(filter[j]) > -1) ||
+					(news[i].keyword && news[i].keyword.toUpperCase().indexOf(filter[j]) > -1) ||
+					(news[i].text && news[i].text.toUpperCase().indexOf(filter[j]) > -1) ||
+					(news[i].link && news[i].link.toUpperCase().indexOf(filter[j]) > -1) ||
+					(news[i].date && news[i].date.toUpperCase().indexOf(filter[j]) > -1)) {} else {
+					show = false;
+				}
+			}
+			if (show) {
 				data.push(news[i]);
 			}
 		}
@@ -43,14 +51,7 @@ function createTable() {
 		data = news;
 	}
 
-	if (firstDataLoad) {
-		$('#table').bootstrapTable({
-			data: data
-		});
-		firstDataLoad = false;
-	} else {
-		$('#table').bootstrapTable('load', data);
-	}
+	$('#table').bootstrapTable('load', data);
 }
 
 function reloadData() {
@@ -63,33 +64,38 @@ function reloadData() {
 			count++;
 		}
 	}
-	for (name in selectedCompanies) {
-		if (selectedCompanies[name]) {
-			$.ajax({
-				url: "/api/news/" + name,
-				type: 'GET',
-				beforeSend: function(xhr) { // jshint ignore:line
-					xhr.setRequestHeader('offset', 0);
-					xhr.setRequestHeader('length', 20);
-				},
-				success: function(data) { // jshint ignore:line
-					completeData = completeData.concat(data);
-					count--;
-					if (count === 0) {
-						for (var i = 0; i < completeData.length; i++) {
-							var zip;
-							var companyObj = getCompanyObject(completeData[i].company);
-							if (companyObj) {
-								zip = companyObj.zipCode;
+	if (count !== 0) {
+		for (name in selectedCompanies) {
+			if (selectedCompanies[name]) {
+				$.ajax({
+					url: "/api/news/" + name,
+					type: 'GET',
+					beforeSend: function(xhr) { // jshint ignore:line
+						xhr.setRequestHeader('offset', 0);
+						xhr.setRequestHeader('length', 20);
+					},
+					success: function(data) { // jshint ignore:line
+						completeData = completeData.concat(data);
+						count--;
+						if (count === 0) {
+							for (var i = 0; i < completeData.length; i++) {
+								var zip;
+								var companyObj = getCompanyObject(completeData[i].company);
+								if (companyObj) {
+									zip = companyObj.zipCode;
+								}
+								completeData[i].zipCode = zip;
 							}
-							completeData[i].zipCode = zip;
+							news = completeData;
+							createTable();
 						}
-						news = completeData;
-						createTable();
 					}
-				}
-			});
+				});
+			}
 		}
+	} else {
+		news = [];
+		createTable();
 	}
 }
 

@@ -23,12 +23,14 @@ var connections = require('../config/connections.conf.json')[process.env.NODE_EN
 function readKeywords(mongodb, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			return console.dir(err);
+			return callback(err, null);
 		}
 		//Open collection
 		var collection = db.collection('keywords', function(err, collcetion) {});
 		//Store collection in array
-		collection.find().toArray(function(err, items) {
+		collection.find().sort({
+			category: 1
+		}).toArray(function(err, items) {
 			callback(null, items);
 		});
 	});
@@ -81,15 +83,9 @@ module.exports = function(app, producer, mongodb) {
 						}
 					});
 				}
-				collection.update({
+				collection.findOne({
 					category: req.body.category
-				}, {
-					$push: {
-						keywords: req.body.keyword
-					}
-				}, {
-					upsert: true
-				}, function(err, records) {
+				}, function(err, category) {
 					if (err) {
 						return res.status(500).send({
 							err: {
@@ -99,17 +95,38 @@ module.exports = function(app, producer, mongodb) {
 							}
 						});
 					}
-				});
-				var msg = [{
-					topic: 'reload',
-					messages: 'keyword added',
-					partition: 0
-				}, ];
-				producer.send(msg, function(err, data) {
-					console.log(data);
-				});
+					var array = category.keywords;
+					array.push(req.body.keyword);
+					var sortedArray = array.sort(function(a, b) {
+						return a.localeCompare(b);
+					});
+					collection.update({
+						category: req.body.category
+					}, {
+						category: req.body.category,
+						keywords: sortedArray
+					}, {
+						upsert: true
+					}, function(err, records) {
+						if (err) {
+							return res.status(500).send({
+								err: {
+									de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+									en: 'MongoDB connection could not be established',
+									err: null
+								}
+							});
+						}
+						var msg = [{
+							topic: 'reload',
+							messages: 'keyword added',
+							partition: 0
+						}, ];
+						producer.send(msg, function(err, data) {});
 
-				return res.status(204).send();
+						return res.status(204).send();
+					});
+				});
 			});
 		});
 
