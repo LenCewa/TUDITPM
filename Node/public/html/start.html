@@ -14,11 +14,9 @@ Author Tobias Mahncke
     <script src="/libs/socket.io/socket.io.min.js"></script>
     <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
-    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
-    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
-    <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.css" />
+    <script type="text/javascript" src="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.js"></script>
     <script type="text/javascript" src="/libs/cookies/cookies.js"></script>
-    
     <script type="text/javascript" src="js/start.js"></script>
     <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
     <!-- set charset to utf-8 -->
@@ -45,14 +43,28 @@ Author Tobias Mahncke
             </table>
         </div>
         <div class="col-md-10">
-            <div ID="jsGrid"></div>
-            <button class="btn btn-primary pull-right" onClick="exportCSV()">Tabelle Exportieren</button>
+            <div class="col-md-offset-8 col-md-2">
+                <input class="form-control" ID="newsSearch" type="text" onkeyup="searchNews()" placeholder="Suche">
+            </div>
+            <button class="btn btn-primary col-md-2" onClick="exportCSV()">Tabelle Exportieren</button>
+            <table style="margin-top: 17px" id="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-1" data-field="zipCode" data-sortable="true">PLZ</th>
+                        <th class="col-md-2" data-field="company" data-sortable="true">Unternehmen</th>
+                        <th class="col-md-1" data-field="category" data-sortable="true">Kategorie</th>
+                        <th class="col-md-1" data-field="keyword" data-sortable="true">Schlagwörter</th>
+                        <th class="col-md-3" data-field="text" data-sortable="true">Inhalt</th>
+                        <th class="col-md-3" data-field="link" data-sortable="true">Quelle</th>
+                        <th class="col-md-1" data-field="date" data-sortable="true">Datum</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
     <div ID="bottom">
     </div>
 </body>
-
 <script type="text/javascript">
 $(function() {
     $("#navbar").load("html/navbar.html");
@@ -61,8 +73,6 @@ $(function() {
 $.get("/api/company", function(data) {
     showCompaniesStart(data);
 });
-
-reloadData();
 </script>
 
 </html>

@@ -89,16 +89,20 @@ mongodb.connect(connections.mongodb.news, function(err, db) {
 							for (var i = 0; i < news.length; i++) {
 								news[i] = JSON.stringify(news[i]);
 							}
-							// Create array for redis. Contains the redis key as first item and then the news.
-							news = [key].concat(news);
-							client.send_command("lpush", news, function(err) {
-								if (err) {
-									console.log(err);
-								}
-								if (connections.length > 0) {
-									readCollection(collections);
-								}
-							});
+							var pushNews = function(array) {
+								var singleNews = array.pop();
+								client.send_command('lpush', [key, singleNews], function(err) {
+									if (err) {
+										console.log(err);
+									}
+									if (array.length > 0) {
+										pushNews(array);
+									} else if (collections.length > 0) {
+										readCollection(collections);
+									}
+								});
+							}
+							pushNews(news);
 						} else {
 							readCollection(collections);
 						}

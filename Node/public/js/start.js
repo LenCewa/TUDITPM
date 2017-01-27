@@ -16,6 +16,7 @@ if (!selectedCompanies) {
 }
 var companies;
 var showAllCompanies = false;
+var news;
 
 var db = {
 	loadData: function(filter) {
@@ -40,76 +41,19 @@ function readData(data) {
 		data = [data];
 	}
 
-	db.clients = [];
 	for (var i = 0; i < data.length; i++) {
 		var zip;
 		var companyObj = getCompanyObject(data[i].company);
-		if (companyObj){
+		if (companyObj) {
 			zip = companyObj.zipCode;
 		}
-		var element = {
-			"PLZ": zip,
-			"Inhalt": data[i].text,
-			"Quelle": data[i].link,
-			"Datum": data[i].date,
-			"Unternehmen": data[i].company,
-			"Schlagwörter": data[i].keyword
-		};
-		db.clients.push(element);
+		data[i].zipCode = zip;
 	}
 
-	$("#jsGrid").jsGrid({
-		height: "auto",
-		width: "100%",
-
-		filtering: true,
-		sorting: true,
-		autoload: true,
-
-		paging: true,
-		pageIndex: 1,
-		pageSize: 20,
-		pageButtonCount: 5,
-		pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
-		pagePrevText: "Zurück",
-		pageNextText: "Weiter",
-		pageFirstText: "Erste",
-		pageLastText: "Letzte",
-		pageNavigatorNextText: "...",
-		pageNavigatorPrevText: "...",
-
-		controller: db,
-		fields: [{
-			name: "PLZ",
-			type: "number",
-			width: 25,
-		}, {
-			name: "Unternehmen",
-			type: "text",
-			width: 40,
-		}, {
-			name: "Kategorie",
-			type: "text",
-			width: 30,
-		}, {
-			name: "Schlagwörter",
-			type: "text",
-			width: 40,
-		}, {
-			name: "Inhalt",
-			type: "text",
-			width: 150,
-			validate: "required"
-		}, {
-			name: "Datum",
-			type: "number",
-			width: 25,
-		}, {
-			name: "Quelle",
-			type: "text",
-			width: 50,
-		}]
+	$('#table').bootstrapTable({
+		data: data
 	});
+	$('#table').bootstrapTable('refresh');
 }
 
 function reloadCompanyList() {
@@ -149,9 +93,11 @@ function reloadData() {
 					xhr.setRequestHeader('length', 20);
 				},
 				success: function(data) { // jshint ignore:line
+					console.log(data);
 					completeData = completeData.concat(data);
 					count--;
 					if (count === 0) {
+						console.log(completeData);
 						readData(completeData);
 					}
 				}
@@ -189,23 +135,55 @@ function showCompaniesStart(data) {
 	reloadCompanyList();
 }
 
+/** 
+ * Search function for the company list.
+ */
 function searchCompany() {
 	// Declare variables
 	var input, filter, table, tr, td, i;
-	input = document.getElementById("companyName");
-	filter = input.value.toUpperCase();
-	table = document.getElementById("companyStartTableBody");
-	tr = table.getElementsByTagName("tr");
+	filter = $('#companyName').val().toUpperCase();
+	table = $('#companyStartTableBody');
+	tr = table.children('tr');
 
 	// Loop through all table rows, and hide those who don't match the search query
 	for (i = 0; i < tr.length; i++) {
-		td = tr[i].getElementsByTagName("td")[0];
+		td = tr[i].children;
 		if (td) {
 			if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
-				tr[i].style.display = "";
+				tr[i].style.display = '';
 			} else {
-				tr[i].style.display = "none";
+				tr[i].style.display = 'none';
 			}
+		}
+	}
+}
+
+
+/** 
+ * Search function for the company list.
+ */
+function searchNews() {
+	// Declare variables
+	var filter, table, tr, td, i, j, show;
+	filter = $('#newsSearch').val().toUpperCase();
+	table = $('#table').children('tbody');
+	tr = table.children('tr');
+
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < tr.length; i++) {
+		td = tr[i].children;
+		show = false;
+		for (j = 0; j < td.length; j++) {
+			if (td[j]) {
+				if (td[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+					show = true;
+				}
+			}
+		}
+		if (show) {
+			tr[i].style.display = '';
+		} else {
+			tr[i].style.display = 'none';
 		}
 	}
 }
@@ -285,7 +263,6 @@ function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
 }
 
 function exportCSV() {
-	var data = $('#jsGrid').jsGrid('option', 'data');
 	var utc = new Date().toJSON().slice(0, 10).replace(/-/g, '/');
-	JSONToCSVConvertor(data, utc, true);
+	JSONToCSVConvertor(news, utc, true);
 }
