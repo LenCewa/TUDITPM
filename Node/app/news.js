@@ -9,9 +9,9 @@
  * @version      3.1
  *
  */
- 
+
 var server = require('../server');
- 
+
 module.exports = function(app, client) {
 	console.log('news routes loading');
 	/**
@@ -20,9 +20,11 @@ module.exports = function(app, client) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/news/:key', function(req, res) {
-		server.io.emit('get', {for: 'everyone'});
+		server.io.emit('get', {
+			for: 'everyone'
+		});
 		// Gets a key from redis, returns null if key is not found
-		client.lrange([req.params.key, req.headers.offset, req.headers.length], function(err, reply) {	
+		client.lrange([req.params.key, req.headers.offset, req.headers.length], function(err, reply) {
 			if (err) {
 				return res.status(500).send({
 					err: {
@@ -32,7 +34,7 @@ module.exports = function(app, client) {
 					}
 				});
 			}
-			if (reply === null){
+			if (reply === null) {
 				return res.status(404).send({
 					err: {
 						de: 'Der angegebene Schlüssel konnte nicht gefunden werden.',
@@ -41,16 +43,16 @@ module.exports = function(app, client) {
 				});
 			}
 			var newsArray = [];
-			for(var i = 0; i < reply.length; i++){
+			for (var i = 0; i < reply.length; i++) {
 				newsArray[i] = JSON.parse(reply[i]);
 			}
-			if (newsArray === undefined){
+			if (newsArray === undefined) {
 				return res.status(500).send({
-						err: {
-							de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
-							en: 'Accessing the news failed. Please contact an adminstrator.',
-						}
-					});
+					err: {
+						de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
+						en: 'Accessing the news failed. Please contact an adminstrator.',
+					}
+				});
 			}
 			return res.send(newsArray);
 		});

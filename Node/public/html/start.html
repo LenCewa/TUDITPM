@@ -17,6 +17,7 @@ Author Tobias Mahncke
     <link type="text/css" rel="stylesheet" href="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.css" />
     <script type="text/javascript" src="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.js"></script>
     <script type="text/javascript" src="/libs/cookies/cookies.js"></script>
+    <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/start.js"></script>
     <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
     <!-- set charset to utf-8 -->
@@ -31,7 +32,7 @@ Author Tobias Mahncke
                 <thead>
                     <tr>
                         <th>
-                            <input class="form-control" ID="companyName" type="text" onkeyup="searchCompany()" placeholder="Unternehmensname">
+                            <input class="form-control" ID="companyName" type="text" onkeyup="searchCompany()" placeholder="Unternehmensname / PLZ">
                         </th>
                         <th>
                             <button id="showAllBtn" class="btn btn-success" onClick="showAll()"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
@@ -44,19 +45,19 @@ Author Tobias Mahncke
         </div>
         <div class="col-md-10">
             <div class="col-md-offset-8 col-md-2">
-                <input class="form-control" ID="newsSearch" type="text" onkeyup="searchNews()" placeholder="Suche">
+                <input class="form-control" ID="newsSearch" type="text" onkeyup="createTable()" placeholder="Suche">
             </div>
             <button class="btn btn-primary col-md-2" onClick="exportCSV()">Tabelle Exportieren</button>
-            <table style="margin-top: 17px" id="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
+            <table style="margin-top: 17px" id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
                 <thead>
                     <tr>
-                        <th class="col-md-1" data-field="zipCode" data-sortable="true">PLZ</th>
-                        <th class="col-md-2" data-field="company" data-sortable="true">Unternehmen</th>
-                        <th class="col-md-1" data-field="category" data-sortable="true">Kategorie</th>
-                        <th class="col-md-1" data-field="keyword" data-sortable="true">Schlagwörter</th>
-                        <th class="col-md-3" data-field="text" data-sortable="true">Inhalt</th>
-                        <th class="col-md-3" data-field="link" data-sortable="true">Quelle</th>
-                        <th class="col-md-1" data-field="date" data-sortable="true">Datum</th>
+                        <th class="col-md-1" data-field="zipCode">PLZ</th>
+                        <th class="col-md-2" data-field="company">Unternehmen</th>
+                        <th class="col-md-1" data-field="category">Kategorie</th>
+                        <th class="col-md-1" data-field="keyword">Schlagwörter</th>
+                        <th class="col-md-3" data-field="text">Inhalt</th>
+                        <th class="col-md-3" data-field="link">Quelle</th>
+                        <th class="col-md-1" data-field="date">Datum</th>
                     </tr>
                 </thead>
             </table>
@@ -70,9 +71,7 @@ $(function() {
     $("#navbar").load("html/navbar.html");
 });
 
-$.get("/api/company", function(data) {
-    showCompaniesStart(data);
-});
+reloadData();
 </script>
 
 </html>

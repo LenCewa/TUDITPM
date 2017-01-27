@@ -14,63 +14,35 @@ if (!selectedCompanies) {
 } else {
 	selectedCompanies = JSON.parse(selectedCompanies);
 }
-var companies;
+
 var showAllCompanies = false;
 var news;
 
-var db = {
-	loadData: function(filter) {
-		return $.grep(this.clients, function(client) {
-			return (!filter.Inhalt || client.Inhalt.indexOf(filter.Inhalt) > -1) && (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1) && (!filter.Schlagwörter || client.Schlagwörter.indexOf(filter.Schlagwörter) > -1) && (!filter.Quelle || client.Quelle.indexOf(filter.Quelle) > -1) && (!filter.Datum || client.Datum.indexOf(filter.Datum) > -1);
-		});
-	}
-};
+function createTable() {
+	var data = [];
 
-function getCompanyObject(name) {
-	if (companies) {
-		for (var i = 0; i < companies.length; i++) {
-			if (companies[i].name === name) {
-				return companies[i];
+	// Declare variables
+	var filter, i, show;
+	filter = $('#newsSearch').val().toUpperCase().trim();
+
+	if (filter && filter !== '') {
+		// Loop through all table rows, and hide those who don't match the search query
+		for (i = 0; i < news.length; i++) {
+			if ((news[i].zipCode && news[i].zipCode.toUpperCase().indexOf(filter) > -1) ||
+				(news[i].company && news[i].company.toUpperCase().indexOf(filter) > -1) ||
+				(news[i].category && news[i].category.toUpperCase().indexOf(filter) > -1) ||
+				(news[i].keyword && news[i].keyword.toUpperCase().indexOf(filter) > -1) ||
+				(news[i].text && news[i].text.toUpperCase().indexOf(filter) > -1) ||
+				(news[i].link && news[i].link.toUpperCase().indexOf(filter) > -1) ||
+				(news[i].date && news[i].date.toUpperCase().indexOf(filter) > -1)) {
+				data.push(news[i]);
 			}
 		}
-	}
-}
-
-function readData(data) {
-	if (!data.length) {
-		data = [data];
+	} else {
+		data = news;
 	}
 
-	for (var i = 0; i < data.length; i++) {
-		var zip;
-		var companyObj = getCompanyObject(data[i].company);
-		if (companyObj) {
-			zip = companyObj.zipCode;
-		}
-		data[i].zipCode = zip;
-	}
-
-	$('#table').bootstrapTable({
-		data: data
-	});
-	$('#table').bootstrapTable('refresh');
-}
-
-function reloadCompanyList() {
-	$('#companyStartTableBody').empty();
-	// Fills the table row by row
-	for (var i = 0; i < companies.length; i++) {
-		var companySelected = selectedCompanies[companies[i].key];
-		var btnType;
-		if (companySelected || showAllCompanies) {
-			if (companySelected) {
-				btnType = 'success';
-			} else {
-				btnType = 'default';
-			}
-			$('#companyStartTableBody').append('<tr><td>' + companies[i].name + '</td><td>' + '<button id="' + companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
-		}
-	}
+	$('#table').bootstrapTable('load', data);
 }
 
 function reloadData() {
@@ -93,17 +65,47 @@ function reloadData() {
 					xhr.setRequestHeader('length', 20);
 				},
 				success: function(data) { // jshint ignore:line
-					console.log(data);
 					completeData = completeData.concat(data);
 					count--;
 					if (count === 0) {
-						console.log(completeData);
-						readData(completeData);
+						for (var i = 0; i < completeData.length; i++) {
+							var zip;
+							var companyObj = getCompanyObject(completeData[i].company);
+							if (companyObj) {
+								zip = companyObj.zipCode;
+							}
+							completeData[i].zipCode = zip;
+						}
+						news = completeData;
+						createTable();
 					}
 				}
 			});
 		}
 	}
+}
+
+function reloadCompanyList() {
+	$('#companyStartTableBody').empty();
+	// Fills the table row by row
+	if (companies) {
+		for (var i = 0; i < companies.length; i++) {
+			var companySelected = selectedCompanies[companies[i].key];
+			var btnType;
+			if (companySelected || showAllCompanies) {
+				if (companySelected) {
+					btnType = 'success';
+				} else {
+					btnType = 'default';
+				}
+				$('#companyStartTableBody').append('<tr><td>' + companies[i].name + '</td><td>' + '<button id="' + companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+			}
+		}
+	}
+}
+
+function companyDataLoaded() {
+	reloadCompanyList();
 }
 
 function selectCompany(name) {
@@ -125,22 +127,12 @@ function showAll() {
 	reloadCompanyList();
 }
 
-/**
- * Displays the companylist in a table
- * @param {[type]} data         [description]
- */
-function showCompaniesStart(data) {
-	companies = data;
-	reloadData();
-	reloadCompanyList();
-}
-
 /** 
  * Search function for the company list.
  */
 function searchCompany() {
 	// Declare variables
-	var input, filter, table, tr, td, i;
+	var filter, table, tr, td, i, company;
 	filter = $('#companyName').val().toUpperCase();
 	table = $('#companyStartTableBody');
 	tr = table.children('tr');
@@ -148,42 +140,13 @@ function searchCompany() {
 	// Loop through all table rows, and hide those who don't match the search query
 	for (i = 0; i < tr.length; i++) {
 		td = tr[i].children;
-		if (td) {
-			if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+		if (td[0]) {
+			company = getCompanyObject(td[0].innerHTML);
+			if (company.name.toUpperCase().indexOf(filter) > -1 || company.zipCode.toUpperCase().indexOf(filter) > -1) {
 				tr[i].style.display = '';
 			} else {
 				tr[i].style.display = 'none';
 			}
-		}
-	}
-}
-
-
-/** 
- * Search function for the company list.
- */
-function searchNews() {
-	// Declare variables
-	var filter, table, tr, td, i, j, show;
-	filter = $('#newsSearch').val().toUpperCase();
-	table = $('#table').children('tbody');
-	tr = table.children('tr');
-
-	// Loop through all table rows, and hide those who don't match the search query
-	for (i = 0; i < tr.length; i++) {
-		td = tr[i].children;
-		show = false;
-		for (j = 0; j < td.length; j++) {
-			if (td[j]) {
-				if (td[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
-					show = true;
-				}
-			}
-		}
-		if (show) {
-			tr[i].style.display = '';
-		} else {
-			tr[i].style.display = 'none';
 		}
 	}
 }
