@@ -71,7 +71,7 @@ exports.init = function(app, producer, mongodb) {
 			var key = searchName.replace(/\./g).trim();
 
 			//Store collection in array
-			var document = {
+			var doc = {
 				name: req.body.name,
 				searchName: searchName,
 				key: key,
@@ -92,7 +92,7 @@ exports.init = function(app, producer, mongodb) {
 						}
 					});
 				}
-				collection.insert(document, function(err, records) {});
+				collection.insert(doc, function(err, records) {});
 				var msg = [{
 					topic: 'reload',
 					messages: 'company added',
