@@ -62,14 +62,17 @@ function postUrls() {
 	});
 }
 
-function deleteCompany() {
+function deleteCompany(company, zipCode) {
 	$.ajax({
 		type: 'DELETE',
 		url: '/api/company',
-		data: '',
-		success: reloadCompanies(function() {
-			showAlert(" deleted!", Level.Danger, 5000);
-		}),
+		data: '{"name":"' + company + '", "zipCode":"' + zipCode + '"}',
+		success: function(data) {
+			$.get("/api/company", function(data) {
+				readData(data);
+				showAlert(company + " deleted!", Level.Danger);
+			});
+		},
 		contentType: 'application/json'
 	});
 }
