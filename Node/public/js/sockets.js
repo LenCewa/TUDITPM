@@ -6,7 +6,7 @@
  * 
  * @author       Yannick Pferr <yannick.pferr@stud.tu-darmstadt.de>
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      3.1
+ * @version      5.0
  *
  */
 var socket = io();
@@ -14,14 +14,12 @@ var connected = true;
 socket.on('redis', function(msg){
 	if (msg === 'Redis unavailable'){
 		if (connected){
-			$('#alerts').append($('<div>').addClass('alert alert-danger alert-dismissible').attr('role', 'alert').text(msg));
+			showAlert(msg, Level.Danger);
 		}
 		connected = false;
 	} else {
 		if (!connected){
-			$('#alerts').empty();
-			$('#alerts').append($('<div>').addClass('alert alert-success alert-dismissible').attr('role', 'alert').text('Redis reconnected'));
-			// TODO: Per Timer ausblenden
+			showAlert('Redis reconnected', Level.Success, 2000);
 		}
 		connected = true;
 	}

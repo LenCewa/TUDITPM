@@ -44,7 +44,7 @@ function postUrls() {
 		data: '{"name":"' + $('#companyName').val() + '", "zipCode":"' + $('#zipCode').val() + '"}',
 		success: reloadCompanies(function() {
 			createTable();
-			showAlert($('#companyName').val() + " added!", Level.Success, 2000);
+			showAlert($('#companyName').val() + " hinzugefügt!", Level.Success, 2000);
 		}),
 		statusCode: {
 			400: function(error) {
@@ -62,7 +62,7 @@ function deleteCompany(company, zipCode) {
 		data: '{"name":"' + company + '", "zipCode":"' + zipCode + '"}',
 		success: reloadCompanies(function() {
 			createTable();
-			showAlert(company + " deleted!", Level.Success, 2000);
+			showAlert(company + " gelöscht!", Level.Success, 2000);
 		}),
 		contentType: 'application/json'
 	});

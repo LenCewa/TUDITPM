@@ -72,7 +72,7 @@ function postKeyword(category) {
 		data: '{"keyword":"' + $('#' + category).val() + '", "category":"' + category + '"}',
 		success: function(data) {
 			$.get("/api/keywords", function(data) {
-				showAlert($('#' + category).val() + " added!", Level.Success, 2000);
+				showAlert($('#' + category).val() + " hinzugefügt!", Level.Success, 2000);
 				localData = data;
 				reloadKeywords();
 			});
@@ -80,14 +80,7 @@ function postKeyword(category) {
 		statusCode: {
 			400: function(error) {
 				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-			},
-			204: function() {
-				$.get("/api/keywords", function(data) {
-					localData = data;
-					reloadKeywords();
-					showAlert($('#' + category).val() + " hinzugefügt!", Level.Success, 2000);
-				});
-			},
+			}
 		},
 		contentType: 'application/json'
 	});
