@@ -24,6 +24,8 @@ var Level = {
  *
  */
 function showAlert(msg, type, timeout) {
+	$('#alerts').empty();
+	
 	if (timeout !== undefined){
 		$('#alerts').append('<div id="alertdiv" class="alert ' +  type + '"><strong>' + msg + '</strong></div>');
 		setTimeout(function(){$('#alerts').empty();}, timeout);

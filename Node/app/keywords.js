@@ -167,28 +167,22 @@ module.exports = function(app, producer, mongodb) {
 			}, {
 				upsert: true
 			}, function(err, records) {
-				if (err) {
-					return res.status(500).send({
-						err: {
-							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-							en: 'MongoDB connection could not be established',
-							err: null
-						}
+				console.log(records);
+				if (records.result.nModified > 0){
+					
+					var msg = [{
+						topic: 'reload',
+						messages: 'keyword removed',
+						partition: 0
+					}];
+					producer.send(msg, function(err, data) {
+						console.log(data);
 					});
+
+					return res.status(204).send();
 				}
 			});
-			var msg = [{
-				topic: 'reload',
-				messages: 'keyword removed',
-				partition: 0
-			}, ];
-			producer.send(msg, function(err, data) {
-				console.log(data);
-			});
-
-			return res.status(204).send();
 		});
-
 	});
 
 
@@ -224,26 +218,20 @@ module.exports = function(app, producer, mongodb) {
 			collection.remove({
 				category: req.body.category
 			}, function(err, result) {
-				if (err) {
-					return res.status(500).send({
-						err: {
-							de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-							en: 'MongoDB connection could not be established',
-							err: null
-						}
+				if (result.result.n > 0){
+					
+					var msg = [{
+						topic: 'reload',
+						messages: 'category removed',
+						partition: 0
+					}];
+					producer.send(msg, function(err, data) {
+						console.log(data);
 					});
+
+					return res.status(204).send();
 				}
 			});
-			var msg = [{
-				topic: 'reload',
-				messages: 'category removed',
-				partition: 0
-			}, ];
-			producer.send(msg, function(err, data) {
-				console.log(data);
-			});
-
-			return res.status(204).send();
 		});
 
 	});

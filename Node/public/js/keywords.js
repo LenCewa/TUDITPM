@@ -98,15 +98,32 @@ function addCategory() {
 	reloadKeywords();
 }
 
-function itemToDelete(data) {
+function keywordToDelete(keyword, category) {
 	$.ajax({
 		type: 'DELETE',
-		url: '/api/keywords',
-		data: '',
-		success: function(data) {
+		url: '/api/deleteKeyword',
+		data: '{"keyword":"' + keyword + '", "category":"' + category + '"}',
+		success: function() {
 			$.get("/api/keywords", function(data) {
-				showAlert(" deleted!", Level.Danger);
-				reloadKeywords(data);
+				localData = data;
+				reloadKeywords();
+				showAlert(keyword + " deleted!", Level.Danger);
+			});
+		},
+		contentType: 'application/json'
+	});
+}
+
+function categoryToDelete(category) {
+	$.ajax({
+		type: 'DELETE',
+		url: '/api/deleteCategory',
+		data: '{"category":"' + category + '"}',
+		success: function() {
+			$.get("/api/keywords", function(data) {
+				localData = data;
+				reloadKeywords();
+				showAlert("Kategorie " + category + " deleted!", Level.Danger);
 			});
 		},
 		contentType: 'application/json'
