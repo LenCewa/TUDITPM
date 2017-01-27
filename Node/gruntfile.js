@@ -27,7 +27,8 @@ module.exports = function(grunt) {
 					'Level': false,
 					'showAlert': false,
 					'companies': false,
-					'getCompanyObject': false
+					'getCompanyObject': false,
+					'reloadCompanies': false
 				}
 			},
 			all: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js', 'app/**/*.js', 'Gruntfile.js']

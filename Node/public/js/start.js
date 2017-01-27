@@ -17,6 +17,7 @@ if (!selectedCompanies) {
 
 var showAllCompanies = false;
 var news;
+var firstDataLoad = true;
 
 function createTable() {
 	var data = [];
@@ -42,7 +43,14 @@ function createTable() {
 		data = news;
 	}
 
-	$('#table').bootstrapTable('load', data);
+	if (firstDataLoad) {
+		$('#table').bootstrapTable({
+			data: data
+		});
+		firstDataLoad = false;
+	} else {
+		$('#table').bootstrapTable('load', data);
+	}
 }
 
 function reloadData() {

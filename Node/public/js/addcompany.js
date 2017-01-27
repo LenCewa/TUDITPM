@@ -8,59 +8,39 @@
  * 
  * @version      5.0
  */
-var db = {
-	loadData: function(filter) {
-		return $.grep(this.clients, function(client) {
-			return (!filter.Unternehmen || client.Unternehmen.indexOf(filter.Unternehmen) > -1) && (!filter.Postleitzahl || client.Postleitzahl.indexOf(filter.Postleitzahl) > -1);
+var firstDataLoad = true;
+
+function createTable() {
+	var data = [];
+
+	// Declare variables
+	var filter, i, show;
+	filter = $('#search').val().toUpperCase().trim();
+
+	if (filter && filter !== '') {
+		// Loop through all table rows, and hide those who don't match the search query
+		for (i = 0; i < companies.length; i++) {
+			if ((companies[i].zipCode && companies[i].zipCode.toUpperCase().indexOf(filter) > -1) ||
+				(companies[i].name && companies[i].name.toUpperCase().indexOf(filter) > -1)) {
+				data.push(companies[i]);
+			}
+		}
+	} else {
+		data = companies;
+	}
+	if (firstDataLoad) {
+		$('#table').bootstrapTable({
+			data: data
 		});
+		firstDataLoad = false;
+	} else {
+		$('#table').bootstrapTable('load', data);
 	}
-};
-
-function readData(data) {
-	db.clients = [];
-	for (var i = 0; i < data.length; i++) {
-		var element = {};
-		element.Postleitzahl = data[i].zipCode;
-		element.Unternehmen = data[i].name;
-		db.clients.push(element);
-	}
-	$("#jsGrid").jsGrid({
-		height: "auto",
-		width: "100%",
-
-		filtering: true,
-		sorting: true,
-		autoload: true,
-
-		paging: true,
-		pageIndex: 1,
-		pageSize: 20,
-		pageButtonCount: 5,
-		pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} von {pageCount}",
-		pagePrevText: "Zurück",
-		pageNextText: "Weiter",
-		pageFirstText: "Erste",
-		pageLastText: "Letzte",
-		pageNavigatorNextText: "...",
-		pageNavigatorPrevText: "...",
-
-		controller: db,
-
-		fields: [{
-			name: "Unternehmen",
-			type: "textarea",
-			width: 150
-		}, {
-			name: "Postleitzahl",
-			type: "textarea",
-			width: 150
-		}, {
-			type: "control"
-		}]
-	});
 }
 
-
+function companyDataLoaded() {
+	createTable();
+}
 
 /**
  * Sends the company name and zip-code given in the input fields to the server.
@@ -70,12 +50,9 @@ function postUrls() {
 		type: 'POST',
 		url: '/api/company',
 		data: '{"name":"' + $('#companyName').val() + '", "zipCode":"' + $('#zipCode').val() + '"}',
-		success: function(data) {
-			$.get("/api/company", function(data) {
-				readData(data);
-				showAlert($('#companyName').val() + " added!", Level.Success, 2000);
-			});
-		},
+		success: reloadCompanies(function() {
+			showAlert($('#companyName').val() + " added!", Level.Success, 2000);
+		}),
 		statusCode: {
 			400: function(error) {
 				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
@@ -90,12 +67,9 @@ function deleteCompany() {
 		type: 'DELETE',
 		url: '/api/company',
 		data: '',
-		success: function(data) {
-			$.get("/api/company", function(data) {
-				readData(data);
-				showAlert(" deleted!", Level.Danger, 5000);
-			});
-		},
+		success: reloadCompanies(function() {
+			showAlert(" deleted!", Level.Danger, 5000);
+		}),
 		contentType: 'application/json'
 	});
 }
