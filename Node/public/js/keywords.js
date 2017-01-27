@@ -22,7 +22,7 @@ function reloadKeywords() {
 	var maxEntries = 0;
 	if (localData) {
 		for (i = 0; i < localData.length; i++) {
-			header += '<th>' + localData[i].category + '</th>';
+			header += '<th>' + localData[i].category + '<button class="btn btn-danger pull-right" onClick="categoryToDelete(\'' + localData[i].category + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>';
 			searchBar += '<td><div class="input-group"><input class="form-control" type="text" ID="' + localData[i].category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + localData[i].category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
 			if (localData[i].keywords) {
 				if (localData[i].keywords.length > maxEntries) {
@@ -36,12 +36,12 @@ function reloadKeywords() {
 		for (i = 0; i < localData.length; i++) {
 			var category = localData[i];
 			if (category.keywords) {
-				for (j = 0; j < maxEntries ; j++) {
+				for (j = 0; j < maxEntries; j++) {
 					if (!mapping[j]) {
 						mapping[j] = '<tr>';
 					}
 					if (category.keywords[j]) {
-						mapping[j] += '<td>' + category.keywords[j] + '</td>';
+						mapping[j] += '<td>' + category.keywords[j] + '<button class="btn btn-danger pull-right" onClick="keywordToDelete(\'' + category.category + '\',\'' + category.keywords[j] + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></td>';
 					} else {
 						mapping[j] += '<td></td>';
 					}
@@ -98,17 +98,19 @@ function addCategory() {
 	reloadKeywords();
 }
 
-function keywordToDelete(keyword, category) {
+function keywordToDelete(category, keyword) {
 	$.ajax({
 		type: 'DELETE',
 		url: '/api/deleteKeyword',
 		data: '{"keyword":"' + keyword + '", "category":"' + category + '"}',
-		success: function() {
-			$.get("/api/keywords", function(data) {
-				localData = data;
-				reloadKeywords();
-				showAlert(keyword + " deleted!", Level.Danger);
-			});
+		statusCode: {
+			204: function() {
+				$.get("/api/keywords", function(data) {
+					localData = data;
+					reloadKeywords();
+					showAlert(keyword + " gelöscht!", Level.Success, 1000);
+				});
+			},
 		},
 		contentType: 'application/json'
 	});
@@ -119,12 +121,14 @@ function categoryToDelete(category) {
 		type: 'DELETE',
 		url: '/api/deleteCategory',
 		data: '{"category":"' + category + '"}',
-		success: function() {
-			$.get("/api/keywords", function(data) {
-				localData = data;
-				reloadKeywords();
-				showAlert("Kategorie " + category + " deleted!", Level.Danger);
-			});
+		statusCode: {
+			204: function() {
+				$.get("/api/keywords", function(data) {
+					localData = data;
+					reloadKeywords();
+					showAlert("Kategorie " + category + " gelöscht!", Level.Success, 1000);
+				});
+			},
 		},
 		contentType: 'application/json'
 	});

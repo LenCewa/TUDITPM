@@ -17,17 +17,16 @@ function createTable() {
 	var filter, i, show;
 	filter = $('#search').val().toUpperCase().trim();
 
-	if (filter && filter !== '') {
-		// Loop through all table rows, and hide those who don't match the search query
-		for (i = 0; i < companies.length; i++) {
-			if ((companies[i].zipCode && companies[i].zipCode.toUpperCase().indexOf(filter) > -1) ||
-				(companies[i].name && companies[i].name.toUpperCase().indexOf(filter) > -1)) {
-				data.push(companies[i]);
-			}
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < companies.length; i++) {
+		if ((companies[i].zipCode && companies[i].zipCode.toUpperCase().indexOf(filter) > -1) ||
+			(companies[i].name && companies[i].name.toUpperCase().indexOf(filter) > -1) ||
+			(filter && filter !== '')) {
+			data.push(companies[i]);
+			data[i].button = '<button class="btn btn-danger pull-right" onClick="deleteCompany(\'' + companies[i].name + '\',\'' + companies[i].zipCode + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
 		}
-	} else {
-		data = companies;
 	}
+
 	if (firstDataLoad) {
 		$('#table').bootstrapTable({
 			data: data
@@ -51,6 +50,7 @@ function postUrls() {
 		url: '/api/company',
 		data: '{"name":"' + $('#companyName').val() + '", "zipCode":"' + $('#zipCode').val() + '"}',
 		success: reloadCompanies(function() {
+			createTable();
 			showAlert($('#companyName').val() + " added!", Level.Success, 2000);
 		}),
 		statusCode: {
@@ -67,12 +67,10 @@ function deleteCompany(company, zipCode) {
 		type: 'DELETE',
 		url: '/api/company',
 		data: '{"name":"' + company + '", "zipCode":"' + zipCode + '"}',
-		success: function(data) {
-			$.get("/api/company", function(data) {
-				readData(data);
-				showAlert(company + " deleted!", Level.Danger);
-			});
-		},
+		success: reloadCompanies(function() {
+			createTable();
+			showAlert(company + " deleted!", Level.Success, 2000);
+		}),
 		contentType: 'application/json'
 	});
 }

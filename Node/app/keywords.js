@@ -167,9 +167,7 @@ module.exports = function(app, producer, mongodb) {
 			}, {
 				upsert: true
 			}, function(err, records) {
-				console.log(records);
-				if (records.result.nModified > 0){
-					
+				if (records.result.nModified > 0) {
 					var msg = [{
 						topic: 'reload',
 						messages: 'keyword removed',
@@ -218,8 +216,8 @@ module.exports = function(app, producer, mongodb) {
 			collection.remove({
 				category: req.body.category
 			}, function(err, result) {
-				if (result.result.n > 0){
-					
+				console.log(result.result.n);
+				if (result.result.n > 0) {
 					var msg = [{
 						topic: 'reload',
 						messages: 'category removed',
