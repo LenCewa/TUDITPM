@@ -18,6 +18,8 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bson.Document;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
@@ -44,6 +46,7 @@ public class ProducerRSSatOM extends Thread {
 		this.dbname = dbname;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
@@ -131,9 +134,19 @@ public class ProducerRSSatOM extends Thread {
 						JSONObject json = new JSONObject();
 						boolean companyFound = false;
 						for (Document company : companies) {
-							if (solr.search("\"" + company.getString("searchName") + "\"", id)) {
+							ArrayList<String> searchTerms = (ArrayList<String>) company
+									.get("searchTerms");
+							String searchString = "\""
+									+ company.getString("searchName") + "\"";
+							if (searchTerms != null) {
+								for (String term : searchTerms) {
+									searchString += " \"" + term + "\"";
+								}
+							}
+							if (solr.search(searchString, id)) {
 								companyFound = true;
-								json.put("searchName", company.getString("searchName"));
+								json.put("searchName",
+										company.getString("searchName"));
 								json.put("companyKey", company.getString("key"));
 								json.put("company", company.getString("name"));
 								json.put("source", "rss");
@@ -141,6 +154,13 @@ public class ProducerRSSatOM extends Thread {
 								json.put("title", title);
 								json.put("text", text);
 								json.put("id", id);
+								JSONArray JSONsearchTerms = new JSONArray();
+								if (searchTerms != null) {
+									for (String term : searchTerms) {
+										JSONsearchTerms.put(term);
+									}
+								}
+								json.put("searchTerms", JSONsearchTerms);
 								if (entry.getPublishedDate() != null) {
 									json.put("date", entry.getPublishedDate());
 								} else {

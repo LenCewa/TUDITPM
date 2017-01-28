@@ -3,6 +3,7 @@ package TUDITPM.Kafka;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -10,6 +11,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.Document;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,6 +47,7 @@ public class Consumer extends Thread {
 	/**
 	 * Gets called on start of the Thread
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
@@ -101,9 +104,24 @@ public class Consumer extends Thread {
 				String id = json.getString("id");
 
 				for (String keyword : keywords) {
-
-					if (solr.search("\"" + json.getString("searchName")
-							+ " " + keyword + "\"" + "~" + PROXIMITY, id)) {
+					boolean found = false;
+					try{
+						JSONArray searchTerms = json.getJSONArray("searchTerms");
+					
+					if(solr.search("\"" + json.getString("searchName")
+							+ " " + keyword + "\"" + "~" + PROXIMITY, id)){
+						found = true;
+					}
+					for(Object term : searchTerms.toList()){
+						if(solr.search("\"" + term
+								+ " " + keyword + "\"" + "~" + PROXIMITY, id)){
+							found = true;
+							break;
+						}
+					}}catch(JSONException e){
+						System.out.println("skipped");
+					}
+					if (found) {
 						String text = json.getString("text");
 						String link = json.getString("link");
 						String date = json.getString("date");

@@ -1,5 +1,6 @@
 package TUDITPM.Kafka;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -38,6 +39,7 @@ public class ProducerTwitterStreamingAPI extends Thread {
 	/**
 	 * Gets called on start of the Thread
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
@@ -92,16 +94,23 @@ public class ProducerTwitterStreamingAPI extends Thread {
 			MongoDBConnector config = new MongoDBConnector(
 					PropertyLoader.getPropertyValue(PropertyFile.database,
 							"config.name"));
-			
+
 			LinkedList<Document> companies = new LinkedList<>();
 			LinkedList<String> searchNames = new LinkedList<>();
 			for (Document doc : config.getCollection("companies").find()) {
 				companies.add(doc);
+				ArrayList<String> searchTerms = (ArrayList<String>) doc
+						.get("searchTerms");
 				searchNames.add(doc.getString("searchName"));
+				if (searchTerms != null) {
+					searchNames.addAll(searchTerms);
+				}
 			}
 
 			// Fetches Tweets that contain specified keywords
 			hosebirdEndpoint.trackTerms(searchNames);
+			LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+					"Started tracking terms: " + searchNames.toString());
 			builder.connect();
 
 			final int abortSize = Integer.parseInt(PropertyLoader
@@ -118,9 +127,19 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					String id = solr.add(text);
 					boolean companyFound = false;
 					for (Document company : companies) {
-						if (solr.search("\"" + company.getString("searchName") + "\"", id)) {
+						ArrayList<String> searchTerms = (ArrayList<String>) company
+								.get("searchTerms");
+						String searchString = "\""
+								+ company.getString("searchName") + "\"";
+						if (searchTerms != null) {
+							for (String term : searchTerms) {
+								searchString += " \"" + term + "\"";
+							}
+						}
+						if (solr.search(searchString, id)) {
 							companyFound = true;
-							json.put("searchName", company.getString("searchName"));
+							json.put("searchName",
+									company.getString("searchName"));
 							json.put("companyKey", company.getString("key"));
 							json.put("company", company.getString("name"));
 							json.put("source", "twitter");
