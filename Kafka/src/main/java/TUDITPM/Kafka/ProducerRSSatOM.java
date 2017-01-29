@@ -34,7 +34,7 @@ import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
  * @version 5.1
  */
 public class ProducerRSSatOM extends ProducerKafka {
-	
+
 	private String dbname;
 	private MongoDBConnector mongo;
 	private ArrayList<String> allFeeds;
@@ -68,10 +68,10 @@ public class ProducerRSSatOM extends ProducerKafka {
 
 	@Override
 	public void initializeNeededData() {
-		
+
 		mongo = new MongoDBConnector(dbname);
 		allFeeds = loadFeedSources();
-		
+
 		for (Document doc : config.getCollection("companies").find()) {
 			companies.add(doc);
 		}
@@ -80,7 +80,7 @@ public class ProducerRSSatOM extends ProducerKafka {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void runRoutine() {
-		
+
 		for (Document doc : mongo.getCollection("rss").find()) {
 			visited.add(doc.getString("link"));
 		}
@@ -100,7 +100,7 @@ public class ProducerRSSatOM extends ProducerKafka {
 			} catch (FeedException e) {
 				e.printStackTrace();
 			}
-			
+
 			int found = 0;
 			int skipped = 0;
 

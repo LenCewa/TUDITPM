@@ -32,21 +32,18 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @version 5.1
  */
 public class ProducerTwitterStreamingAPI extends ProducerKafka {
-	
+
 	private BlockingQueue<String> msgQueue;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initializeNeededData() {
 		// TODO Auto-generated method stub
 		Authentication auth = null;
-		auth = new OAuth1(PropertyLoader.getPropertyValue(
-				PropertyFile.credentials, "OAUTHCONSUMERKEY"),
-				PropertyLoader.getPropertyValue(PropertyFile.credentials,
-						"OAUTHCONSUMERSECRET"),
-				PropertyLoader.getPropertyValue(PropertyFile.credentials,
-						"OAUTHACCESSTOKEN"), PropertyLoader.getPropertyValue(
-						PropertyFile.credentials, "OAUTHACCESSTOKENSECRET"));
+		auth = new OAuth1(PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERKEY"),
+				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERSECRET"),
+				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKEN"),
+				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKENSECRET"));
 
 		msgQueue = new LinkedBlockingQueue<String>(100000);
 
@@ -54,33 +51,29 @@ public class ProducerTwitterStreamingAPI extends ProducerKafka {
 
 		// Fetches Tweets from specific Users with their User Id
 		// hosebirdEndpoint.followings(followings);
-		Client builder = new ClientBuilder().hosts(Constants.STREAM_HOST)
-				.authentication(auth).endpoint(hosebirdEndpoint)
-				.processor(new StringDelimitedProcessor(msgQueue)).build();
-		
+		Client builder = new ClientBuilder().hosts(Constants.STREAM_HOST).authentication(auth)
+				.endpoint(hosebirdEndpoint).processor(new StringDelimitedProcessor(msgQueue)).build();
 
-			LinkedList<String> searchNames = new LinkedList<>();
-			for (Document doc : config.getCollection("companies").find()) {
-				companies.add(doc);
-				ArrayList<String> searchTerms = (ArrayList<String>) doc
-						.get("searchTerms");
-				searchNames.add(doc.getString("searchName"));
-				if (searchTerms != null) {
-					searchNames.addAll(searchTerms);
-				}
+		LinkedList<String> searchNames = new LinkedList<>();
+		for (Document doc : config.getCollection("companies").find()) {
+			companies.add(doc);
+			ArrayList<String> searchTerms = (ArrayList<String>) doc.get("searchTerms");
+			searchNames.add(doc.getString("searchName"));
+			if (searchTerms != null) {
+				searchNames.addAll(searchTerms);
 			}
+		}
 
-			// Fetches Tweets that contain specified keywords
-			hosebirdEndpoint.trackTerms(searchNames);
-			LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-					"Started tracking terms: " + searchNames.toString());
-			builder.connect();
+		// Fetches Tweets that contain specified keywords
+		hosebirdEndpoint.trackTerms(searchNames);
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO, "Started tracking terms: " + searchNames.toString());
+		builder.connect();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void runRoutine() {
-		
+
 		String tweet = null;
 		try {
 			tweet = msgQueue.take().trim();
@@ -90,10 +83,8 @@ public class ProducerTwitterStreamingAPI extends ProducerKafka {
 			String id = solr.add(text);
 			boolean companyFound = false;
 			for (Document company : companies) {
-				ArrayList<String> searchTerms = (ArrayList<String>) company
-						.get("searchTerms");
-				String searchString = "\""
-						+ company.getString("searchName") + "\"";
+				ArrayList<String> searchTerms = (ArrayList<String>) company.get("searchTerms");
+				String searchString = "\"" + company.getString("searchName") + "\"";
 				if (searchTerms != null) {
 					for (String term : searchTerms) {
 						searchString += " \"" + term + "\"";
@@ -101,23 +92,18 @@ public class ProducerTwitterStreamingAPI extends ProducerKafka {
 				}
 				if (solr.search(searchString, id)) {
 					companyFound = true;
-					json.put("searchName",
-							company.getString("searchName"));
+					json.put("searchName", company.getString("searchName"));
 					json.put("companyKey", company.getString("key"));
 					json.put("company", company.getString("name"));
 					json.put("source", "twitter");
 					json.put("text", text);
-					json.put("date",
-							JSONrawdata.getString("created_at"));
-					json.put("link", "https://twitter.com/statuses/"
-							+ JSONrawdata.getString("id_str"));
+					json.put("date", JSONrawdata.getString("created_at"));
+					json.put("link", "https://twitter.com/statuses/" + JSONrawdata.getString("id_str"));
 					json.put("id", id);
 
-					LoggingWrapper.log(this.getClass().getName(),
-							Level.INFO, json.toString());
+					LoggingWrapper.log(this.getClass().getName(), Level.INFO, json.toString());
 
-					producer.send(new ProducerRecord<String, String>(
-							"twitter", json.toString()));
+					producer.send(new ProducerRecord<String, String>("twitter", json.toString()));
 				}
 			}
 			if (!companyFound)
