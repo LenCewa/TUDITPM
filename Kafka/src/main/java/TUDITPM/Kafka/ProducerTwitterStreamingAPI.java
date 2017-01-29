@@ -36,6 +36,7 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
  * @version 5.1
  */
 public class ProducerTwitterStreamingAPI extends Thread {
+	
 	/**
 	 * Gets called on start of the Thread
 	 */
@@ -64,9 +65,6 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		props.put("value.serializer", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "value.serializer"));
 
-		// Create the producer
-		Producer<String, String> producer = null;
-
 		// Load configuration for hbc from config files
 		Authentication auth = null;
 		auth = new OAuth1(PropertyLoader.getPropertyValue(
@@ -86,7 +84,11 @@ public class ProducerTwitterStreamingAPI extends Thread {
 		Client builder = new ClientBuilder().hosts(Constants.STREAM_HOST)
 				.authentication(auth).endpoint(hosebirdEndpoint)
 				.processor(new StringDelimitedProcessor(msgQueue)).build();
+		
 		Solr solr = new Solr();
+		
+		// Create the producer
+		Producer<String, String> producer = null;
 
 		try {
 			producer = new KafkaProducer<String, String>(props);
@@ -113,14 +115,11 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					"Started tracking terms: " + searchNames.toString());
 			builder.connect();
 
-			final int abortSize = Integer.parseInt(PropertyLoader
-					.getPropertyValue(PropertyFile.kafka, "abort.size"));
+			while(true) {
 
-			// Stop at abort size
-			for (int i = 0; i < abortSize; i++) {
-
+				String tweet = null;
 				try {
-					String tweet = msgQueue.take().trim();
+					tweet = msgQueue.take().trim();
 					JSONObject JSONrawdata = new JSONObject(tweet);
 					JSONObject json = new JSONObject();
 					String text = JSONrawdata.getString("text");
@@ -163,16 +162,14 @@ public class ProducerTwitterStreamingAPI extends Thread {
 					e.printStackTrace();
 					System.out.println("Couldnt fetch tweets.");
 				} catch (JSONException e) {
-					System.out.println("Tweet limit reached.");
+					LoggingWrapper.log(this.getClass().getName(), Level.WARNING, tweet);
 				}
 			}
-
-			System.out.println("finished");
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			producer.close();
+			if(producer != null)
+				producer.close();
 			builder.stop();
 		}
 	}

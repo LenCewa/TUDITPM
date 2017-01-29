@@ -2,11 +2,16 @@ package TUDITPM.Kafka;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Properties;
+import java.util.logging.Level;
 
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
@@ -33,10 +38,10 @@ public class ConsumerReload extends Thread {
 				
 		consumer = new Consumer(dbname);
 		consumer.start();
-		
+	
 		producerTwitter = new ProducerTwitterStreamingAPI();
 		producerTwitter.start();
-		
+	
 		producerRss = new ProducerRSSatOM("checkeddata_dev");
 		producerRss.start();
 	}
@@ -65,14 +70,30 @@ public class ConsumerReload extends Thread {
 
 		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(
 				props);
-		kafkaConsumer.subscribe(Arrays.asList("reload"));
+		kafkaConsumer.subscribe(Arrays.asList("reload"), new ConsumerRebalanceListener() {
+			
+			@Override
+			public void onPartitionsRevoked(Collection<TopicPartition> arg0) {
 
+			}
+			
+			@Override
+			public void onPartitionsAssigned(Collection<TopicPartition> arg0) {
+				// Lets consumer jump to the latest offset
+				// so it doesnt consume messages published while it wasnt running
+				kafkaConsumer.seekToEnd(arg0);
+			}
+		});
 
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
-			for (ConsumerRecord<String, String> record : records) {
-				if(record.value().equals("company added")){
-					
+			for (ConsumerRecord<String, String> record : records) {		
+				
+				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+						record.value() + ", reloading!");
+				
+				if(record.value().equals("company added") || record.value().equals("company removed")){
+				
 					try {
 						new PropertyLoader();
 					} catch (IOException e) {
@@ -89,21 +110,20 @@ public class ConsumerReload extends Thread {
 					producerTwitter.start();
 					producerRss.start();
 				}
-				else if(record.value().equals("keyword added")){
+				else if(record.value().equals("keyword added") || record.value().equals("keyword removed")){
 					consumer.interrupt();
 					
 					consumer = new Consumer(dbname);
 					
 					consumer.start();
 				}
-				else if(record.value().equals("rss url added")){
+				else if(record.value().equals("rss url added") || record.value().equals("rss url removed")){
 					producerRss.interrupt();
 					
 					producerRss = new ProducerRSSatOM("checkeddata_dev");
 					
 					producerRss.start();
 				}
-				System.err.println(record.value() + ", reloading");
 			}
 		}
 	}

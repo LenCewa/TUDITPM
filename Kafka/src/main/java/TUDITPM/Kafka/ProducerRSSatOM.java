@@ -28,6 +28,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 
@@ -49,41 +50,25 @@ public class ProducerRSSatOM extends Thread {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-				"Thread started");
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO, "Thread started");
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
 		MongoDBConnector config = new MongoDBConnector(
-				PropertyLoader.getPropertyValue(PropertyFile.database,
-						"config.name"));
+				PropertyLoader.getPropertyValue(PropertyFile.database, "config.name"));
 
 		HashSet<String> visited = new HashSet<>();
 
-		for (Document doc : mongo.getCollection("rss").find()) {
-			visited.add(doc.getString("link"));
-		}
-
 		// set configs for kafka
 		Properties props = new Properties();
-		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "bootstrap.servers"));
-		props.put("acks",
-				PropertyLoader.getPropertyValue(PropertyFile.kafka, "acks"));
-		props.put("retries", Integer.parseInt(PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "retries")));
-		props.put("batch.size", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "batch.size")));
-		props.put("linger.ms", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "linger.ms")));
-		props.put("buffer.memory", Integer.parseInt(PropertyLoader
-				.getPropertyValue(PropertyFile.kafka, "buffer.memory")));
-		props.put("key.serializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "key.serializer"));
-		props.put("value.serializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "value.serializer"));
-
-		// Create the producer
-		Producer<String, String> producer = null;
+		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(PropertyFile.kafka, "bootstrap.servers"));
+		props.put("acks", PropertyLoader.getPropertyValue(PropertyFile.kafka, "acks"));
+		props.put("retries", Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "retries")));
+		props.put("batch.size", Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "batch.size")));
+		props.put("linger.ms", Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "linger.ms")));
+		props.put("buffer.memory",
+				Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.kafka, "buffer.memory")));
+		props.put("key.serializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "key.serializer"));
+		props.put("value.serializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "value.serializer"));
 
 		LinkedList<Document> companies = new LinkedList<>();
 		for (Document doc : config.getCollection("companies").find()) {
@@ -92,40 +77,46 @@ public class ProducerRSSatOM extends Thread {
 
 		Solr solr = new Solr();
 
+		// Create the producer
+		Producer<String, String> producer = new KafkaProducer<>(props);
+
 		ArrayList<String> allFeeds = loadFeedSources();
 
-		try {
-			producer = new KafkaProducer<>(props);
+		while (true) {
+
+			for (Document doc : mongo.getCollection("rss").find()) {
+				visited.add(doc.getString("link"));
+			}
 
 			for (int i = 0; i < allFeeds.size(); i++) {
-				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-						"Reading RSS: " + allFeeds.get(i));
+				LoggingWrapper.log(this.getClass().getName(), Level.INFO, "Reading RSS: " + allFeeds.get(i));
 				SyndFeedInput input = new SyndFeedInput();
 				SyndFeed feed = null;
 				try {
 					feed = input.build(new XmlReader(new URL(allFeeds.get(i))));
 				} catch (IOException e) {
-					LoggingWrapper.log(getName(), Level.WARNING,
-							"Server returned HTTP response code: 403 for URL: "
-									+ allFeeds.get(i)
-									+ ", continuing with next url");
+					LoggingWrapper.log(getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: "
+							+ allFeeds.get(i) + ", continuing with next url");
 					continue;
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (FeedException e) {
+					e.printStackTrace();
 				}
+				
 				int found = 0;
 				int skipped = 0;
 
 				for (SyndEntry entry : feed.getEntries()) {
 					String title = entry.getTitle();
 					String link = entry.getLink();
-					if (!visited.contains(link)
-							&& entry.getDescription() != null) {
+					if (!visited.contains(link) && entry.getDescription() != null) {
 						found++;
 						String text = entry.getDescription().getValue();
 						String id = solr.add(title + " " + text);
 
 						// Checked here because of performance
-						if ((text.trim().equals("") || text == null)
-								&& (title.trim().equals("") || title == null)) {
+						if ((text.trim().equals("") || text == null) && (title.trim().equals("") || title == null)) {
 							solr.delete(id);
 							break;
 						} else if (text.trim().equals("") || text == null)
@@ -134,10 +125,8 @@ public class ProducerRSSatOM extends Thread {
 						JSONObject json = new JSONObject();
 						boolean companyFound = false;
 						for (Document company : companies) {
-							ArrayList<String> searchTerms = (ArrayList<String>) company
-									.get("searchTerms");
-							String searchString = "\""
-									+ company.getString("searchName") + "\"";
+							ArrayList<String> searchTerms = (ArrayList<String>) company.get("searchTerms");
+							String searchString = "\"" + company.getString("searchName") + "\"";
 							if (searchTerms != null) {
 								for (String term : searchTerms) {
 									searchString += " \"" + term + "\"";
@@ -145,8 +134,7 @@ public class ProducerRSSatOM extends Thread {
 							}
 							if (solr.search(searchString, id)) {
 								companyFound = true;
-								json.put("searchName",
-										company.getString("searchName"));
+								json.put("searchName", company.getString("searchName"));
 								json.put("companyKey", company.getString("key"));
 								json.put("company", company.getString("name"));
 								json.put("source", "rss");
@@ -166,11 +154,9 @@ public class ProducerRSSatOM extends Thread {
 								} else {
 									json.put("date", new Date().toString());
 								}
-								LoggingWrapper.log(this.getClass().getName(),
-										Level.INFO, json.toString());
+								LoggingWrapper.log(this.getClass().getName(), Level.INFO, json.toString());
 
-								producer.send(new ProducerRecord<String, String>(
-										"rss", json.toString()));
+								producer.send(new ProducerRecord<String, String>("rss", json.toString()));
 								System.out.println(json);
 							}
 						}
@@ -184,19 +170,15 @@ public class ProducerRSSatOM extends Thread {
 					}
 				}
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-						"Scanned " + found + " entries, skipped " + skipped
-								+ " entries");
+						"Scanned " + found + " entries, skipped " + skipped + " entries");
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 	}
 
 	private ArrayList<String> loadFeedSources() {
 		ArrayList<String> l = new ArrayList<>();
 		try {
-			FileInputStream in = new FileInputStream(new File(
-					"properties/feedsources"));
+			FileInputStream in = new FileInputStream(new File("properties/feedsources"));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
 			String line = null;
