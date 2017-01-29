@@ -93,14 +93,8 @@ public class ConsumerReload extends Thread {
 						e.printStackTrace();
 					}
 
-					producerTwitter.interrupt();
-					producerRss.interrupt();
-
-					producerTwitter = new ProducerTwitterStreamingAPI();
-					producerRss = new ProducerRSSatOM("checkeddata_dev");
-
-					producerTwitter.start();
-					producerRss.start();
+					producerTwitter.reload();
+					producerRss.reload();
 				} else if (record.value().equals("keyword added") || record.value().equals("keyword removed")
 						|| record.value().equals("category removed")) {
 					consumer.interrupt();
@@ -109,11 +103,7 @@ public class ConsumerReload extends Thread {
 
 					consumer.start();
 				} else if (record.value().equals("rss url added") || record.value().equals("rss url removed")) {
-					producerRss.interrupt();
-
-					producerRss = new ProducerRSSatOM("checkeddata_dev");
-
-					producerRss.start();
+					producerRss.reload();
 				}
 			}
 		}
