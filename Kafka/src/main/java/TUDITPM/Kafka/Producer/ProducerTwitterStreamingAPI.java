@@ -54,8 +54,7 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 				.endpoint(hosebirdEndpoint).processor(new StringDelimitedProcessor(msgQueue)).build();
 
 		LinkedList<String> searchNames = new LinkedList<>();
-		for (Document doc : config.getCollection("companies").find()) {
-			companies.add(doc);
+		for (Document doc : companies) {
 			ArrayList<String> searchTerms = (ArrayList<String>) doc.get("searchTerms");
 			searchNames.add(doc.getString("searchName"));
 			if (searchTerms != null) {
@@ -76,10 +75,8 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 			tweet = msgQueue.take().trim();
 			JSONObject json = new JSONObject(tweet);
 			String text = json.getString("text");
-			String id = solr.add(text);
-			
-			checkForCompany(id, "twitter", "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"));
 
+			checkForCompany("twitter", "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"), "");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			System.out.println("Couldnt fetch tweets.");

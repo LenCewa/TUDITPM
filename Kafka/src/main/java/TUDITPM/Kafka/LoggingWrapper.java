@@ -20,7 +20,6 @@ public class LoggingWrapper {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void log(String classname, Level level, String msg) {

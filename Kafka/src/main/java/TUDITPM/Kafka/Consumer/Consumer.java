@@ -3,7 +3,6 @@ package TUDITPM.Kafka.Consumer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -33,8 +32,8 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
 public class Consumer extends Thread {
 
 	private String dbname;
-	private final int PROXIMITY = Integer.parseInt(PropertyLoader
-			.getPropertyValue(PropertyFile.solr, "proximity"));
+	private final int PROXIMITY = Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.solr, "proximity"));
+	private final String groupId = "enhanced";
 
 	/**
 	 * Creates a new consumer for the given database name.
@@ -52,28 +51,19 @@ public class Consumer extends Thread {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-				"Thread started");
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO, "Thread started");
 
 		Properties props = new Properties();
-		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "bootstrap.servers"));
-		props.put("group.id", "group-2");
-		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "enable.auto.commit"));
-		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "auto.commit.interval.ms"));
-		props.put("auto.offset.reset", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "auto.offset.reset"));
-		props.put("session.timeout.ms", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "session.timeout.ms"));
-		props.put("key.deserializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "key.deserializer"));
-		props.put("value.deserializer", PropertyLoader.getPropertyValue(
-				PropertyFile.kafka, "value.deserializer"));
+		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(PropertyFile.kafka, "bootstrap.servers"));
+		props.put("group.id", groupId);
+		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(PropertyFile.kafka, "enable.auto.commit"));
+		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(PropertyFile.kafka, "auto.commit.interval.ms"));
+		props.put("auto.offset.reset", PropertyLoader.getPropertyValue(PropertyFile.kafka, "auto.offset.reset"));
+		props.put("session.timeout.ms", PropertyLoader.getPropertyValue(PropertyFile.kafka, "session.timeout.ms"));
+		props.put("key.deserializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "key.deserializer"));
+		props.put("value.deserializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "value.deserializer"));
 
-		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(
-				props);
+		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(props);
 		kafkaConsumer.subscribe(Arrays.asList("twitter", "rss"));
 
 		MongoDBConnector mongo = new MongoDBConnector(dbname);
