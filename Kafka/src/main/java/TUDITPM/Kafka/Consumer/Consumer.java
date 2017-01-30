@@ -1,14 +1,11 @@
 package TUDITPM.Kafka.Consumer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,136 +19,108 @@ import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
- * Listening to the twitter Stream and converting the given data to stream it to
- * spark.
+ * Listening to all topics searches the entries for keywords and saves them to
+ * the enhanced data database.
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 5.1
+ * @version 6.0
  */
-public class Consumer extends Thread {
-
-	private String dbname;
-	private final int PROXIMITY = Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.solr, "proximity"));
-	private final String groupId = "enhanced";
+public class Consumer extends AbstractConsumer {
+	private final int PROXIMITY = Integer.parseInt(PropertyLoader
+			.getPropertyValue(PropertyFile.solr, "proximity"));
+	private static final String groupId = "enhanced";
+	private MongoDBConnector mongo;
+	private LinkedList<String> keywords;
+	private RedisConnector redis;
+	private Solr solr;
 
 	/**
 	 * Creates a new consumer for the given database name.
 	 * 
-	 * @param dbname
-	 *            - the name of the database to which this consumer connects
+	 * @param env
+	 *            the name of the environment to use for the collection of
+	 *            already checked feed entries
 	 */
-	public Consumer(String dbname) {
-		this.dbname = dbname;
+	public Consumer(String env) {
+		super(groupId);
+		mongo = new MongoDBConnector("enhanceddata_" + env);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	void initializeNeededData() {
+		MongoDBConnector config = new MongoDBConnector(
+				PropertyLoader.getPropertyValue(PropertyFile.database,
+						"config.name"));
+		keywords = new LinkedList<>();
+		for (Document doc : config.getCollection("keywords").find()) {
+			keywords.addAll((ArrayList<String>) doc.get("keywords"));
+		}
+		redis = new RedisConnector();
+		solr = new Solr();
 	}
 
 	/**
 	 * Gets called on start of the Thread
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public void run() {
-		LoggingWrapper.log(this.getClass().getName(), Level.INFO, "Thread started");
+	public void runRoutine(JSONObject json) {
+		String id = json.getString("id");
 
-		Properties props = new Properties();
-		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(PropertyFile.kafka, "bootstrap.servers"));
-		props.put("group.id", groupId);
-		props.put("enable.auto.commit", PropertyLoader.getPropertyValue(PropertyFile.kafka, "enable.auto.commit"));
-		props.put("auto.commit.interval.ms", PropertyLoader.getPropertyValue(PropertyFile.kafka, "auto.commit.interval.ms"));
-		props.put("auto.offset.reset", PropertyLoader.getPropertyValue(PropertyFile.kafka, "auto.offset.reset"));
-		props.put("session.timeout.ms", PropertyLoader.getPropertyValue(PropertyFile.kafka, "session.timeout.ms"));
-		props.put("key.deserializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "key.deserializer"));
-		props.put("value.deserializer", PropertyLoader.getPropertyValue(PropertyFile.kafka, "value.deserializer"));
+		for (String keyword : keywords) {
+			boolean found = false;
+			try {
+				JSONArray searchTerms = json.getJSONArray("searchTerms");
 
-		KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(props);
-		kafkaConsumer.subscribe(Arrays.asList("twitter", "rss"));
-
-		MongoDBConnector mongo = new MongoDBConnector(dbname);
-		MongoDBConnector config = new MongoDBConnector(
-				PropertyLoader.getPropertyValue(PropertyFile.database,
-						"config.name"));
-
-		LinkedList<String> keywords = new LinkedList<>();
-		for (Document doc : config.getCollection("keywords").find()) {
-			keywords.addAll((ArrayList<String>)doc.get("keywords"));
-		}
-
-		RedisConnector redis = new RedisConnector();
-
-		Solr solr = new Solr();
-
-		while (true) {
-			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
-			for (ConsumerRecord<String, String> record : records) {
-				System.out.println("CONSUMER_ENHANCEDDATA: " + record.value());
-				// decode JSON String
-				JSONObject json = null;
-				try {
-					json = new JSONObject(record.value());
-				} catch (JSONException e) {
-					System.err
-							.println("Not a valid JSON Object, continuing...");
-					continue;
+				if (solr.search("\"" + json.getString("searchName") + " "
+						+ keyword + "\"" + "~" + PROXIMITY, id)) {
+					found = true;
 				}
-				String id = json.getString("id");
-
-				for (String keyword : keywords) {
-					boolean found = false;
-					try{
-						JSONArray searchTerms = json.getJSONArray("searchTerms");
-					
-					if(solr.search("\"" + json.getString("searchName")
-							+ " " + keyword + "\"" + "~" + PROXIMITY, id)){
+				for (Object term : searchTerms.toList()) {
+					if (solr.search("\"" + term + " " + keyword + "\"" + "~"
+							+ PROXIMITY, id)) {
 						found = true;
-					}
-					for(Object term : searchTerms.toList()){
-						if(solr.search("\"" + term
-								+ " " + keyword + "\"" + "~" + PROXIMITY, id)){
-							found = true;
-							break;
-						}
-					}}catch(JSONException e){
-						System.out.println("skipped");
-					}
-					if (found) {
-						String text = json.getString("text");
-						String link = json.getString("link");
-						String date = json.getString("date");
-						String company = json.getString("company");
-
-						// Create JSON object to store in redis
-						JSONObject redisJson = new JSONObject();
-						redisJson.append("id", id);
-						redisJson.append("text", text);
-						redisJson.append("link", link);
-						redisJson.append("date", date);
-						redisJson.append("company", company);
-						redisJson.append("keyword", keyword);
-
-						// Create mongoDB document to store in mongoDB
-						Document mongoDBdoc = new Document("text", text)
-								.append("link", link).append("date", date)
-								.append("company", company)
-								.append("keyword", keyword);
-						try {
-							String title = json.getString("title");
-							mongoDBdoc.append("title", title);
-							redisJson.append("title", title);
-						} catch (JSONException e) {
-							// title field is optional and not saved if not
-							// available
-						}
-						// Write to DB
-						// Remove points for the collection name, because
-						// they are not permitted in MongoDB
-						mongo.writeToDb(mongoDBdoc,
-								json.getString("companyKey"));
-						redis.appendJSONToList(json.getString("companyKey"),
-								redisJson);
+						break;
 					}
 				}
-				solr.delete(id);
+			} catch (JSONException e) {
+				System.out.println("skipped");
+			}
+			if (found) {
+				String text = json.getString("text");
+				String link = json.getString("link");
+				String date = json.getString("date");
+				String company = json.getString("company");
+
+				// Create JSON object to store in redis
+				JSONObject redisJson = new JSONObject();
+				redisJson.append("id", id);
+				redisJson.append("text", text);
+				redisJson.append("link", link);
+				redisJson.append("date", date);
+				redisJson.append("company", company);
+				redisJson.append("keyword", keyword);
+
+				// Create mongoDB document to store in mongoDB
+				Document mongoDBdoc = new Document("text", text)
+						.append("link", link).append("date", date)
+						.append("company", company).append("keyword", keyword);
+				try {
+					String title = json.getString("title");
+					mongoDBdoc.append("title", title);
+					redisJson.append("title", title);
+				} catch (JSONException e) {
+					// title field is optional and not saved if not
+					// available
+				}
+				// Write to DB
+				// Remove points for the collection name, because
+				// they are not permitted in MongoDB
+				mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
+				redis.appendJSONToList(json.getString("companyKey"), redisJson);
 			}
 		}
+		solr.delete(id);
 	}
 }

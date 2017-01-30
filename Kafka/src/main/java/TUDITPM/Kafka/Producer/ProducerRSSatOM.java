@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import org.bson.Document;
 
 import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -44,12 +45,12 @@ public class ProducerRSSatOM extends AbstractProducer {
 	/**
 	 * Constructor setting the database name.
 	 * 
-	 * @param dbname
-	 *            the name of the database to use for the collection of already
+	 * @param env
+	 *            the name of the environment to use for the collection of already
 	 *            checked feed entries
 	 */
-	public ProducerRSSatOM(String dbname) {
-		mongo = new MongoDBConnector(dbname);
+	public ProducerRSSatOM(String env) {
+		mongo = new MongoDBConnector("checkeddata_" + env);
 		for (Document doc : mongo.getCollection("rss").find()) {
 			visited.add(doc.getString("link"));
 		}
@@ -136,9 +137,9 @@ public class ProducerRSSatOM extends AbstractProducer {
 					String title = entry.getTitle();
 
 					if (entry.getPublishedDate() != null) {
-						checkForCompany("rss", link, text, entry.getPublishedDate().toString(), title);
+						checkForCompany(Topic.rss, link, text, entry.getPublishedDate().toString(), title);
 					} else {
-						checkForCompany("rss", link, text, (new Date()).toString(), title);
+						checkForCompany(Topic.rss, link, text, (new Date()).toString(), title);
 					}
 
 					visited.add(link);

@@ -29,21 +29,18 @@ import TUDITPM.Kafka.Producer.ProducerTwitterStreamingAPI;
  */
 public class ConsumerReload extends Thread {
 
-	String dbname;
 	Consumer consumer;
 	ProducerTwitterStreamingAPI producerTwitter;
 	ProducerRSSatOM producerRss;
 
-	public ConsumerReload(String dbname) {
-		this.dbname = dbname;
-
-		consumer = new Consumer(dbname);
+	public ConsumerReload(String env) {
+		consumer = new Consumer(env);
 		consumer.start();
 
 		producerTwitter = new ProducerTwitterStreamingAPI();
 		producerTwitter.start();
 
-		producerRss = new ProducerRSSatOM("checkeddata_dev");
+		producerRss = new ProducerRSSatOM(env);
 		producerRss.start();
 	}
 
@@ -101,7 +98,7 @@ public class ConsumerReload extends Thread {
 						|| record.value().equals("category removed")) {
 					consumer.interrupt();
 
-					consumer = new Consumer(dbname);
+					//consumer = new Consumer(env);
 
 					consumer.start();
 				} else if (record.value().equals("rss url added") || record.value().equals("rss url removed")) {

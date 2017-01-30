@@ -68,11 +68,11 @@ public class Main {
 		// Enable rawdata database
 		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {
 			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata enabled.");
-			new ConsumerMongoDB("rawdata_" + env).start();
+			new ConsumerMongoDB(env).start();
 		} else {
 			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata disabled.");
 		}
 		// Start the service
-		new ConsumerReload("enhanceddata_" + env).start();
+		new ConsumerReload(env).start();
 	}
 }

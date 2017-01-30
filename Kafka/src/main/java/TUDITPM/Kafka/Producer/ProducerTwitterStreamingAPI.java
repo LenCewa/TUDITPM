@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -76,7 +77,7 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 			JSONObject json = new JSONObject(tweet);
 			String text = json.getString("text");
 
-			checkForCompany("twitter", "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"), "");
+			checkForCompany(Topic.twitter, "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"), "");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			System.out.println("Couldnt fetch tweets.");

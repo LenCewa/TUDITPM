@@ -36,7 +36,7 @@ public class ConsumerMongoDB extends Thread {
 	 *            - the name of the database to which this consumer connects
 	 */
 	public ConsumerMongoDB(String dbname) {
-		this.dbname = dbname;
+		this.dbname = "rawdata_" + dbname;
 	}
 
 	/**
