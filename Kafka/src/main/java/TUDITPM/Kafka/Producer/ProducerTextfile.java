@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Producer;
 
 import java.io.IOException;
 import java.nio.file.Files;

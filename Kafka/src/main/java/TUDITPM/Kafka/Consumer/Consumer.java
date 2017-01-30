@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Consumer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,8 +15,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import TUDITPM.Kafka.DBConnectors.MongoDBConnector;
-import TUDITPM.Kafka.DBConnectors.RedisConnector;
+import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Connectors.MongoDBConnector;
+import TUDITPM.Kafka.Connectors.RedisConnector;
+import TUDITPM.Kafka.Connectors.Solr;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 

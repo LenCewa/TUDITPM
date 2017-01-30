@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Connectors;
 
 import java.io.IOException;
 import java.util.Date;

@@ -16,9 +16,7 @@ public class LoggingWrapper {
 	private static void ensureFileExists(String date) {
 		File logsDir = new File("logs/" + date);
 		try {
-			if (logsDir.mkdirs()) {
-				System.out.println("Log directory Created");
-			}
+			logsDir.mkdirs();	
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}

@@ -1,9 +1,8 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Consumer;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -13,8 +12,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 
+import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
+import TUDITPM.Kafka.Producer.ProducerRSSatOM;
+import TUDITPM.Kafka.Producer.ProducerTwitterStreamingAPI;
 
 /**
  * Listening to the twitter Stream and converting the given data to stream it to

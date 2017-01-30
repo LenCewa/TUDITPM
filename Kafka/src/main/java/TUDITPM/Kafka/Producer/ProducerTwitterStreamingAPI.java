@@ -1,4 +1,4 @@
-package TUDITPM.Kafka;
+package TUDITPM.Kafka.Producer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -6,10 +6,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Loading.PropertyFile;
+import TUDITPM.Kafka.Loading.PropertyLoader;
 
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
@@ -19,9 +22,6 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 
-import TUDITPM.Kafka.Loading.PropertyFile;
-import TUDITPM.Kafka.Loading.PropertyLoader;
-
 /**
  * Producer that listens to the twitter streaming API for given keywords and
  * pushes them to the kafka topic "twitter". Extends Thread so that it can run
@@ -29,16 +29,15 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 5.1
+ * @version 6.0
  */
-public class ProducerTwitterStreamingAPI extends ProducerKafka {
+public class ProducerTwitterStreamingAPI extends AbstractProducer {
 
 	private BlockingQueue<String> msgQueue;
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initializeNeededData() {
-		// TODO Auto-generated method stub
 		Authentication auth = null;
 		auth = new OAuth1(PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERKEY"),
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERSECRET"),
@@ -70,44 +69,17 @@ public class ProducerTwitterStreamingAPI extends ProducerKafka {
 		builder.connect();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void runRoutine() {
-
 		String tweet = null;
 		try {
 			tweet = msgQueue.take().trim();
-			JSONObject JSONrawdata = new JSONObject(tweet);
-			JSONObject json = new JSONObject();
-			String text = JSONrawdata.getString("text");
+			JSONObject json = new JSONObject(tweet);
+			String text = json.getString("text");
 			String id = solr.add(text);
-			boolean companyFound = false;
-			for (Document company : companies) {
-				ArrayList<String> searchTerms = (ArrayList<String>) company.get("searchTerms");
-				String searchString = "\"" + company.getString("searchName") + "\"";
-				if (searchTerms != null) {
-					for (String term : searchTerms) {
-						searchString += " \"" + term + "\"";
-					}
-				}
-				if (solr.search(searchString, id)) {
-					companyFound = true;
-					json.put("searchName", company.getString("searchName"));
-					json.put("companyKey", company.getString("key"));
-					json.put("company", company.getString("name"));
-					json.put("source", "twitter");
-					json.put("text", text);
-					json.put("date", JSONrawdata.getString("created_at"));
-					json.put("link", "https://twitter.com/statuses/" + JSONrawdata.getString("id_str"));
-					json.put("id", id);
+			
+			checkForCompany(id, "twitter", "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"));
 
-					LoggingWrapper.log(this.getClass().getName(), Level.INFO, json.toString());
-
-					producer.send(new ProducerRecord<String, String>("twitter", json.toString()));
-				}
-			}
-			if (!companyFound)
-				solr.delete(id);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			System.out.println("Couldnt fetch tweets.");
