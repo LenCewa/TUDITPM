@@ -96,11 +96,8 @@ public class ConsumerReload extends Thread {
 					producerRss.reload();
 				} else if (record.value().equals("keyword added") || record.value().equals("keyword removed")
 						|| record.value().equals("category removed")) {
-					consumer.interrupt();
-
-					//consumer = new Consumer(env);
-
-					consumer.start();
+					
+					consumer.reload();
 				} else if (record.value().equals("rss url added") || record.value().equals("rss url removed")) {
 					producerRss.reload();
 				}

@@ -35,7 +35,7 @@ abstract class AbstractProducer extends Thread {
 	/** The MongoDB connector instance for the configuration database */
 	private MongoDBConnector config;
 	/** The list of all companies from the configuration database. Initialized in {@link initialize} */
-	private LinkedList<Document> companies = new LinkedList<>();
+	LinkedList<Document> companies = new LinkedList<>();
 	/** flag to indicate re-initializing before the next run */
 	private boolean reload = false;
 

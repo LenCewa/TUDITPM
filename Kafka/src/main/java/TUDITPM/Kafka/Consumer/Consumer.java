@@ -36,11 +36,10 @@ public class Consumer extends AbstractConsumer {
 	private Solr solr;
 
 	/**
-	 * Creates a new consumer for the given database name.
+	 * Creates a new consumer for the given environment name.
 	 * 
 	 * @param env
-	 *            the name of the environment to use for the collection of
-	 *            already checked feed entries
+	 *            the name of the environment to use for the database
 	 */
 	public Consumer(String env) {
 		super(groupId);
