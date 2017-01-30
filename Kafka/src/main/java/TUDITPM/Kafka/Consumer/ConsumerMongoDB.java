@@ -1,20 +1,10 @@
 package TUDITPM.Kafka.Consumer;
 
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.logging.Level;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
-import TUDITPM.Kafka.Loading.PropertyFile;
-import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
  * Listening to the twitter Stream and converting the given data to stream it to

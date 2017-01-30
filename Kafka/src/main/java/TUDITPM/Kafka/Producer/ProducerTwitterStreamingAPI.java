@@ -10,11 +10,6 @@ import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import TUDITPM.Kafka.LoggingWrapper;
-import TUDITPM.Kafka.Topic;
-import TUDITPM.Kafka.Loading.PropertyFile;
-import TUDITPM.Kafka.Loading.PropertyLoader;
-
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
@@ -22,6 +17,11 @@ import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
+
+import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Topic;
+import TUDITPM.Kafka.Loading.PropertyFile;
+import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
  * Producer that listens to the twitter streaming API for given keywords and

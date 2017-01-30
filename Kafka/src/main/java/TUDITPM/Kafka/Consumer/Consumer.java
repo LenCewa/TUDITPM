@@ -2,16 +2,12 @@ package TUDITPM.Kafka.Consumer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.logging.Level;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.RedisConnector;
 import TUDITPM.Kafka.Connectors.Solr;

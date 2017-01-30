@@ -15,15 +15,15 @@ import java.util.logging.Level;
 
 import org.bson.Document;
 
-import TUDITPM.Kafka.LoggingWrapper;
-import TUDITPM.Kafka.Topic;
-import TUDITPM.Kafka.Connectors.MongoDBConnector;
-
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
+
+import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Topic;
+import TUDITPM.Kafka.Connectors.MongoDBConnector;
 
 /**
  * Gets RSS and atOM feeds into a Kafka producer. a single feed of the specified
