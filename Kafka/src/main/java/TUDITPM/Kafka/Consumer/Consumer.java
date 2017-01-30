@@ -40,8 +40,13 @@ public class Consumer extends AbstractConsumer {
 	public Consumer(String env) {
 		super(groupId);
 		mongo = new MongoDBConnector("enhanceddata_" + env);
+		redis = new RedisConnector();
+		solr = new Solr();
 	}
 
+	/**
+	 * Reloads the keywords.
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	void initializeNeededData() {
@@ -52,22 +57,19 @@ public class Consumer extends AbstractConsumer {
 		for (Document doc : config.getCollection("keywords").find()) {
 			keywords.addAll((ArrayList<String>) doc.get("keywords"));
 		}
-		redis = new RedisConnector();
-		solr = new Solr();
 	}
 
 	/**
-	 * Gets called on start of the Thread
+	 * Consumes a single news object. The solr document is searched for the
+	 * keywords and then written to the mongoDB an redis.
 	 */
 	@Override
-	public void runRoutine(JSONObject json) {
+	public void consumeObject(JSONObject json) {
 		String id = json.getString("id");
-
 		for (String keyword : keywords) {
 			boolean found = false;
 			try {
 				JSONArray searchTerms = json.getJSONArray("searchTerms");
-
 				if (solr.search("\"" + json.getString("searchName") + " "
 						+ keyword + "\"" + "~" + PROXIMITY, id)) {
 					found = true;
@@ -80,42 +82,33 @@ public class Consumer extends AbstractConsumer {
 					}
 				}
 			} catch (JSONException e) {
+				// TODO Error handling
 				System.out.println("skipped");
 			}
 			if (found) {
-				String text = json.getString("text");
-				String link = json.getString("link");
-				String date = json.getString("date");
-				String company = json.getString("company");
-
-				// Create JSON object to store in redis
-				JSONObject redisJson = new JSONObject();
-				redisJson.append("id", id);
-				redisJson.append("text", text);
-				redisJson.append("link", link);
-				redisJson.append("date", date);
-				redisJson.append("company", company);
-				redisJson.append("keyword", keyword);
+				// remove the id before writing to redis
+				json.remove("id");
+				json.append("keyword", keyword);
 
 				// Create mongoDB document to store in mongoDB
-				Document mongoDBdoc = new Document("text", text)
-						.append("link", link).append("date", date)
-						.append("company", company).append("keyword", keyword);
+				Document mongoDBdoc = new Document("text", json.getString("text"))
+						.append("link", json.getString("link"))
+						.append("date", json.getString("date"))
+						.append("company", json.getString("company"))
+						.append("keyword", keyword);
 				try {
 					String title = json.getString("title");
 					mongoDBdoc.append("title", title);
-					redisJson.append("title", title);
 				} catch (JSONException e) {
-					// title field is optional and not saved if not
-					// available
+					// title field is optional and not saved if not available
 				}
-				// Write to DB
-				// Remove points for the collection name, because
-				// they are not permitted in MongoDB
+
+				// Write to database and redis
 				mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
-				redis.appendJSONToList(json.getString("companyKey"), redisJson);
+				redis.appendJSONToList(json.getString("companyKey"), json);
 			}
 		}
+		// Remove the solr document to keep the solr instance clean
 		solr.delete(id);
 	}
 }

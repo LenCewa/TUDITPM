@@ -16,9 +16,7 @@ import TUDITPM.Kafka.Connectors.MongoDBConnector;
  * @version 5.0
  */
 public class ConsumerMongoDB extends AbstractConsumer {
-
 	private static final String groupId = "rawdata";
-	private String dbname;
 	private MongoDBConnector mongo;
 
 	/**
@@ -29,17 +27,14 @@ public class ConsumerMongoDB extends AbstractConsumer {
 	 */
 	public ConsumerMongoDB(String env) {
 		super(groupId);
-		this.dbname = "rawdata_" + env;
+		mongo = new MongoDBConnector("rawdata_" + env);
 	}
 
 	@Override
-	void initializeNeededData() {
-		
-		mongo = new MongoDBConnector(dbname);
-	}
+	void initializeNeededData() {}
 
 	@Override
-	void runRoutine(JSONObject json) {
+	void consumeObject(JSONObject json) {
 		// decode JSON String
 		Document mongoDBdoc = new Document("text", json.getString("text"))
 				.append("link", json.getString("link")).append("company", json.getString("company"))

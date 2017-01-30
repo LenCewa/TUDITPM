@@ -14,6 +14,14 @@ import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
+/**
+ * Abstract producer that includes all needed elements. It automates the
+ * initialization and the topic listening.
+ * 
+ * @author Yannick Pferr
+ * @author Tobias Mahncke
+ * @version 6.0
+ */
 public abstract class AbstractConsumer extends Thread {
 	/** The kafka consumer. */
 	private KafkaConsumer<String, String> consumer;
@@ -43,7 +51,7 @@ public abstract class AbstractConsumer extends Thread {
 		props.put("value.deserializer", PropertyLoader.getPropertyValue(
 				PropertyFile.kafka, "value.deserializer"));
 
-		// Initialize the producer
+		// Initialize the consumer
 		consumer = new KafkaConsumer<String, String>(props);
 		consumer.subscribe(Topic.toList());
 	}
@@ -55,9 +63,10 @@ public abstract class AbstractConsumer extends Thread {
 	abstract void initializeNeededData();
 
 	/**
-	 * 
+	 * Works on a single data object.
+	 * @param json The object containing the articles.
 	 */
-	abstract void runRoutine(JSONObject json);
+	abstract void consumeObject(JSONObject json);
 
 	/**
 	 * Sets the reload flag.
@@ -74,7 +83,7 @@ public abstract class AbstractConsumer extends Thread {
 		while (true) {
 			ConsumerRecords<String, String> records = consumer.poll(10);
 			for (ConsumerRecord<String, String> record : records) {
-				// decode JSON String
+				// Decode JSON String
 				JSONObject json = null;
 				try {
 					json = new JSONObject(record.value());
@@ -83,7 +92,7 @@ public abstract class AbstractConsumer extends Thread {
 					continue;
 				}
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO, json.toString());
-				runRoutine(json);
+				consumeObject(json);
 			}
 			// If the reload flag is set re-init the data and continue running
 			if (reload) {
