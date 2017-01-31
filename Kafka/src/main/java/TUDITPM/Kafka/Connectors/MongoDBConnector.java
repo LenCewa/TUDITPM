@@ -2,12 +2,12 @@ package TUDITPM.Kafka.Connectors;
 
 import org.bson.Document;
 
-import TUDITPM.Kafka.Loading.PropertyFile;
-import TUDITPM.Kafka.Loading.PropertyLoader;
-
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
+import TUDITPM.Kafka.Loading.PropertyFile;
+import TUDITPM.Kafka.Loading.PropertyLoader;
 
 /**
  * Wrapper for the MongoDB database connection.

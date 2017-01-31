@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.Solr;
 import TUDITPM.Kafka.Loading.PropertyFile;
@@ -28,14 +29,14 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  */
 abstract class AbstractProducer extends Thread {
 	/** The kafka producer. */
-	Producer<String, String> producer;
+	private Producer<String, String> producer;
 	/** The solr connector instance */
-	Solr solr;
+	private Solr solr;
 	/** The MongoDB connector instance for the configuration database */
-	MongoDBConnector config;
+	private MongoDBConnector config;
 	/** The list of all companies from the configuration database. Initialized in {@link initialize} */
 	LinkedList<Document> companies = new LinkedList<>();
-
+	/** flag to indicate re-initializing before the next run */
 	private boolean reload = false;
 
 	/**
@@ -125,7 +126,7 @@ abstract class AbstractProducer extends Thread {
 	 * @param title
 	 *            The title
 	 */
-	void checkForCompany(String source, String link, String text, String date,
+	void checkForCompany(Topic topic, String link, String text, String date,
 			String title) {
 		String id;
 		// Check for empty title and text. If the title is set but no text, the
@@ -162,7 +163,7 @@ abstract class AbstractProducer extends Thread {
 				json.put("searchName", company.getString("searchName"));
 				json.put("companyKey", company.getString("key"));
 				json.put("company", company.getString("name"));
-				json.put("source", source);
+				json.put("source", topic.name());
 				json.put("link", link);
 				json.put("title", title);
 				json.put("text", text);
@@ -177,7 +178,7 @@ abstract class AbstractProducer extends Thread {
 				json.put("date", date);
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
 						json.toString());
-				producer.send(new ProducerRecord<String, String>(source, json
+				producer.send(new ProducerRecord<String, String>(topic.name(), json
 						.toString()));
 			}
 		}
