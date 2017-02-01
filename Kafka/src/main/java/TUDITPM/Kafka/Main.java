@@ -1,8 +1,11 @@
 package TUDITPM.Kafka;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Timer;
 import java.util.logging.Level;
 
+import TUDITPM.DateChecker.DateChecker;
 import TUDITPM.Kafka.Consumer.ConsumerMongoDB;
 import TUDITPM.Kafka.Consumer.ConsumerReload;
 import TUDITPM.Kafka.Loading.PropertyFile;
@@ -19,6 +22,9 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  */
 public class Main {
 	public static void main(String[] args) {
+		
+		
+		
 		// Load the property files
 		try {
 			new PropertyLoader();
@@ -27,6 +33,7 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
 		// Define the environment from the args parameter
 		String env = "";
 		switch (args.length) {
@@ -64,6 +71,23 @@ public class Main {
 		
 		System.out.println("Starting in environment '" + env + "'. Logs can be found at logs/<currentDate>.");
 		LoggingWrapper.log(Main.class.getName(), Level.INFO, "Starting in environment '" + env + "'.");
+	
+		Timer timer = new Timer();
+	    Calendar date = Calendar.getInstance();
+	    date.set(Calendar.AM_PM, Calendar.AM);
+	    date.set(Calendar.HOUR, 0);
+	    date.set(Calendar.MINUTE, 0);
+	    date.set(Calendar.SECOND, 0);
+	    date.set(Calendar.MILLISECOND, 0);
+	   
+	    // Schedule to run every Sunday in midnight
+	    timer.schedule(
+	      new DateChecker("dev"),
+	      date.getTime(),
+	      // Time to wait before next action in milliseconds
+	      1000l * 60l * 60l * 24l
+	    );
+		
 		
 		// Enable rawdata database
 		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {

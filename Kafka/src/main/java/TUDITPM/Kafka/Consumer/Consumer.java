@@ -1,6 +1,9 @@
 package TUDITPM.Kafka.Consumer;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 
 import org.bson.Document;
@@ -8,6 +11,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+
+import TUDITPM.DateChecker.DateChecker;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.RedisConnector;
 import TUDITPM.Kafka.Connectors.Solr;
@@ -90,10 +96,19 @@ public class Consumer extends AbstractConsumer {
 				json.remove("id");
 				json.append("keyword", keyword);
 
+				
+				// Create Date Object from String
+				DateFormat df = DateFormat.getDateInstance();
+				Date date = new Date();
+				try {
+					date = df.parse(json.getString("date"));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
 				// Create mongoDB document to store in mongoDB
 				Document mongoDBdoc = new Document("text", json.getString("text"))
 						.append("link", json.getString("link"))
-						.append("date", json.getString("date"))
+						.append("date", date)
 						.append("company", json.getString("company"))
 						.append("keyword", keyword);
 				try {
@@ -106,6 +121,11 @@ public class Consumer extends AbstractConsumer {
 				// Write to database and redis
 				mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
 				redis.appendJSONToList(json.getString("companyKey"), json);
+				
+				
+				if(DateChecker.isLastMonth(date))
+					redis.appendJSONToList("lastMonth", json);
+						
 			}
 		}
 		// Remove the solr document to keep the solr instance clean

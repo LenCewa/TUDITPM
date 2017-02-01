@@ -17,4 +17,8 @@ public class RedisConnector {
 	public void appendJSONToList(String key, JSONObject value){
 		jedis.lpush(key, value.toString());
 	}
+	
+	public void deleteKey(String key){
+		jedis.del(key);
+	}
 }
