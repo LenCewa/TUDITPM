@@ -15,10 +15,9 @@ Author Arne Schmidt
     <script src="/libs/socket.io/socket.io.min.js"></script>
     <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
-   
-    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid.min.css" />
-    <link type="text/css" rel="stylesheet" href="/libs/jsgrid-1.5.3/jsgrid-theme.min.css" />
-    <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.css" />
+    <script type="text/javascript" src="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.js"></script>
+    <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/alerts.js"></script>
     <script type="text/javascript" src="js/sockets.js"></script>
     <script type="text/javascript" src="js/rss.js"></script>
@@ -31,19 +30,29 @@ Author Arne Schmidt
     <div ID="navbar"></div>
     
     <div ID="middle">
-        <div class="container">
-            <div class="col-md-2"></div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <input class="form-control" ID="search" type="text" onkeyup="createTable()" placeholder="Suche">
+            </div>
             <div class="form-group col-md-6">
                 <input class="form-control" ID="rssName" type="text" placeholder="URL">
             </div>
             <input class="btn btn-primary col-md-2" type="button" value="URL hinzufügen" onClick='postUrls()'>
-            <div class="col-md-2"></div>
         </div>
-        
-        <p style="margin-bottom: 20px">
-            
-        <div ID="jsGrid"></div>
-        
+        <table id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="col-md-2" data-field="link1">URL</th>
+                    <th class="col-md-1" data-field="button1"></th>
+                    <th class="col-md-2" data-field="link2">URL</th>
+                    <th class="col-md-1" data-field="button2"></th>
+                    <th class="col-md-2" data-field="link3">URL</th>
+                    <th class="col-md-1" data-field="button3"></th>
+                    <th class="col-md-2" data-field="link4">URL</th>
+                    <th class="col-md-1" data-field="button4"></th>
+                </tr>
+            </thead>
+        </table>
     </div>
     <div ID="bottom">
     </div>
@@ -52,10 +61,6 @@ Author Arne Schmidt
 
 $(function() {
     $("#navbar").load("html/navbar.html");
-});
-
-$.get("/api/rss", function(data) {   
-    readData(data);
 });
 
 </script>

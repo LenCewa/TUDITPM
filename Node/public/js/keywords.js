@@ -8,8 +8,6 @@
  * @version      5.0
  */
 
-var localData;
-
 function reloadKeywords() {
 	$('#keywordTableHead').empty();
 	$('#keywordTableBody').empty();
@@ -20,21 +18,21 @@ function reloadKeywords() {
 	var searchBar = '<tr>';
 	var i, j;
 	var maxEntries = 0;
-	if (localData) {
-		for (i = 0; i < localData.length; i++) {
-			header += '<th>' + localData[i].category + '<button class="btn btn-danger pull-right" onClick="categoryToDelete(\'' + localData[i].category + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>';
-			searchBar += '<td><div class="input-group"><input class="form-control" type="text" ID="' + localData[i].category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + localData[i].category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
-			if (localData[i].keywords) {
-				if (localData[i].keywords.length > maxEntries) {
-					maxEntries = localData[i].keywords.length;
+	if (localData.keywords) {
+		for (i = 0; i < localData.keywords.length; i++) {
+			header += '<th>' + localData.keywords[i].category + '<button class="btn btn-danger pull-right" onClick="categoryToDelete(\'' + localData.keywords[i].category + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>';
+			searchBar += '<td><div class="input-group"><input class="form-control" type="text" ID="' + localData.keywords[i].category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + localData.keywords[i].category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
+			if (localData.keywords[i].keywords) {
+				if (localData.keywords[i].keywords.length > maxEntries) {
+					maxEntries = localData.keywords[i].keywords.length;
 				}
 			}
 		}
 		header += '<th><div class="input-group"><input class="form-control" type="text" ID="newCategory" placeholder="Neue Kategorie"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="addCategory()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></tr>';
 		searchBar += '</tr>';
 
-		for (i = 0; i < localData.length; i++) {
-			var category = localData[i];
+		for (i = 0; i < localData.keywords.length; i++) {
+			var category = localData.keywords[i];
 			if (category.keywords) {
 				for (j = 0; j < maxEntries; j++) {
 					if (!mapping[j]) {
@@ -45,7 +43,7 @@ function reloadKeywords() {
 					} else {
 						mapping[j] += '<td></td>';
 					}
-					if (i === localData.length - 1) {
+					if (i === localData.keywords.length - 1) {
 						mapping[j] += '</tr>';
 					}
 				}
@@ -62,28 +60,37 @@ function reloadKeywords() {
 	}
 }
 
+function keywordsDataLoaded() {
+	reloadKeywords();
+}
+
 /**
  * Sends the keyword given in the input field "keywordName" to the server.
  */
 function postKeyword(category) {
-	$.ajax({
-		type: 'POST',
-		url: '/api/keywords',
-		data: '{"keyword":"' + $('#' + category).val() + '", "category":"' + category + '"}',
-		success: function(data) {
-			$.get("/api/keywords", function(data) {
-				showAlert($('#' + category).val() + " hinzugefügt!", Level.Success, 2000);
-				localData = data;
-				reloadKeywords();
-			});
-		},
-		statusCode: {
-			400: function(error) {
-				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-			}
-		},
-		contentType: 'application/json'
-	});
+	if ($("[id='" + category + "']").val().trim() === '') {
+		showAlert('Keine leeren Schlagwörter erlaubt.', Level.Warning, 1000);
+	} else {
+		$.ajax({
+			type: 'POST',
+			url: '/api/keywords',
+			data: '{"keyword":"' + $("[id='" + category + "']").val().trim() + '", "category":"' + category + '"}',
+			success: function(data) {
+				$.get("/api/keywords", function(data) {
+					showAlert($("[id='" + category + "']").val() + " hinzugefügt!", Level.Success, 2000);
+					$("[id='" + category + "']").val('');
+					localData.keywords = data;
+					reloadKeywords();
+				});
+			},
+			statusCode: {
+				400: function(error) {
+					showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+				}
+			},
+			contentType: 'application/json'
+		});
+	}
 }
 
 
@@ -91,11 +98,16 @@ function postKeyword(category) {
  * Sends the keyword given in the input field "keywordName" to the server.
  */
 function addCategory() {
-	localData.push({
-		category: $('#newCategory').val(),
-		keywords: []
-	});
-	reloadKeywords();
+	if ($('#newCategory').val().trim() === '') {
+		showAlert('Keine leere Kategorie erlaubt.', Level.Warning, 1000);
+	} else {
+		localData.keywords.push({
+			category: $('#newCategory').val().trim(),
+			keywords: []
+		});
+		$('#newCategory').val('');
+		reloadKeywords();
+	}
 }
 
 function keywordToDelete(category, keyword) {
@@ -106,7 +118,7 @@ function keywordToDelete(category, keyword) {
 		statusCode: {
 			204: function() {
 				$.get("/api/keywords", function(data) {
-					localData = data;
+					localData.keywords = data;
 					reloadKeywords();
 					showAlert(keyword + " gelöscht!", Level.Success, 1000);
 				});
@@ -124,7 +136,7 @@ function categoryToDelete(category) {
 		statusCode: {
 			204: function() {
 				$.get("/api/keywords", function(data) {
-					localData = data;
+					localData.keywords = data;
 					reloadKeywords();
 					showAlert("Kategorie " + category + " gelöscht!", Level.Success, 1000);
 				});

@@ -8,67 +8,81 @@
  * @version      6.0
  */
 
-function readData(data) {
-	console.log(data);
-	var clients = [];
-	for (var i = 0; i < data.length; i++) {
-		var element = {};
-		element.URL = data[i].link;
-		element.ID = i + 1;
-		clients.push(element);
+function createTable() {
+	var data = [];
+
+	// Declare variables
+	var filter, i, show;
+	filter = $('#search').val().toUpperCase().trim();
+
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < localData.rss.length; i++) {
+		if ((localData.rss[i].link && localData.rss[i].link.toUpperCase().indexOf(filter) > -1) ||
+			(filter && filter === '')) {
+			data.push(localData.rss[i]);
+			data[data.length - 1].button = '<button class="btn btn-danger pull-right" onClick="deleteRss(\'' + localData.rss[i] + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
+		}
 	}
 
-	$("#jsGrid").jsGrid({
-		width: "100%",
-		height: "auto",
+	var tableData = [];
+	for (i = 0; i < data.length; i += 4) {
+		tableData[i / 4] = {
+			link1: data[i].link,
+			button1: data[i].button
+		};
+		if (data[i + 1]) {
+			tableData[i / 4].link2 = data[i + 1].link;
+			tableData[i / 4].button2 = data[i + 1].button;
+		} else {
+			tableData[i / 4].link2 = "";
+			tableData[i / 4].button2 = "";
+		}
+		if (data[i + 2]) {
+			tableData[i / 4].link3 = data[i + 2].link;
+			tableData[i / 4].button3 = data[i + 2].button;
+		} else {
+			tableData[i / 4].link3 = "";
+			tableData[i / 4].button3 = "";
+		}
+		if (data[i + 3]) {
+			tableData[i / 4].link4 = data[i + 3].link;
+			tableData[i / 4].button4 = data[i + 3].button;
+		} else {
+			tableData[i / 4].link4 = "";
+			tableData[i / 4].button4 = "";
+		}
+	}
 
-		inserting: false,
-		editing: false,
-		sorting: true,
-		autoload: true,
-
-		paging: true,
-		pageIndex: 1,
-		pageSize: 20,
-		pageButtonCount: 5,
-		pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
-		pagePrevText: "Zurück",
-		pageNextText: "Weiter",
-		pageFirstText: "Erste",
-		pageLastText: "Letzte",
-		pageNavigatorNextText: "...",
-		pageNavigatorPrevText: "...",
-
-		data: clients,
-
-		fields: [{
-				name: "ID",
-				type: "number",
-				width: 25,
-			}, {
-				name: "URL",
-				type: "text",
-				width: 50,
-			}
-			//{ type: "control" }
-		]
-	});
+	$('#table').bootstrapTable('load', tableData);
 }
 
+function rssDataLoaded() {
+	createTable();
+}
 
 /**
  * Sends the rss given in the input field "rssName" to the server.
  */
 function postUrls() {
-	$.ajax({
-		type: 'POST',
-		url: '/api/rss',
-		data: '{"link":"' + $('#rssName').val() + '"}',
-		success: function(data) {
-			$.get("/api/rss", function(data) {
-				readData(data);
-			});
-		},
-		contentType: 'application/json'
-	});
+	var rssName = $('#rssName').val().trim();
+	if (rssName === '') {
+		showAlert('Keine leeren RSS Feeds erlaubt.', Level.Warning, 1000);
+	} else {
+		$.ajax({
+			type: 'POST',
+			url: '/api/rss',
+			data: '{"link":"' + rssName + '"}',
+			statusCode: {
+				400: function(error) {
+					showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+				},
+				204: localData.reloadRSS(function() {
+					createTable();
+					showAlert($('#rssName').val() + ' hinzugefügt!', Level.Success, 2000);
+					$('#rssName').val('');
+				}),
+			},
+			contentType: 'application/json'
+		});
+	}
 }

@@ -80,7 +80,7 @@ function reloadData() {
 						if (count === 0) {
 							for (var i = 0; i < completeData.length; i++) {
 								var zip;
-								var companyObj = getCompanyObject(completeData[i].company);
+								var companyObj = localData.getCompanyObject(completeData[i].company);
 								if (companyObj) {
 									zip = companyObj.zipCode;
 								}
@@ -102,9 +102,9 @@ function reloadData() {
 function reloadCompanyList() {
 	$('#companyStartTableBody').empty();
 	// Fills the table row by row
-	if (companies) {
-		for (var i = 0; i < companies.length; i++) {
-			var companySelected = selectedCompanies[companies[i].key];
+	if (localData.companies) {
+		for (var i = 0; i < localData.companies.length; i++) {
+			var companySelected = selectedCompanies[localData.companies[i].key];
 			var btnType;
 			if (companySelected || showAllCompanies) {
 				if (companySelected) {
@@ -112,7 +112,7 @@ function reloadCompanyList() {
 				} else {
 					btnType = 'default';
 				}
-				$('#companyStartTableBody').append('<tr><td>' + companies[i].name + '</td><td>' + '<button id="' + companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+				$('#companyStartTableBody').append('<tr><td>' + localData.companies[i].name + '</td><td>' + '<button id="' + localData.companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + localData.companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
 			}
 		}
 	}
@@ -155,7 +155,7 @@ function searchCompany() {
 	for (i = 0; i < tr.length; i++) {
 		td = tr[i].children;
 		if (td[0]) {
-			company = getCompanyObject(td[0].innerHTML);
+			company = localData.getCompanyObject(td[0].innerHTML);
 			if (company.name.toUpperCase().indexOf(filter) > -1 || company.zipCode.toUpperCase().indexOf(filter) > -1) {
 				tr[i].style.display = '';
 			} else {
