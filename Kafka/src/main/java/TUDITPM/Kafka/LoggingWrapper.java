@@ -10,9 +10,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * Class which provides functions to write logfiles for Kafka
+ * 
+ * @author Tobias Mahncke
+ * @version 6.0
+ *
+ */
 public class LoggingWrapper {
 	private static HashMap<String, Logger> loggers = new HashMap<>();
 
+	/**
+	 * Checks if the folders storing the logfiles exist, if not they get created 
+	 * 
+	 * @param date - the date this logfile was created
+	 */
 	private static void ensureFileExists(String date) {
 		File logsDir = new File("logs/" + date);
 		try {
@@ -22,6 +34,13 @@ public class LoggingWrapper {
 		}
 	}
 
+	/**
+	 * Function which writes to the logfile with the given info
+	 *  
+	 * @param classname - the name of the class which is responsible for the log message
+	 * @param level - the level of importance of this log message
+	 * @param msg - the log message itself
+	 */
 	public static void log(String classname, Level level, String msg) {
 		Logger classLogger = null;
 		FileHandler fh = null;
