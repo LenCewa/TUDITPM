@@ -86,7 +86,7 @@ module.exports = function(app, producer, mongodb) {
 				collection.findOne({
 					category: req.body.category
 				}, function(err, category) {
-					if (err) {
+					if (err ) {
 						return res.status(500).send({
 							err: {
 								de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
@@ -95,11 +95,15 @@ module.exports = function(app, producer, mongodb) {
 							}
 						});
 					}
-					var array = category.keywords;
-					array.push(req.body.keyword);
-					var sortedArray = array.sort(function(a, b) {
-						return a.localeCompare(b);
-					});
+					var sortedArray = [req.body.keyword];
+ 
+					if (category !== null){
+						var array = category.keywords;
+						array.push(req.body.keyword);
+						sortedArray = array.sort(function(a, b) {
+							return a.localeCompare(b);
+						});
+					}
 					collection.update({
 						category: req.body.category
 					}, {
