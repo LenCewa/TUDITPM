@@ -15,13 +15,13 @@ function reloadKeywords() {
 	var total = 0;
 	var mapping = [];
 	var header = '<tr>';
-	var searchBar = '<tr>';
+	var addKeywordBar = '<tr>';
 	var i, j;
 	var maxEntries = 0;
 	if (localData.keywords) {
 		for (i = 0; i < localData.keywords.length; i++) {
 			header += '<th>' + localData.keywords[i].category + '<button class="btn btn-danger pull-right" onClick="categoryToDelete(\'' + localData.keywords[i].category + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button></th>';
-			searchBar += '<td><div class="input-group"><input class="form-control" type="text" ID="' + localData.keywords[i].category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + localData.keywords[i].category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
+			addKeywordBar += '<td><div class="input-group"><input class="form-control" type="text" ID="' + localData.keywords[i].category + '" placeholder="Neues Schlagwort"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="postKeyword(\'' + localData.keywords[i].category + '\')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></td>';
 			if (localData.keywords[i].keywords) {
 				if (localData.keywords[i].keywords.length > maxEntries) {
 					maxEntries = localData.keywords[i].keywords.length;
@@ -29,7 +29,7 @@ function reloadKeywords() {
 			}
 		}
 		header += '<th><div class="input-group"><input class="form-control" type="text" ID="newCategory" placeholder="Neue Kategorie"></input><span class="input-group-btn"><button class="btn btn-success" type="button" onClick="addCategory()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></span></div></tr>';
-		searchBar += '</tr>';
+		addKeywordBar += '</tr>';
 
 		for (i = 0; i < localData.keywords.length; i++) {
 			var category = localData.keywords[i];
@@ -51,7 +51,7 @@ function reloadKeywords() {
 		}
 
 		$('#keywordTableHead').append(header);
-		$('#keywordTableHead').append(searchBar);
+		$('#keywordTableHead').append(addKeywordBar);
 
 		// Fills the table row by row
 		for (i = 0; i < mapping.length; i++) {

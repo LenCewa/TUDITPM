@@ -68,3 +68,13 @@ localData.getCompanyObject = function(name) {
 		}
 	}
 };
+
+localData.getCompanyObjectByKey = function(key) {
+	if (localData.companies) {
+		for (var i = 0; i < localData.companies.length; i++) {
+			if (localData.companies[i].key === key) {
+				return localData.companies[i];
+			}
+		}
+	}
+};

@@ -73,28 +73,25 @@ exports.init = function(app, producer, mongodb) {
 			}
 			var key = searchName.replace(/\./g).trim();
 
+			var searchTerms = [];
+			if(req.body.searchTerms){
+				searchTerms = req.body.searchTerms;
+			}
+
 			//Store collection in array
 			var doc = {
 				name: req.body.name,
 				searchName: searchName,
 				key: key,
-				zipCode: req.body.zipCode
+				zipCode: req.body.zipCode,
+				searchTerms: searchTerms
 			};
 
 			// checks if doc already exists
-			collection.findOne({
+			collection.remove({
 				name: req.body.name,
 				zipCode: req.body.zipCode
 			}, function(err, document) {
-				if (document !== null) {
-					return res.status(400).send({
-						err: {
-							de: 'Firma ist bereits vorhanden',
-							en: 'Company already exists',
-							err: null
-						}
-					});
-				}
 				collection.insert(doc, function(err, records) {});
 				var msg = [{
 					topic: 'reload',

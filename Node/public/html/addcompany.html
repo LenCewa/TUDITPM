@@ -40,14 +40,17 @@ Author Arne Schmidt
                 <input class="form-control" ID="zipCode" type="text" placeholder="Postleitzahl">
             </div>
             <div class="col-md-2">
-                <input style="width:100%" class="btn btn-primary" type="button" value="Unternehmen hinzufügen" onClick='postUrls()'></input>
+                <input style="width:100%" class="btn btn-primary" type="button" value="Unternehmen hinzufügen" onClick='createCompany()'></input>
             </div>
         </div>
         <table id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
             <thead>
                 <tr>
-                    <th class="col-md-2" data-field="zipCode">PLZ</th>
-                    <th class="col-md-3" data-field="name">Unternehmen</th>
+                    <th class="col-md-1" data-field="zipCode">PLZ</th>
+                    <th class="col-md-2" data-field="name">Unternehmen</th>
+                    <th class="col-md-1" data-field="appendTerm"></th>
+                    <th class="col-md-1" data-field="removeTerm"></th>
+                    <th class="col-md-3" data-field="searchTerms">Suchbegriffe</th>
                     <th class="col-md-1" data-field="button"></th>
                 </tr>
             </thead>
@@ -56,9 +59,9 @@ Author Arne Schmidt
     <div ID="bottom">
     </div>
 </body>
-<script type="text/javascript">
+<script type=" text/javascript ">
 $(function() {
-    $("#navbar").load("html/navbar.html");
+    $("#navbar ").load("html/navbar.html ");
 });
 </script>
 
