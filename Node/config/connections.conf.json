@@ -7,30 +7,29 @@
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_dev",
 			"news": "mongodb://localhost:27017/enhanceddata_dev",
-			"config": "mongodb://localhost:27017/config"
+			"config": "mongodb://localhost:27017/config_dev"
 		}
 	},
 	"test": {
 		"redis": {
 			"address": "127.0.0.1",
-			"port": 6379
+			"port": 6380
 		},
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_test",
-			"news": "mongodb://localhost:27017/dbtest",
-			"config": "mongodb://localhost:27017/config"
+			"news": "mongodb://localhost:27017/enhanceddata_test",
+			"config": "mongodb://localhost:27017/config_test"
 		}
 	},
 	"prod": {
 		"redis": {
 			"address": "127.0.0.1",
-			"port": 6379
+			"port": 6381
 		},
 		"mongodb": {
-			"user": "mongodb://localhost:27017/user_prod"
+			"user": "mongodb://localhost:27017/user_prod",
+			"news": "mongodb://localhost:27017/enhanceddata_prod",
+			"config": "mongodb://localhost:27017/config_prod"
 		}
-	},
-	"rss": {
-		"kafka": "../Kafka/properties/feedsources"
 	}
 }

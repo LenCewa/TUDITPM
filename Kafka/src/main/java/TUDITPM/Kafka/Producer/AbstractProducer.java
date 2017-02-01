@@ -25,7 +25,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 6.0
+ * @version 6.1
  */
 abstract class AbstractProducer extends Thread {
 	/** The kafka producer. */
@@ -33,7 +33,7 @@ abstract class AbstractProducer extends Thread {
 	/** The solr connector instance */
 	private Solr solr;
 	/** The MongoDB connector instance for the configuration database */
-	private MongoDBConnector config;
+	MongoDBConnector config;
 	/** The list of all companies from the configuration database. Initialized in {@link initialize} */
 	LinkedList<Document> companies = new LinkedList<>();
 	/** flag to indicate re-initializing before the next run */
@@ -43,7 +43,7 @@ abstract class AbstractProducer extends Thread {
 	 * Constructor that handles loading from configuration files. Creates the
 	 * producer and needed connectors.
 	 */
-	AbstractProducer() {
+	AbstractProducer(String env) {
 		// set configs for kafka
 		Properties props = new Properties();
 		props.put("bootstrap.servers", PropertyLoader.getPropertyValue(
@@ -70,7 +70,7 @@ abstract class AbstractProducer extends Thread {
 		// database
 		solr = new Solr();
 		config = new MongoDBConnector(PropertyLoader.getPropertyValue(
-				PropertyFile.database, "config.name"));
+				PropertyFile.database, "config.name") + "_" + env);
 	}
 
 	/**

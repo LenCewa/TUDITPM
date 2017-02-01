@@ -20,7 +20,8 @@ var fs = require('fs-extra');
 exports.getCompanies = function(mongodb, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			return console.dir(err);
+			callback(err);
+			return console.log(err);
 		}
 		//Open collection
 		var collection = db.collection('companies', function(err, collection) {});

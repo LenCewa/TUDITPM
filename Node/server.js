@@ -185,7 +185,7 @@ app.get('/admin', function routeIndex(req, res) {
 
 // API routing
 company.init(app, producer, mongodb);
-require('./app/rss')(app, producer);
+require('./app/rss')(app, producer, mongodb);
 require('./app/keywords')(app, producer, mongodb);
 require('./app/news')(app, client);
 

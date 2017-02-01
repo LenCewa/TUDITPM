@@ -1,65 +1,49 @@
 'use strict';
 // app/rss.js
-
 /**
- * Contains all functions to manipulate the list of companies
+ * Contains all functions to manipulate the list of rss feeds
  * 
  * @author       Arne Schmidt
- * @version      1.0
- *
- * @requires fs-extra
+ * @author       Tobias Mahncke
+ * 
+ * @version      6.0
  */
 
-// Dependencies
-var fs = require('fs-extra');
-
 // load configuration
-var connections = require('../config/connections.conf.json').rss;
+var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
 
 /**
  * Helper function to read the url list
  * @param callback callback function, gets an error as first element and data as second
  */
-function readLinks(callback) {
-	fs.ensureFile(connections.kafka, function(err) {
-		// if the file cannot be created the server isn't set up right
+function getLinks(mongodb, callback) {
+	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			callback({
-				err: {
-					de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-					en: 'Accessing the companies file failed. Please contact an adminstrator.',
-					err: err
-				}
-			}, null);
+			callback(err);
+			return console.log(err);
 		}
-		// file has now been created, including the directory it is to be placed in
-		fs.readFile(connections.kafka, 'utf8', function(err, data) {
-			// if the file cannot be read the user has to contact a adminstrator
-			if (err) {
-				callback({
-					err: {
-						de: 'Fehler beim Zugriff auf die Unternehmensliste. Bitte informieren Sie einen Administrator.',
-						en: 'Accessing the companies file failed. Please contact an adminstrator.',
-						err: err
-					}
-				}, null);
-			}
-			callback(null, data);
+		//Open collection
+		var collection = db.collection('rsslinks', function(err, collection) {});
+		//Store collection in array
+		collection.find().sort({
+			name: 1
+		}).toArray(function(err, feeds) {
+			callback(null, feeds);
 		});
 	});
 }
 
-module.exports = function(app, producer) {
+module.exports = function(app, producer, mongodb) {
 	console.log('rss routes loading');
 	/**
-	 *  Takes a company name and appends it to the kafka list of companies.
-	 *  Expects the request to contain a json with a company name.
+	 *  Takes a rss link and appends it to the kafka list of rss feeds.
+	 *  Expects the request to contain a json with a rss link.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
 	app.post('/api/rss', function(req, res) {
 		// Check if the request is correctly formed
-		if (req.body.company === undefined || req.body.company === null || req.body.company === '') {
+		if (req.body.link === undefined || req.body.link === null || req.body.link === '') {
 			return res.status(400).send({
 				err: {
 					de: 'Der Rss Link wurde nicht angegeben.',
@@ -68,53 +52,60 @@ module.exports = function(app, producer) {
 				}
 			});
 		}
-		readLinks(function(err, data) {
+		mongodb.connect(connections.mongodb.config, function(err, db) {
 			if (err) {
-				return res.status(500).send(err);
+				return res.status(500).send({
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: null
+					}
+				});
 			}
-			// Append the data to existing data
-			if (data !== '') {
-				data = data + '\n' + req.body.company;
-			} else {
-				data = req.body.company;
-			}
-			fs.writeFile(connections.kafka, data, function(err) {
-				if (err) {
-					// if the file cannot be written the user has to contact an adminstrator
-					return res.status(500).send({
+			//Open collection
+			var collection = db.collection('rsslinks', function(err, collection) {});
+
+			// checks if doc already exists
+			collection.findOne({
+				link: req.body.link,
+			}, function(err, document) {
+				if (document !== null) {
+					return res.status(400).send({
 						err: {
-							de: 'Fehler beim Zugriff auf die Liste der Rss Links. Bitte informieren Sie einen Administrator.',
-							en: 'Accessing the Rss file failed. Please contact an adminstrator.',
-							err: err
+							de: 'RSS Feed ist bereits vorhanden',
+							en: 'RSS feed already exists',
+							err: null
 						}
 					});
 				}
-				
-				//Send reload message to Kafka
-				var msg = [
-					{ topic: 'reload', messages: 'rss url added', partition: 0 },
-				];
-				producer.send(msg, function (err, data) {
+				collection.insert({
+					link: req.body.link,
+				}, function(err, records) {});
+				var msg = [{
+					topic: 'reload',
+					messages: 'rss feed added',
+					partition: 0
+				}];
+				producer.send(msg, function(err, data) {
 					console.log(data);
 				});
-				
+
 				return res.status(204).send();
 			});
 		});
 	});
 
 	/**
-	 *  Returns all the listed companies vie HTTP get.
+	 *  Returns all the listed companies via HTTP get.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/rss', function(req, res) {
-		readLinks(function(err, data) {
+		getLinks(mongodb, function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
-			var array = data.split('\n');
-			return res.json(array);
+			return res.json(data);
 		});
 	});
 };

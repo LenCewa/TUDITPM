@@ -30,23 +30,25 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
- * @version 6.0
+ * @version 6.1
  */
 public class ProducerTwitterStreamingAPI extends AbstractProducer {
-
 	private BlockingQueue<String> msgQueue;
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void initializeNeededData() {
-		Authentication auth = null;
+	private Authentication auth;
+	
+	ProducerTwitterStreamingAPI(String env) {
+		super(env);
 		auth = new OAuth1(PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERKEY"),
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERSECRET"),
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKEN"),
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKENSECRET"));
-
 		msgQueue = new LinkedBlockingQueue<String>(100000);
+	}
 
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void initializeNeededData() {
 		StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
 
 		// Fetches Tweets from specific Users with their User Id
@@ -76,7 +78,6 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 			tweet = msgQueue.take().trim();
 			JSONObject json = new JSONObject(tweet);
 			String text = json.getString("text");
-
 			checkForCompany(Topic.twitter, "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"), "");
 		} catch (InterruptedException e) {
 			e.printStackTrace();

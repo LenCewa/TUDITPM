@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 public/html/rss.html
-Version 5.0
+Version 6.0
 Author Tobias Mahncke
 Author Yannick Pferr
 Author Arne Schmidt
@@ -21,6 +21,7 @@ Author Arne Schmidt
     <script type="text/javascript" src="/libs/jsgrid-1.5.3/jsgrid.min.js"></script>
     <script type="text/javascript" src="js/alerts.js"></script>
     <script type="text/javascript" src="js/sockets.js"></script>
+    <script type="text/javascript" src="js/rss.js"></script>
     <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
     <!-- set charset to utf-8 -->
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -48,6 +49,7 @@ Author Arne Schmidt
     </div>
 </body>
 <script type="text/javascript">
+
 $(function() {
     $("#navbar").load("html/navbar.html");
 });
@@ -55,68 +57,6 @@ $(function() {
 $.get("/api/rss", function(data) {   
     readData(data);
 });
-
-
-function readData(data) {
-
-        var clients = [];
-        for (var i = 0; i < data.length; i++) {
-            var element = {};
-            element.URL = data[i];
-            element.ID = i + 1;
-            clients.push(element);
-        }
-    
-        $("#jsGrid").jsGrid({
-        width: "100%",
-        height: "auto",
- 
-        inserting: false,
-        editing: false,
-        sorting: true,
-        autoload: true,
-            
-        paging: true, 
-        pageIndex: 1,
-        pageSize: 20,
-        pageButtonCount: 5,
-        pagerFormat: "{first} {prev} {pages} {next} {last}    {pageIndex} of {pageCount}",
-        pagePrevText: "Zurück",
-        pageNextText: "Weiter",
-        pageFirstText: "Erste",
-        pageLastText: "Letzte",
-        pageNavigatorNextText: "...",
-        pageNavigatorPrevText: "...",
- 
-        data: clients,
- 
-        fields: [
-            { name: "ID", type: "number", width: 25,  },
-            { name: "URL", type: "text", width: 50,  }
-            //{ type: "control" }
-        ]
-    });
-    
-}     
- 
-
-/**
- * Sends the keyword given in the input field "keywordName" to the server.
- */
-function postUrls() {
-    $.ajax({
-        type: 'POST',
-        url: '/api/rss',
-        data: '{"company":"' + $('#rssName').val() + '"}',
-        success: function(data) {
-            $.get("/api/rss", function(data) {
-                readData(data);
-            });
-        },
-        contentType: 'application/json'
-    });
-    
-}
 
 </script>
 
