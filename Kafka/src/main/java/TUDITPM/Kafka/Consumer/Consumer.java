@@ -36,6 +36,7 @@ public class Consumer extends AbstractConsumer {
 	private LinkedList<String> keywords;
 	private RedisConnector redis;
 	private Solr solr;
+	private String env;
 
 	/**
 	 * Creates a new consumer for the given environment name.
@@ -45,6 +46,7 @@ public class Consumer extends AbstractConsumer {
 	 */
 	public Consumer(String env) {
 		super(groupId);
+		this.env = env;
 		mongo = new MongoDBConnector("enhanceddata_" + env);
 		redis = new RedisConnector();
 		solr = new Solr();
@@ -58,11 +60,12 @@ public class Consumer extends AbstractConsumer {
 	void initializeNeededData() {
 		MongoDBConnector config = new MongoDBConnector(
 				PropertyLoader.getPropertyValue(PropertyFile.database,
-						"config.name"));
+						"config.name") + "_" +  env);
 		keywords = new LinkedList<>();
 		for (Document doc : config.getCollection("keywords").find()) {
 			keywords.addAll((ArrayList<String>) doc.get("keywords"));
 		}
+		System.out.println(keywords);
 	}
 
 	/**
@@ -124,7 +127,7 @@ public class Consumer extends AbstractConsumer {
 				
 				
 				if(DateChecker.isLastMonth(date))
-					redis.appendJSONToList("lastMonth", json);
+					redis.appendJSONToList("monthList", json);
 						
 			}
 		}
