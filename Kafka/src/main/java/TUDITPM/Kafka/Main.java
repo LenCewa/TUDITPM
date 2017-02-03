@@ -22,9 +22,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  */
 public class Main {
 	public static void main(String[] args) {
-		
-		
-		
+
 		// Load the property files
 		try {
 			new PropertyLoader();
@@ -33,14 +31,15 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 		// Define the environment from the args parameter
 		String env = "";
 		switch (args.length) {
 		case 0:
 			// If no parameter was given assume development mode
 			System.out.println("No environment set, starting in development mode.");
-			System.out.println("To specifiy an environment start the system with parameter. Valid environments are 'development'/'dev', 'producition'/'prod' oder 'test'.");
+			System.out.println(
+					"To specifiy an environment start the system with parameter. Valid environments are 'development'/'dev', 'producition'/'prod' oder 'test'.");
 			env = "dev";
 			break;
 		case 1:
@@ -65,32 +64,27 @@ public class Main {
 		default:
 			// If more than one parameter was given abort
 			System.err.println("No environment set, aborting.");
-			System.err.println("To specifiy an environment start the system with only one parameter. Valid environments are 'development'/'dev', 'producition'/'prod' oder 'test'.");
+			System.err.println(
+					"To specifiy an environment start the system with only one parameter. Valid environments are 'development'/'dev', 'producition'/'prod' oder 'test'.");
 			System.exit(1);
 		}
-		
+
 		System.out.println("Starting in environment '" + env + "'. Logs can be found at logs/<currentDate>.");
 		LoggingWrapper.log(Main.class.getName(), Level.INFO, "Starting in environment '" + env + "'.");
-	
+
 		Timer timer = new Timer();
-	    Calendar date = Calendar.getInstance();
-	    date.set(Calendar.AM_PM, Calendar.AM);
-	    date.set(Calendar.HOUR, 0);
-	    date.set(Calendar.MINUTE, 0);
-	    date.set(Calendar.SECOND, 0);
-	    date.set(Calendar.MILLISECOND, 0);
-	   
-	    DateChecker checker = new DateChecker(env);
-	    // Schedule to run every Sunday in midnight
-	    timer.schedule(
-	      checker,
-	      date.getTime(),
-	      // Time to wait before next action in milliseconds
-	      1000l * 60l * 60l * 24l
-	    );
-	    checker.loadLast30Days();
-		
-		
+		Calendar date = Calendar.getInstance();
+		date.set(Calendar.AM_PM, Calendar.AM);
+		date.set(Calendar.HOUR, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MILLISECOND, 0);
+
+		// Schedule to run every Sunday in midnight
+		timer.schedule(new DateChecker(env), date.getTime(),
+				// Time to wait before next action in milliseconds
+				1000l * 60l * 60l * 24l);
+
 		// Enable rawdata database
 		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {
 			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata enabled.");

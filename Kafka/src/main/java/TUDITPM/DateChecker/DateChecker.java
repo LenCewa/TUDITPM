@@ -24,7 +24,7 @@ public class DateChecker extends TimerTask {
 		redis = new RedisConnector();
 		mongo = new MongoDBConnector("enhanceddata_" + env);
 		config = new MongoDBConnector("config");// + env);
-
+		loadLast30Days();
 	}
 
 	public static boolean isLastMonth(Date date) {
@@ -41,7 +41,7 @@ public class DateChecker extends TimerTask {
 		loadLast30Days();
 	}
 	
-	public void loadLast30Days() {
+	private void loadLast30Days() {
 		LoggingWrapper.log(getClass().getName(), Level.INFO, "Refreshing Redis key monthList...");
 		redis.deleteKey("monthList");
 		for (Document doc : config.getCollection("companies").find()) {
