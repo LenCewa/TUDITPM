@@ -80,13 +80,15 @@ public class Main {
 	    date.set(Calendar.SECOND, 0);
 	    date.set(Calendar.MILLISECOND, 0);
 	   
+	    DateChecker checker = new DateChecker(env);
 	    // Schedule to run every Sunday in midnight
 	    timer.schedule(
-	      new DateChecker("dev"),
+	      checker,
 	      date.getTime(),
 	      // Time to wait before next action in milliseconds
 	      1000l * 60l * 60l * 24l
 	    );
+	    checker.loadLast30Days();
 		
 		
 		// Enable rawdata database

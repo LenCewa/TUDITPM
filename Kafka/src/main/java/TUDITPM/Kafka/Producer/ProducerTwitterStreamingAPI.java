@@ -36,7 +36,7 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 	private BlockingQueue<String> msgQueue;
 	private Authentication auth;
 	
-	ProducerTwitterStreamingAPI(String env) {
+	public ProducerTwitterStreamingAPI(String env) {
 		super(env);
 		auth = new OAuth1(PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERKEY"),
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHCONSUMERSECRET"),

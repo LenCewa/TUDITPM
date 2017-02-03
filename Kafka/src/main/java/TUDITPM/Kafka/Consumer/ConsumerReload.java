@@ -37,7 +37,7 @@ public class ConsumerReload extends Thread {
 		consumer = new Consumer(env);
 		consumer.start();
 
-		producerTwitter = new ProducerTwitterStreamingAPI();
+		producerTwitter = new ProducerTwitterStreamingAPI(env);
 		producerTwitter.start();
 
 		producerRss = new ProducerRSSatOM(env);

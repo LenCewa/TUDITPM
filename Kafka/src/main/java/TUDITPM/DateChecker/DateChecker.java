@@ -38,6 +38,10 @@ public class DateChecker extends TimerTask {
 
 	public void run() {
 
+		loadLast30Days();
+	}
+	
+	public void loadLast30Days() {
 		LoggingWrapper.log(getClass().getName(), Level.INFO, "Refreshing Redis key monthList...");
 		redis.deleteKey("monthList");
 		for (Document doc : config.getCollection("companies").find()) {

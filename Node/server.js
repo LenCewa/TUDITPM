@@ -181,6 +181,11 @@ app.get('/admin', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/admin.html'));
 });
 
+// Routing statistics
+app.get('/statistics', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/statistics.html'));
+});
+
 
 
 // API routing
