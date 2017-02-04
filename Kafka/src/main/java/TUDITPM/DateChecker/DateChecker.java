@@ -23,7 +23,7 @@ public class DateChecker extends TimerTask {
 	public DateChecker(String env) {
 		redis = new RedisConnector();
 		mongo = new MongoDBConnector("enhanceddata_" + env);
-		config = new MongoDBConnector("config");// + env);
+		config = new MongoDBConnector("config_" + env);
 		loadLast30Days();
 	}
 
@@ -44,8 +44,8 @@ public class DateChecker extends TimerTask {
 	private void loadLast30Days() {
 		LoggingWrapper.log(getClass().getName(), Level.INFO, "Refreshing Redis key monthList...");
 		redis.deleteKey("monthList");
+		int count = 0;
 		for (Document doc : config.getCollection("companies").find()) {
-
 			Date end = new Date();
 			long day30 = 30l * 24 * 60 * 60 * 1000;
 			Date start = new Date(end.getTime() - day30);
@@ -53,8 +53,11 @@ public class DateChecker extends TimerTask {
 			BasicDBObject query = new BasicDBObject();
 			query.put("date", BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
 	
-			for (Document doc2 : mongo.getCollection(doc.getString("searchName")).find(query).sort(new BasicDBObject("dateAdded", -1))) 
+			for (Document doc2 : mongo.getCollection(doc.getString("searchName")).find(query).sort(new BasicDBObject("dateAdded", -1))){ 
+				count++;
 				redis.appendJSONToList("monthList", new JSONObject(doc2.toJson()));
+			}
 		}
+		LoggingWrapper.log(getClass().getName(), Level.INFO, "Refreshing Redis key monthList done, " + count + " documents added");
 	}
 }
