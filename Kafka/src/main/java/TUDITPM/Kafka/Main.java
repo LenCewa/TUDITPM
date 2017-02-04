@@ -80,19 +80,19 @@ public class Main {
 		date.set(Calendar.SECOND, 0);
 		date.set(Calendar.MILLISECOND, 0);
 
-		// Schedule to run every Sunday in midnight
+		// Schedule to run every day at 0:00
 		timer.schedule(new DateChecker(env), date.getTime(),
 				// Time to wait before next action in milliseconds
 				1000l * 60l * 60l * 24l);
 
-		// Enable rawdata database
-		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {
-			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata enabled.");
-			new ConsumerMongoDB(env).start();
-		} else {
-			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata disabled.");
-		}
-		// Start the service
-		new ConsumerReload(env).start();
+//		// Enable rawdata database
+//		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {
+//			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata enabled.");
+//			new ConsumerMongoDB(env).start();
+//		} else {
+//			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata disabled.");
+//		}
+//		// Start the service
+//		new ConsumerReload(env).start();
 	}
 }
