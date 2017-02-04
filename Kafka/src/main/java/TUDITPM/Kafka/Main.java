@@ -85,14 +85,14 @@ public class Main {
 				// Time to wait before next action in milliseconds
 				1000l * 60l * 60l * 24l);
 
-//		// Enable rawdata database
-//		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {
-//			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata enabled.");
-//			new ConsumerMongoDB(env).start();
-//		} else {
-//			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata disabled.");
-//		}
-//		// Start the service
-//		new ConsumerReload(env).start();
+		// Enable rawdata database
+		if (Boolean.valueOf(PropertyLoader.getPropertyValue(PropertyFile.database, "rawdata"))) {
+			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata enabled.");
+			new ConsumerMongoDB(env).start();
+		} else {
+			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata disabled.");
+		}
+		// Start the service
+		new ConsumerReload(env).start();
 	}
 }
