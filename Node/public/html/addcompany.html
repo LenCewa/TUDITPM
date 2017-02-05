@@ -24,6 +24,9 @@ Author Arne Schmidt
     <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
     <!-- set charset to utf-8 -->
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-filestyle/1.2.1/bootstrap-filestyle.min.js"> </script>
+    
 </head>
 
 <body>
@@ -55,6 +58,23 @@ Author Arne Schmidt
                 </tr>
             </thead>
         </table>
+    
+        <div class="row">
+            <div class="col-md-4"></div>
+            <form class="form-inline col-md-4" id="uploadForm" method='post' action='upload' enctype="multipart/form-data">
+                <div class="form-group">
+                    <input class="filestyle" type='file' data-buttonText="Datei auswählen" name='fileUploaded'>
+                </div>
+                <div class="form-group">
+                    <input type='submit' class="btn btn-primary" value="Hochladen"> 
+                </div>
+                <div class="form-group">  
+                    <input type='button' id="uploadButton" class="btn btn-primary" value="Hinzufügen"> 
+                </div>
+            </form>
+            <div class="col-md-4"></div>
+        </div>
+    
     </div>
     <div ID="bottom">
     </div>
@@ -62,7 +82,45 @@ Author Arne Schmidt
 <script type=" text/javascript ">
 $(function() {
     $("#navbar ").load("html/navbar.html ");
+    createTable();
 });
+
+    
+$( "#uploadButton" ).click(function() {
+    
+    $.get("/upload", function(data) {
+        var inhalt = data;
+
+        var test2 = inhalt.split(/\n/);
+        //erste Zeile wird immer ignoriert
+        for (i = 1; i < test2.length; i++){
+
+            var test3 = test2[i].split(';');
+
+            var unternehmen = new Object();
+            
+            unternehmen = {
+                'name': test3[0].trim(),
+                'plz' : test3[1].trim()
+            }
+
+
+            if (unternehmen.name === '') {
+                showAlert('Keine leeren Unternehmensnamen erlaubt.', Level.Warning, 1000);
+            } else if (unternehmen.plz === '' || unternehmen.plz.length !== 5) {
+                showAlert('Keine valide Postleitzahl eingegeben.', Level.Warning, 1000);
+                alert("Fehler");
+            } else {
+                postCompany({
+                    name: unternehmen.name,
+                    zipCode: unternehmen.plz
+                });
+            }       
+        }
+    });
+}); 
+    
+
 </script>
 
 </html>
