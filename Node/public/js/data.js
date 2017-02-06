@@ -16,7 +16,7 @@ var localData = {
 $.get("/api/company", function(data) {
 	localData.companies = data;
 	// Call the data loaded function. Implement this function in another js file to react to the finished data load.
-	if(companyDataLoaded){   // jshint ignore:line
+	if (companyDataLoaded) { // jshint ignore:line
 		companyDataLoaded(); // jshint ignore:line
 	}
 });
@@ -24,7 +24,7 @@ $.get("/api/company", function(data) {
 $.get("/api/rss", function(data) {
 	localData.rss = data;
 	// Call the data loaded function. Implement this function in another js file to react to the finished data load.
-	if(rssDataLoaded){   // jshint ignore:line
+	if (rssDataLoaded) { // jshint ignore:line
 		rssDataLoaded(); // jshint ignore:line
 	}
 });
@@ -32,7 +32,7 @@ $.get("/api/rss", function(data) {
 $.get("/api/keywords", function(data) {
 	localData.keywords = data;
 	// Call the data loaded function. Implement this function in another js file to react to the finished data load.
-	if(keywordsDataLoaded){   // jshint ignore:line
+	if (keywordsDataLoaded) { // jshint ignore:line
 		keywordsDataLoaded(); // jshint ignore:line
 	}
 });

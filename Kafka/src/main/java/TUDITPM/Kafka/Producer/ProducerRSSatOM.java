@@ -57,6 +57,7 @@ public class ProducerRSSatOM extends AbstractProducer {
 	 */
 	@Override
 	public void initializeNeededData() {
+		allFeeds = new ArrayList<URL>();
 		for (Document doc : config.getCollection("rsslinks").find()) {
 			try {
 				allFeeds.add(new URL(doc.getString("link")));

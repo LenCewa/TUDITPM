@@ -9,7 +9,6 @@
  * @version      3.1
  *
  */
-
 var server = require('../server');
 
 module.exports = function(app, client) {
@@ -23,8 +22,8 @@ module.exports = function(app, client) {
 		server.io.emit('get', {
 			for: 'everyone'
 		});
-		// Gets a key from redis, returns null if key is not found
-		client.lrange([req.params.key, req.headers.offset, req.headers.length], function(err, reply) {
+		// Gets the length for a key from redis, returns null if key is not found
+		client.llen(req.params.key, function(err, length) {
 			if (err) {
 				return res.status(500).send({
 					err: {
@@ -34,27 +33,42 @@ module.exports = function(app, client) {
 					}
 				});
 			}
-			if (reply === null) {
-				return res.status(404).send({
-					err: {
-						de: 'Der angegebene Schlüssel konnte nicht gefunden werden.',
-						en: 'No data found for the given key.',
-					}
+			// Gets a key from redis, returns null if key is not found
+			client.lrange([req.params.key, 0, length], function(err, reply) {
+				if (err) {
+					return res.status(500).send({
+						err: {
+							de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
+							en: 'Accessing the news failed. Please contact an adminstrator.',
+							err: err
+						}
+					});
+				}
+				if (reply === null) {
+					return res.status(404).send({
+						err: {
+							de: 'Der angegebene Schlüssel konnte nicht gefunden werden.',
+							en: 'No data found for the given key.',
+						}
+					});
+				}
+				var newsArray = [];
+				for (var i = 0; i < reply.length; i++) {
+					newsArray[i] = JSON.parse(reply[i]);
+				}
+				if (newsArray === undefined) {
+					return res.status(500).send({
+						err: {
+							de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
+							en: 'Accessing the news failed. Please contact an adminstrator.',
+						}
+					});
+				}
+				return res.send({
+					length: length,
+					news: newsArray
 				});
-			}
-			var newsArray = [];
-			for (var i = 0; i < reply.length; i++) {
-				newsArray[i] = JSON.parse(reply[i]);
-			}
-			if (newsArray === undefined) {
-				return res.status(500).send({
-					err: {
-						de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
-						en: 'Accessing the news failed. Please contact an adminstrator.',
-					}
-				});
-			}
-			return res.send(newsArray);
+			});
 		});
 	});
 };

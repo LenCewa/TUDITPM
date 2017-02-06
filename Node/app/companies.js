@@ -94,7 +94,7 @@ exports.init = function(app, producer, mongodb) {
 			var key = searchName.replace(/\./g).trim();
 
 			var searchTerms = [];
-			if(req.body.searchTerms){
+			if (req.body.searchTerms) {
 				searchTerms = req.body.searchTerms;
 			}
 
