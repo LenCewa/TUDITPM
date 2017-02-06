@@ -158,3 +158,7 @@ function deleteCompany(company, zipCode) {
 		contentType: 'application/json'
 	});
 }
+
+function emptyCheckeddata() {
+	$.get("/api/emptyCheckedData");
+}
