@@ -20,7 +20,7 @@ function loadDiagram() {
 			var map = {};
 			var key;
 			for (var i = 0; i < news.length; i++) {
-				key = news[i].company;
+				key = news.news[i].company;
 				if (key in map) {
 					map[key] += 1;
 				} else {

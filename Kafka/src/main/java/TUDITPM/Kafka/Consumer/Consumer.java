@@ -116,7 +116,7 @@ public class Consumer extends AbstractConsumer {
 					try {
 						date = df.parse(json.getString("date"));
 					} catch (ParseException e) {
-						e.printStackTrace();
+						// If date is not correctly formatted, current time is used
 					}
 					// Create mongoDB document to store in mongoDB
 					Document mongoDBdoc = new Document("text", json.getString("text"))
