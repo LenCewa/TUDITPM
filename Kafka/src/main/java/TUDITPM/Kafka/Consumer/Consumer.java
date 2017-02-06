@@ -29,8 +29,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @version 6.0
  */
 public class Consumer extends AbstractConsumer {
-	private final int PROXIMITY = Integer.parseInt(PropertyLoader
-			.getPropertyValue(PropertyFile.solr, "proximity"));
+	private final int PROXIMITY = Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.solr, "proximity"));
 	private static final String groupId = "enhanced";
 	private MongoDBConnector mongo;
 	private LinkedList<KeywordCategory> categories;
@@ -46,9 +45,9 @@ public class Consumer extends AbstractConsumer {
 			this.name = name;
 			this.keywords = keywords;
 		}
-		
+
 		@Override
-		public String toString(){
+		public String toString() {
 			return name + ":" + keywords.toString();
 		}
 	}
@@ -74,12 +73,10 @@ public class Consumer extends AbstractConsumer {
 	@Override
 	void initializeNeededData() {
 		MongoDBConnector config = new MongoDBConnector(
-				PropertyLoader.getPropertyValue(PropertyFile.database,
-						"config.name") + "_" + env);
+				PropertyLoader.getPropertyValue(PropertyFile.database, "config.name") + "_" + env);
 		categories = new LinkedList<>();
 		for (Document doc : config.getCollection("keywords").find()) {
-			categories.add(new KeywordCategory(doc.getString("category"),
-					(ArrayList<String>) doc.get("keywords")));
+			categories.add(new KeywordCategory(doc.getString("category"), (ArrayList<String>) doc.get("keywords")));
 		}
 	}
 
@@ -90,22 +87,24 @@ public class Consumer extends AbstractConsumer {
 	@Override
 	public void consumeObject(JSONObject json) {
 		String id = json.getString("id");
+
+		// Only do this if unique company, link and keyword pair is not already
+		// contained
 		for (KeywordCategory category : categories) {
 			for (String keyword : category.keywords) {
 				boolean found = false;
-				if (solr.search("\"" + json.getString("searchName") + " "
-						+ keyword + "\"" + "~" + PROXIMITY, id)) {
+				if (solr.search("\"" + json.getString("searchName") + " " + keyword + "\"" + "~" + PROXIMITY, id)) {
 					found = true;
 				}
 				JSONArray searchTerms = json.getJSONArray("searchTerms");
 				for (Object term : searchTerms.toList()) {
-					if (solr.search("\"" + term + " " + keyword + "\"" + "~"
-							+ PROXIMITY, id)) {
+					if (solr.search("\"" + term + " " + keyword + "\"" + "~" + PROXIMITY, id)) {
 						found = true;
 						break;
 					}
 				}
-				if (found) {
+				if (found && !mongo.find(json.getString("company"), json.getString("company"), json.getString("link"),
+						category.name, keyword)) {
 					// remove the id before writing to redis
 					json.remove("id");
 					json.append("category", category.name);
@@ -120,12 +119,9 @@ public class Consumer extends AbstractConsumer {
 						e.printStackTrace();
 					}
 					// Create mongoDB document to store in mongoDB
-					Document mongoDBdoc = new Document("text",
-							json.getString("text"))
-							.append("link", json.getString("link"))
-							.append("date", date)
-							.append("company", json.getString("company"))
-							.append("category", category.name)
+					Document mongoDBdoc = new Document("text", json.getString("text"))
+							.append("link", json.getString("link")).append("date", date)
+							.append("company", json.getString("company")).append("category", category.name)
 							.append("keyword", keyword);
 					try {
 						String title = json.getString("title");

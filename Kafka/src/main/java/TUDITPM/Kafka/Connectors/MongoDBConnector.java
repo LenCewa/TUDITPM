@@ -91,10 +91,11 @@ public class MongoDBConnector {
 	 * @param keyword - keyword to search for
 	 * @return true if contained, else false
 	 */
-	public boolean find(String collection, String company, String link, String keyword){
+	public boolean find(String collection, String company, String link, String category, String keyword){
 		BasicDBObject query = new BasicDBObject();
 		query.put("link", link);
 		query.put("company", company);
+		query.put("category", category);
 		query.put("keyword", keyword);
 
 		for(Document doc : getCollection(collection).find(query))
@@ -108,16 +109,5 @@ public class MongoDBConnector {
 	 */
 	public void dropDatabase() {
 		mongo.dropDatabase(dbname);
-	}
-	
-	public static void main(String[] args) {
-		try {
-			new PropertyLoader();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		MongoDBConnector mongo = new MongoDBConnector("enhanceddata_dev");
-		System.out.println(mongo.find("Trump", "Trump", "https://twitter.com/statuses/828574737471242240"));
 	}
 }
