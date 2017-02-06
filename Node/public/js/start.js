@@ -54,6 +54,31 @@ function createTable() {
 	$('#table').bootstrapTable('load', data);
 }
 
+function reloadCompanyList() {
+	$('#companyStartTableBody').empty();
+	// Fills the table row by row
+	if (localData.companies) {
+		for (var i = 0; i < localData.companies.length; i++) {
+			var companySelected = selectedCompanies[localData.companies[i].key];
+			var btnType;
+			if (companySelected || showAllCompanies) {
+				if (companySelected) {
+					btnType = 'success';
+				} else {
+					btnType = 'default';
+				}
+				var companyName = '<td style="vertical-align:middle"><span>' + localData.companies[i].name + '</span>';
+				if (localData.companies[i].length) {
+					companyName += '<span style="float:right">' + '(' + localData.companies[i].length + ')' + '</span></td>';
+				} else {
+					companyName += '<span style="float:right">' + '(0)' + '</span></td>';
+				}
+				$('#companyStartTableBody').append('<tr>' + companyName + '<td>' + '<button id="' + localData.companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + localData.companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+			}
+		}
+	}
+}
+
 function reloadData() {
 	var queries = [];
 	var completeData = [];
@@ -101,31 +126,6 @@ function reloadData() {
 	}
 }
 
-function reloadCompanyList() {
-	$('#companyStartTableBody').empty();
-	// Fills the table row by row
-	if (localData.companies) {
-		for (var i = 0; i < localData.companies.length; i++) {
-			var companySelected = selectedCompanies[localData.companies[i].key];
-			var btnType;
-			if (companySelected || showAllCompanies) {
-				if (companySelected) {
-					btnType = 'success';
-				} else {
-					btnType = 'default';
-				}
-				var companyName = '<td style="vertical-align:middle"><span>' + localData.companies[i].name + '</span>';
-				if (localData.companies[i].length) {
-					companyName += '<span style="float:right">' + '(' + localData.companies[i].length + ')' + '</span></td>';
-				} else {
-					companyName += '<span style="float:right">' + '(0)' + '</span></td>';
-				}
-				$('#companyStartTableBody').append('<tr>' + companyName + '<td>' + '<button id="' + localData.companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + localData.companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
-			}
-		}
-	}
-}
-
 function companyDataLoaded() {
 	reloadCompanyList();
 }
@@ -163,7 +163,7 @@ function searchCompany() {
 	for (i = 0; i < tr.length; i++) {
 		td = tr[i].children;
 		if (td[0]) {
-			company = localData.getCompanyObject(td[0].innerHTML);
+			company = localData.getCompanyObject(td[0].children[0].innerHTML);
 			if (company.name.toUpperCase().indexOf(filter) > -1 || company.zipCode.toUpperCase().indexOf(filter) > -1) {
 				tr[i].style.display = '';
 			} else {

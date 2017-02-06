@@ -50,16 +50,16 @@ Author Tobias Mahncke
                 <input class="form-control" ID="newsSearch" type="text" onkeyup="createTable()" placeholder="Suche">
             </div>
             <button class="btn btn-primary col-md-2" onClick="exportCSV()">Tabelle Exportieren</button>
-            <table style="margin-top: 17px" id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
+            <table style="margin-top: 17px" id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" data-sort-name="date" data-sort-order="asc" class="table table-hover">
                 <thead>
                     <tr>
-                        <th class="col-md-1" data-field="zipCode">PLZ</th>
-                        <th class="col-md-2" data-field="company">Unternehmen</th>
-                        <th class="col-md-1" data-field="category">Kategorie</th>
-                        <th class="col-md-1" data-field="keyword">Schlagwörter</th>
+                        <th class="col-md-1" data-field="zipCode" data-sortable="true">PLZ</th>
+                        <th class="col-md-2" data-field="company" data-sortable="true">Unternehmen</th>
+                        <th class="col-md-1" data-field="category" data-sortable="true">Kategorie</th>
+                        <th class="col-md-1" data-field="keyword" data-sortable="true">Schlagwörter</th>
                         <th class="col-md-3" data-field="text">Inhalt</th>
                         <th class="col-md-3" data-field="link">Quelle</th>
-                        <th class="col-md-1" data-field="date">Datum</th>
+                        <th class="col-md-1" data-field="date" data-sortable="true">Datum</th>
                     </tr>
                 </thead>
             </table>
