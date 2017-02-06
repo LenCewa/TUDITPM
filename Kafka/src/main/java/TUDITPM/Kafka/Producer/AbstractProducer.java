@@ -195,7 +195,7 @@ abstract class AbstractProducer extends Thread {
 		initialize();
 		while (true) {
 			runRoutine();
-			// If the reload flag is set re-init the data and continue running
+			// If the reload flag is set, re-init the data and continue running
 			if (reload) {
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO,
 						"Reloading data.");
