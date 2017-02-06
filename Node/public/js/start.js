@@ -70,24 +70,25 @@ function reloadData() {
 				$.ajax({
 					url: "/api/news/" + name,
 					type: 'GET',
-					beforeSend: function(xhr) { // jshint ignore:line
-						xhr.setRequestHeader('offset', 0);
-						xhr.setRequestHeader('length', 20);
-					},
 					success: function(data) { // jshint ignore:line
 						completeData = completeData.concat(data);
 						count--;
 						if (count === 0) {
+							var zip, companyObj;
+							news = [];
 							for (var i = 0; i < completeData.length; i++) {
-								var zip;
-								var companyObj = localData.getCompanyObject(completeData[i].company);
+								companyObj = localData.getCompanyObject(completeData[i].news[0].company);
+								companyObj.length = completeData[i].length;
 								if (companyObj) {
 									zip = companyObj.zipCode;
 								}
-								completeData[i].zipCode = zip;
+								for (var j = 0; j < completeData[i].length; j++) {
+									completeData[i].news[j].zipCode = zip;
+									news.push(completeData[i].news[j]);
+								}
 							}
-							news = completeData;
 							createTable();
+							reloadCompanyList();
 						}
 					}
 				});
@@ -96,6 +97,7 @@ function reloadData() {
 	} else {
 		news = [];
 		createTable();
+		reloadCompanyList();
 	}
 }
 
@@ -112,7 +114,13 @@ function reloadCompanyList() {
 				} else {
 					btnType = 'default';
 				}
-				$('#companyStartTableBody').append('<tr><td>' + localData.companies[i].name + '</td><td>' + '<button id="' + localData.companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + localData.companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
+				var companyName = '<td style="vertical-align:middle"><span>' + localData.companies[i].name + '</span>';
+				if (localData.companies[i].length) {
+					companyName += '<span style="float:right">' + '(' + localData.companies[i].length + ')' + '</span></td>';
+				} else {
+					companyName += '<span style="float:right">' + '(0)' + '</span></td>';
+				}
+				$('#companyStartTableBody').append('<tr>' + companyName + '<td>' + '<button id="' + localData.companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + localData.companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
 			}
 		}
 	}

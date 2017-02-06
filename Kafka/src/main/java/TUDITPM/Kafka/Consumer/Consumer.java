@@ -33,10 +33,25 @@ public class Consumer extends AbstractConsumer {
 			.getPropertyValue(PropertyFile.solr, "proximity"));
 	private static final String groupId = "enhanced";
 	private MongoDBConnector mongo;
-	private LinkedList<String> keywords;
+	private LinkedList<KeywordCategory> categories;
 	private RedisConnector redis;
 	private Solr solr;
 	private String env;
+
+	private class KeywordCategory {
+		public String name;
+		public ArrayList<String> keywords;
+
+		public KeywordCategory(String name, ArrayList<String> keywords) {
+			this.name = name;
+			this.keywords = keywords;
+		}
+		
+		@Override
+		public String toString(){
+			return name + ":" + keywords.toString();
+		}
+	}
 
 	/**
 	 * Creates a new consumer for the given environment name.
@@ -60,12 +75,12 @@ public class Consumer extends AbstractConsumer {
 	void initializeNeededData() {
 		MongoDBConnector config = new MongoDBConnector(
 				PropertyLoader.getPropertyValue(PropertyFile.database,
-						"config.name") + "_" +  env);
-		keywords = new LinkedList<>();
+						"config.name") + "_" + env);
+		categories = new LinkedList<>();
 		for (Document doc : config.getCollection("keywords").find()) {
-			keywords.addAll((ArrayList<String>) doc.get("keywords"));
+			categories.add(new KeywordCategory(doc.getString("category"),
+					(ArrayList<String>) doc.get("keywords")));
 		}
-		System.out.println(keywords);
 	}
 
 	/**
@@ -75,14 +90,14 @@ public class Consumer extends AbstractConsumer {
 	@Override
 	public void consumeObject(JSONObject json) {
 		String id = json.getString("id");
-		for (String keyword : keywords) {
-			boolean found = false;
-			try {
-				JSONArray searchTerms = json.getJSONArray("searchTerms");
+		for (KeywordCategory category : categories) {
+			for (String keyword : category.keywords) {
+				boolean found = false;
 				if (solr.search("\"" + json.getString("searchName") + " "
 						+ keyword + "\"" + "~" + PROXIMITY, id)) {
 					found = true;
 				}
+				JSONArray searchTerms = json.getJSONArray("searchTerms");
 				for (Object term : searchTerms.toList()) {
 					if (solr.search("\"" + term + " " + keyword + "\"" + "~"
 							+ PROXIMITY, id)) {
@@ -90,45 +105,44 @@ public class Consumer extends AbstractConsumer {
 						break;
 					}
 				}
-			} catch (JSONException e) {
-				// TODO Error handling
-				System.out.println("skipped");
-			}
-			if (found) {
-				// remove the id before writing to redis
-				json.remove("id");
-				json.append("keyword", keyword);
+				if (found) {
+					// remove the id before writing to redis
+					json.remove("id");
+					json.append("category", category.name);
+					json.append("keyword", keyword);
 
-				
-				// Create Date Object from String
-				DateFormat df = DateFormat.getDateInstance();
-				Date date = new Date();
-				try {
-					date = df.parse(json.getString("date"));
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				// Create mongoDB document to store in mongoDB
-				Document mongoDBdoc = new Document("text", json.getString("text"))
-						.append("link", json.getString("link"))
-						.append("date", date)
-						.append("company", json.getString("company"))
-						.append("keyword", keyword);
-				try {
-					String title = json.getString("title");
-					mongoDBdoc.append("title", title);
-				} catch (JSONException e) {
-					// title field is optional and not saved if not available
-				}
+					// Create Date Object from String
+					DateFormat df = DateFormat.getDateInstance();
+					Date date = new Date();
+					try {
+						date = df.parse(json.getString("date"));
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					// Create mongoDB document to store in mongoDB
+					Document mongoDBdoc = new Document("text",
+							json.getString("text"))
+							.append("link", json.getString("link"))
+							.append("date", date)
+							.append("company", json.getString("company"))
+							.append("category", category.name)
+							.append("keyword", keyword);
+					try {
+						String title = json.getString("title");
+						mongoDBdoc.append("title", title);
+					} catch (JSONException e) {
+						// title field is optional and not saved if not
+						// available
+					}
 
-				// Write to database and redis
-				mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
-				redis.appendJSONToList(json.getString("companyKey"), json);
-				
-				
-				if(DateChecker.isLastMonth(date))
-					redis.appendJSONToList("monthList", json);
-						
+					// Write to database and redis
+					mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
+					redis.appendJSONToList(json.getString("companyKey"), json);
+
+					if (DateChecker.isLastMonth(date)) {
+						redis.appendJSONToList("monthList", json);
+					}
+				}
 			}
 		}
 		// Remove the solr document to keep the solr instance clean
