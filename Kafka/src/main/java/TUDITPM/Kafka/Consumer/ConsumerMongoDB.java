@@ -47,6 +47,7 @@ public class ConsumerMongoDB extends AbstractConsumer {
 			// available
 		}
 		// Write to DB
-		mongo.writeToDb(mongoDBdoc, json.getString("source"));
+		if(!mongo.find(json.getString("companyKey"), json.getString("companyKey"), json.getString("link")))
+			mongo.writeToDb(mongoDBdoc, json.getString("source"));
 	}
 }

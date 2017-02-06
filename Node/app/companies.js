@@ -34,6 +34,26 @@ exports.getCompanies = function(mongodb, callback) {
 	});
 };
 
+/**
+ * Helper function to empty the checkeddata DB
+ * @param callback callback function, gets an error as first element and data as second
+ */
+exports.emptyCheckedData = function(mongodb, callback) {
+	mongodb.connect(connections.mongodb.checkeddata, function(err, db) {
+		if (err) {
+			callback(err);
+			return console.log(err);
+		}
+		db.dropDatabase(function(err, result) {
+			if (err) {
+				callback(err);
+				return console.log(err);
+			}
+			callback(null);
+		});
+	});
+};
+
 exports.init = function(app, producer, mongodb) {
 	console.log('company routes loading');
 	/**
@@ -118,6 +138,20 @@ exports.init = function(app, producer, mongodb) {
 				return res.status(500).send(err);
 			}
 			return res.json(data);
+		});
+	});
+	
+	/**
+	 *  Returns all the listed companies vie HTTP get.
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
+	app.get('/api/emptyCheckedData', function(req, res) {
+		exports.emptyCheckedData(mongodb, function(err, data) {
+			if (err) {
+				return res.status(500).send(err);
+			}
+			return res.status(204).send();
 		});
 	});
 

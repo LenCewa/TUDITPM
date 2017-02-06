@@ -1,7 +1,12 @@
 package TUDITPM.Kafka.Connectors;
 
-import org.bson.Document;
+import java.io.IOException;
 
+import org.bson.Document;
+import org.json.JSONObject;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -61,9 +66,58 @@ public class MongoDBConnector {
 	}
 	
 	/**
+	 * Checks if unique company and link pair is in the specified collection
+	 * @param collection - the collection to be searched
+	 * @param company - the company to search for
+	 * @param link - the link to search for
+	 * @return true if contained, else false
+	 */
+	public boolean find(String collection, String company, String link){
+		BasicDBObject query = new BasicDBObject();
+		query.put("link", link);
+		query.put("company", company);
+
+		for(Document doc : getCollection(collection).find(query))
+			return true;
+		
+		return false;
+	}
+	
+	/**
+	 * Checks if unique company, link and keyword pair is in the specified collection
+	 * @param collection - the collection to be searched
+	 * @param company - the company to search for
+	 * @param link - the link to search for
+	 * @param keyword - keyword to search for
+	 * @return true if contained, else false
+	 */
+	public boolean find(String collection, String company, String link, String keyword){
+		BasicDBObject query = new BasicDBObject();
+		query.put("link", link);
+		query.put("company", company);
+		query.put("keyword", keyword);
+
+		for(Document doc : getCollection(collection).find(query))
+			return true;
+		
+		return false;
+	}
+	
+	/**
 	 * Drops the connected database.
 	 */
 	public void dropDatabase() {
 		mongo.dropDatabase(dbname);
+	}
+	
+	public static void main(String[] args) {
+		try {
+			new PropertyLoader();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		MongoDBConnector mongo = new MongoDBConnector("enhanceddata_dev");
+		System.out.println(mongo.find("Trump", "Trump", "https://twitter.com/statuses/828574737471242240"));
 	}
 }

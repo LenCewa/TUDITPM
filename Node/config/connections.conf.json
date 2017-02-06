@@ -7,7 +7,8 @@
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_dev",
 			"news": "mongodb://localhost:27017/enhanceddata_dev",
-			"config": "mongodb://localhost:27017/config_dev"
+			"config": "mongodb://localhost:27017/config_dev",
+			"checkeddata": "mongodb://localhost:27017/checkeddata_dev"
 		}
 	},
 	"test": {
@@ -18,7 +19,8 @@
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_test",
 			"news": "mongodb://localhost:27017/enhanceddata_test",
-			"config": "mongodb://localhost:27017/config_test"
+			"config": "mongodb://localhost:27017/config_test",
+			"checkeddata": "mongodb://localhost:27017/checkeddata_test"
 		}
 	},
 	"prod": {
@@ -29,7 +31,8 @@
 		"mongodb": {
 			"user": "mongodb://localhost:27017/user_prod",
 			"news": "mongodb://localhost:27017/enhanceddata_prod",
-			"config": "mongodb://localhost:27017/config_prod"
+			"config": "mongodb://localhost:27017/config_prod",
+			"checkeddata": "mongodb://localhost:27017/checkeddata_prod"
 		}
 	}
 }

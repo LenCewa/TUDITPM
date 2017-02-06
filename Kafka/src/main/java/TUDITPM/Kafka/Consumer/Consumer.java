@@ -106,7 +106,7 @@ public class Consumer extends AbstractConsumer {
 				try {
 					date = df.parse(json.getString("date"));
 				} catch (ParseException e) {
-					e.printStackTrace();
+					// if date is not correctly formatted, current time is used
 				}
 				// Create mongoDB document to store in mongoDB
 				Document mongoDBdoc = new Document("text", json.getString("text"))
@@ -121,10 +121,11 @@ public class Consumer extends AbstractConsumer {
 					// title field is optional and not saved if not available
 				}
 
-				// Write to database and redis
-				mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
-				redis.appendJSONToList(json.getString("companyKey"), json);
-				
+				// Write to database and redis if not already contained
+				if(!mongo.find(json.getString("companyKey"), json.getString("companyKey"), json.getString("link"), json.getString("keyword"))){
+					mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
+					redis.appendJSONToList(json.getString("companyKey"), json);
+				}
 				
 				if(DateChecker.isLastMonth(date))
 					redis.appendJSONToList("monthList", json);

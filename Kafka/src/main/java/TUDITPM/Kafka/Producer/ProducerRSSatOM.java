@@ -33,7 +33,7 @@ public class ProducerRSSatOM extends AbstractProducer {
 	/** The database connector for the links of the checked articles */
 	private MongoDBConnector mongo;
 	/** The list of all feed URLs */
-	private ArrayList<URL> allFeeds;
+	private ArrayList<URL> allFeeds = new ArrayList<>();
 	/** The HashSet for fast reading of the links of the checked articles */
 	private HashSet<String> visited = new HashSet<>();
 
