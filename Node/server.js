@@ -161,6 +161,11 @@ app.get('/', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/start.html'));
 });
 
+// Routing map
+app.get('/map', function routeIndex(req, res) {
+	res.sendFile(path.join(__dirname, '/public/html/map.html'));
+});
+
 // Routing addcompany
 app.get('/addcompany', function routeIndex(req, res) {
 	res.sendFile(path.join(__dirname, '/public/html/addcompany.html'));
@@ -223,6 +228,7 @@ company.init(app, producer, mongodb);
 require('./app/rss')(app, producer, mongodb);
 require('./app/keywords')(app, producer, mongodb);
 require('./app/news')(app, client);
+require('./app/map')(app, client);
 
 // Start Express server.
 server.listen(app.get('port'), function() {

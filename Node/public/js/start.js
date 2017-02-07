@@ -16,7 +16,7 @@ if (!selectedCompanies) {
 }
 
 var showAllCompanies = false;
-var news;
+var news, key;
 var firstDataLoad = true;
 
 function createTable() {
@@ -61,17 +61,23 @@ function reloadCompanyList() {
 		for (var i = 0; i < localData.companies.length; i++) {
 			var companySelected = selectedCompanies[localData.companies[i].key];
 			var btnType;
-			if (companySelected || showAllCompanies) {
-				if (companySelected) {
+			if ((companySelected && companySelected.selected) || showAllCompanies) {
+				if (companySelected && companySelected.selected) {
 					btnType = 'success';
 				} else {
 					btnType = 'default';
 				}
 				var companyName = '<td style="vertical-align:middle"><span>' + localData.companies[i].name + '</span>';
 				if (localData.companies[i].length) {
-					companyName += '<span style="float:right">' + '(' + localData.companies[i].length + ')' + '</span></td>';
+					var read = 0;
+					if (companySelected) {
+						read = companySelected.read;
+					}
+					companyName += '<a href="#" onClick="markRead(\'' + localData.companies[i].key + '\')" style="float:right">' + localData.companies[i].length + '<b>(' + (localData.companies[i].length - read) + ')</b>' + '</a></td>';
+				} else if (companySelected && companySelected.selected) {
+					companyName += '<a href="#" style="float:right">0<b>(0)</b>' + '</a></td>';
 				} else {
-					companyName += '<span style="float:right">' + '(0)' + '</span></td>';
+					companyName += '<span style="float:right">' + '*' + '</span></td>';
 				}
 				$('#companyStartTableBody').append('<tr>' + companyName + '<td>' + '<button id="' + localData.companies[i].key + '-btn" class="btn btn-' + btnType + '" onClick="selectCompany(\'' + localData.companies[i].key + '\')"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>' + '</td></tr>');
 			}
@@ -85,13 +91,13 @@ function reloadData() {
 	var name;
 	var count = 0;
 	for (name in selectedCompanies) {
-		if (selectedCompanies[name]) {
+		if (selectedCompanies[name].selected) {
 			count++;
 		}
 	}
 	if (count !== 0) {
 		for (name in selectedCompanies) {
-			if (selectedCompanies[name]) {
+			if (selectedCompanies[name].selected) {
 				$.ajax({
 					url: "/api/news/" + name,
 					type: 'GET',
@@ -102,14 +108,16 @@ function reloadData() {
 							var zip, companyObj;
 							news = [];
 							for (var i = 0; i < completeData.length; i++) {
-								companyObj = localData.getCompanyObject(completeData[i].news[0].company);
-								companyObj.length = completeData[i].length;
-								if (companyObj) {
-									zip = companyObj.zipCode;
-								}
-								for (var j = 0; j < completeData[i].length; j++) {
-									completeData[i].news[j].zipCode = zip;
-									news.push(completeData[i].news[j]);
+								if (completeData[i].length > 0) {
+									companyObj = localData.getCompanyObject(completeData[i].news[0].company);
+									companyObj.length = completeData[i].length;
+									if (companyObj) {
+										zip = companyObj.zipCode;
+									}
+									for (var j = 0; j < completeData[i].length; j++) {
+										completeData[i].news[j].zipCode = zip;
+										news.push(completeData[i].news[j]);
+									}
 								}
 							}
 							createTable();
@@ -133,10 +141,16 @@ function companyDataLoaded() {
 function selectCompany(name) {
 	$('[id="' + name + '-btn"]').toggleClass('btn-default');
 	$('[id="' + name + '-btn"]').toggleClass('btn-success');
-	if (selectedCompanies[name]) {
-		selectedCompanies[name] = false;
+	if (selectedCompanies[name] && selectedCompanies[name].selected) {
+		selectedCompanies[name] = {
+			selected: false,
+			read: 0
+		};
 	} else {
-		selectedCompanies[name] = true;
+		selectedCompanies[name] = {
+			selected: true,
+			read: 0
+		};
 	}
 	Cookies.set('selectedCompanies', selectedCompanies);
 	reloadData();
@@ -146,6 +160,22 @@ function showAll() {
 	showAllCompanies = !showAllCompanies;
 	$('#showAllBtn').toggleClass('btn-default');
 	$('#showAllBtn').toggleClass('btn-success');
+	reloadCompanyList();
+}
+
+function markRead(name) {
+	if (name) {
+		if (selectedCompanies[name].selected) {
+			selectedCompanies[name].read = localData.getCompanyObjectByKey(name).length;
+		}
+	} else {
+		for (key in selectedCompanies) {
+			if (selectedCompanies[key].selected) {
+				selectedCompanies[key].read = localData.getCompanyObjectByKey(key).length;
+			}
+		}
+	}
+	Cookies.set('selectedCompanies', selectedCompanies);
 	reloadCompanyList();
 }
 

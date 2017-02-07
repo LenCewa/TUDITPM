@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+public/html/map.html
+Version 6.0
+Author Tobias Mahncke
+-->
+<html>
+
+<head>
+    <Title>Kartenansicht</Title>
+    <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
+    <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
+    <script src="/libs/socket.io/socket.io.min.js"></script>
+    <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
+    <link type="text/css" rel="stylesheet" href="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.css" />
+    <script type="text/javascript" src="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.js"></script>
+    <script type="text/javascript" src="/libs/cookies/cookies.js"></script>
+    <script type="text/javascript" src="/libs/d3/d3.min.js"></script>
+    <script type="text/javascript" src="/libs/d3/d3-geo.v1.min.js"></script>
+    <script type="text/javascript" src="/libs/topojson/topojson.min.js"></script>
+    <script type="text/javascript" src="js/data.js"></script>
+    <script type="text/javascript" src="js/start.js"></script>
+    <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
+    <!-- set charset to utf-8 -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+    <div style="margin-top:-80px; position: fixed">
+        <div style="height: 35px;">
+            <span class="label label-primary">Ausgewählte Gebiete ohne neue Nachrichten</span>
+        </div>
+        <div>
+            <span class="label label-success">Ausgewählte Gebiete mit neuen Nachrichten</span>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+$(function() {
+    var width = 1800,
+        height = 2400;
+
+    var svg = d3.select('body').append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    var companies = '';
+    for (var key in selectedCompanies) {
+        if (selectedCompanies[key].selected) {
+            if (companies.length > 0) {
+                companies += ',';
+            }
+            companies += key + ',' + localData.getCompanyObjectByKey(key).zipCode + ',' + selectedCompanies[key].read;
+        }
+    }
+
+    d3.json('/api/map/' + companies, function(error, de) {
+        if (error) {
+            return console.error(error);
+        }
+
+        // create a first guess for the projection
+        var center = d3.geoCentroid(de)
+        var scale = 150;
+        var offset = [width / 2, height / 2];
+        var projection = d3.geoMercator().scale(scale).center(center)
+            .translate(offset);
+
+        // create the path
+        var path = d3.geoPath().projection(projection);
+
+        // using the path determine the bounds of the current map and use 
+        // these to determine better values for the scale and translation
+        var bounds = path.bounds(de);
+        var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
+        var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
+        var scale = (hscale < vscale) ? hscale : vscale;
+        var offset = [width - (bounds[0][0] + bounds[1][0]) / 2,
+            height - (bounds[0][1] + bounds[1][1]) / 2
+        ];
+
+        // new projection
+        projection = d3.geoMercator().center(center)
+            .scale(scale).translate(offset);
+        path = path.projection(projection);
+
+        svg.selectAll('.feature')
+            .data(de.features)
+            .enter().append('path')
+            .attr('class', function(d) {
+                return d.properties.style;
+            })
+            .attr('d', path)
+            .on('mousedown.log', function(d) {
+                if (d.properties.PLZ99_N !== 0) {
+                    if (d.properties.news === 0) {
+                        alert('Keine ungelesenen Nachrichten für ' + d.properties.PLZ99 + ' ' + d.properties.PLZORT99);
+                    } else if (d.properties.news === 1) {
+                        alert(d.properties.news + ' ungelesene Nachricht für ' + d.properties.PLZ99 + ' ' + d.properties.PLZORT99);
+                    } else {
+                        alert(d.properties.news + ' ungelesene Nachrichten für ' + d.properties.PLZ99 + ' ' + d.properties.PLZORT99);
+                    }
+                }
+            });
+    });
+});
+</script>
+
+</html>

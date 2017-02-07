@@ -5,6 +5,21 @@ body {
     padding-bottom: 50px;
 }
 
-#jsGrid {
-	margin-bottom: 10px;
+.label {
+	font-size: 16px;
+}
+
+.blank {
+	fill: #777;
+	stroke: #000;
+}
+
+.new {
+	fill: #5cb85c;
+	stroke: #000;
+}
+
+.old {
+	fill: #337ab7;
+	stroke: #000;
 }
