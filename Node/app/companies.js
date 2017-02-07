@@ -142,11 +142,11 @@ exports.init = function(app, producer, mongodb) {
 	});
 	
 	/**
-	 *  Returns all the listed companies vie HTTP get.
+	 *  Emptys the checkeddata DB vie HTTP delete.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.get('/api/emptyCheckedData', function(req, res) {
+	app.delete('/api/emptyCheckedData', function(req, res) {
 		exports.emptyCheckedData(mongodb, function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
