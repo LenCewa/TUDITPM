@@ -160,5 +160,13 @@ function deleteCompany(company, zipCode) {
 }
 
 function emptyCheckeddata() {
-	$.get("/api/emptyCheckedData");
+	$.ajax({
+		type: 'DELETE',
+		url: '/api/emptyCheckedData',
+		success: localData.reloadCompanies(function() {
+			createTable();
+			showAlert(company + " gelöscht!", Level.Success, 2000);
+		}),
+		contentType: 'application/json'
+	});
 }

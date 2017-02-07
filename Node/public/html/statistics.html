@@ -28,19 +28,38 @@ Author Yannick Pferr
 .bar:hover {
   fill: brown;
 }
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+	border-radius: 5px;
+	background: #F7F7F7
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+#card { 
+	margin-top: 50px; 
+}
 </style>
-<svg width="500" height="500"></svg>
+
 </head>
 
 <body>
     <div ID="navbar"></div>
+	<h1 align="center"> Diagramme zu Verteilung von Schlagwörtern und Unternehmen </h1>
+	<div ID="card" align="center">
+		<svg class="card" width="1250" height="600"></svg>
+	</div>
 </body>
 <script type="text/javascript">
 $(function() {
     $("#navbar").load("html/navbar.html");
 });
 
-loadDiagram();
-</script>
+loadMonthList();
 
+</script>
 </html>
