@@ -30,6 +30,7 @@ function createTable() {
 	// Loop through all data and add the button to remove a news
 	for (i = 0; i < news.length; i++) {
 		news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
+		news[i].date = $.format.date(news[i].date, 'dd.MM.yyyy');
 	}
 
 	if (filter && (filter.length > 1 || filter[0] !== '')) {
