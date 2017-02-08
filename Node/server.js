@@ -195,27 +195,21 @@ var fs = require('fs-extra');       //File System - for file manipulation
 app.use(busboy());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.route('/upload')
+app.route('/api/uploadCompany')
     .post(function (req, res, next) {
-
-        var fstream;
+    
         req.pipe(req.busboy);
         req.busboy.on('file', function (fieldname, file, filename) {
-            //console.log("Uploading: " + filename);
-            //Path where image will be uploaded
-            fstream = fs.createWriteStream(__dirname + '/img/upload.csv');
-            file.pipe(fstream);
-            fstream.on('close', function () {    
-                //console.log("Upload Finished of " + filename);              
-                res.redirect('back');           //where to go next
-            });
+            
+              file.on('data', function(data) {
+                console.log('File [' + fieldname + '] got ' + data);
+                company.uploadCompanies(data);
+              });
+              file.on('end', function() {
+                console.log('File [' + fieldname + '] Finished');
+              });
         });
-    
     });
-
-app.get('/upload', function routeIndex(req, res) {
-	res.sendFile(path.join(__dirname, '/img/upload.csv'));
-});
 
 
 

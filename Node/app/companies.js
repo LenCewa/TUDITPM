@@ -224,3 +224,61 @@ exports.init = function(app, producer) {
 
 	});
 };
+
+exports.uploadCompanies = function (data) {
+    var inhalt = "" + data;
+
+    var lines = inhalt.split(/\n/);
+    
+    var titel = lines[0].split(';');
+    var namekey, plzkey;
+    if(titel[0].toLowerCase().includes("unternehmen")){
+        namekey = 0; plzkey = 1;
+    } else {
+        namekey = 1; plzkey = 0;
+    }
+    
+    
+    for (var i = 1; i < lines.length; i++) {
+
+        var fields = lines[i].split(';');
+        
+        var name;
+        if (fields[namekey] === undefined) {
+            name = "";
+        } else{
+            name = fields[namekey].trim();
+        }
+        
+        var plz;
+        if (fields[plzkey] === undefined) {
+            plz = "";
+        } else {
+            plz = fields[plzkey].trim();
+        }
+            
+        var unternehmen = {
+            'name': name,
+            'plz' : plz
+        };
+        
+        console.log(unternehmen.name);
+        console.log(unternehmen.plz);
+
+        if (unternehmen.name === '') {
+            console.log('Keine leeren Unternehmensnamen erlaubt.');
+        } else if (unternehmen.plz === '' || unternehmen.plz.length !== 5) {
+            console.log('Keine valide Postleitzahl eingegeben.');
+        } else {
+            var searchTerms = [];
+            saveCompany(unternehmen.name, unternehmen.plz, searchTerms, function(err) {
+                if (err) {
+                    return res.status(500).send(err);
+                } else {
+                    return res.status(204).send();
+                }
+            });
+            console.log("Hinzugefügt - Name: " + unternehmen.name + ", PLZ: " + unternehmen.plz);
+		}
+    }
+};
