@@ -172,7 +172,7 @@ function emptyCheckeddata() {
 		type: 'DELETE',
 		url: '/api/emptyCheckedData',
 		success: localData.reloadCompanies(function() {
-			showAlert(" gelöscht!", Level.Success, 2000);
+			showAlert("checkeddata geleert!", Level.Success, 2000);
 		}),
 		contentType: 'application/json'
 	});

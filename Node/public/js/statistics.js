@@ -7,6 +7,13 @@
  * 
  * @version      6.0
  */
+ 
+ /**
+ * Draws a Graph with the given data
+ *
+ * @param data - the x and y data to be drawn
+ * @param isFirst - should be true if data is for companies, else false
+ */
 function drawDiagram(data, isFirst){
 	
 			var svg = d3.select("svg"),
@@ -81,6 +88,9 @@ function drawDiagram(data, isFirst){
 				.text("Vorkommen in den letzten 30 Tagen");
 }
 
+/**
+* Loads the monthList key from Redis and counts the appearance of companies and keywords
+*/
 function loadMonthList() {
 	$.ajax({
 		url: "/api/news/" + "monthList",
