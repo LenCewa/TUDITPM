@@ -2,9 +2,11 @@ package TUDITPM.Kafka.Consumer;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.Locale;
 
 import org.bson.Document;
 import org.json.JSONArray;
@@ -111,7 +113,7 @@ public class Consumer extends AbstractConsumer {
 					json.append("keyword", keyword);
 
 					// Create Date Object from String
-					DateFormat df = DateFormat.getDateInstance();
+					SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 					Date date = new Date();
 					try {
 						date = df.parse(json.getString("date"));
