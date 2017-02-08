@@ -56,23 +56,24 @@ module.exports = function(app, client) {
 					});
 				}
 				var found = false;
+				var data, i;
 				try {
-					var data = require('../config/data/' + zip + '.json');
+					data = require('../config/data/' + zip + '.json');
 					found = true;
 				} catch (err) {}
 				if (!found) {
-					for (var i = 0; i < 10; i++) {
+					for (i = 0; i < 10; i++) {
 						try {
-							var data = require('../config/data/' + zip.substring(0, 4) + i + '.json');
+							data = require('../config/data/' + zip.substring(0, 4) + i + '.json');
 							found = true;
 							break;
 						} catch (err) {}
 					}
 				}
 				if (!found) {
-					for (var i = 0; i < 100; i++) {
+					for (i = 0; i < 100; i++) {
 						try {
-							var data = require('../config/data/' + zip.substring(0, 3) + i + '.json');
+							data = require('../config/data/' + zip.substring(0, 3) + i + '.json');
 							found = true;
 							break;
 						} catch (err) {}

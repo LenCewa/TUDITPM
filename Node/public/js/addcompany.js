@@ -55,6 +55,14 @@ function companyDataLoaded() {
 	createTable();
 }
 
+function delayedReload() {
+	showAlert("Daten werden aktualisiert...", Level.Info, 10000);
+	setTimeout(function() {
+		showAlert("Daten erfolgreich aktualisiert.", Level.Success, 1000);
+		localData.reloadCompanies(createTable);
+	}, 10000);
+}
+
 /**
  * Sends the company name and zip-code given in the input fields to the server.
  */

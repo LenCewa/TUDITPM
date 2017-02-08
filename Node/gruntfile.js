@@ -28,7 +28,8 @@ module.exports = function(grunt) {
 					'showAlert': false,
 					'localData': false,
 					'd3': false,
-					'topojson': false
+					'topojson': false,
+					'confirm': false
 				}
 			},
 			all: ['public/**/*.js', '!public/libs/**/*.js', '!public/dist/js/*.js', 'app/**/*.js', 'Gruntfile.js']

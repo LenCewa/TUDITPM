@@ -24,28 +24,32 @@ Author Arne Schmidt
     <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
     <!-- set charset to utf-8 -->
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-filestyle/1.2.1/bootstrap-filestyle.min.js"> </script>
-    
 </head>
 
 <body>
     <div ID="navbar"></div>
     <div ID="middle">
         <div class="row">
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-2">
                 <input class="form-control" ID="search" type="text" onkeyup="createTable()" placeholder="Suche">
             </div>
             <div class="form-group col-md-3">
                 <input class="form-control" ID="companyName" type="text" placeholder="Unternehmensname">
             </div>
-            <div class="form-group col-md-3">
+            <div class="form-group col-md-1">
                 <input class="form-control" ID="zipCode" type="text" placeholder="Postleitzahl">
             </div>
+            <form class="form-inline row col-md-4" id="uploadForm" action="/api/uploadCompany" method="post" enctype="multipart/form-data">
+                <div class="col-md-8">
+                    <input style="width:100%" name="file" type="file" accept="text/*">
+                </div>
+                <div class="col-md-4">
+                    <button style="width:100%" class="btn btn-primary" onClick='delayedReload()'>Upload</button>
+                </div>
+            </form>
             <div class="col-md-2">
                 <input style="width:100%" class="btn btn-primary" type="button" value="Unternehmen hinzufügen" onClick='createCompany()'></input>
             </div>
-			
         </div>
         <table id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">
             <thead>
@@ -59,35 +63,15 @@ Author Arne Schmidt
                 </tr>
             </thead>
         </table>
-    
-        <div class="row">
-            <div class="col-md-4"></div>
-            <form class="form-inline col-md-4" id="uploadForm" method='post' action='/api/uploadCompany' enctype="multipart/form-data">
-                <div class="form-group">
-                    <input class="filestyle" type='file' data-buttonText="Datei auswählen" name='fileUploaded'>
-                </div>
-                <div class="form-group">
-                    <input type='submit' class="btn btn-primary" value="Hochladen"> 
-                </div>
-				<div class="form-group">
-					<input style="width:100%" class="btn btn-primary" type="button" value="Checked-Data leeren" onClick='emptyCheckeddata()'></input>
-				</div>
-            </form>
-            <div class="col-md-4"></div>
-        </div>
-    
     </div>
     <div ID="bottom">
     </div>
 </body>
 <script type=" text/javascript ">
 $(function() {
-    $("#navbar ").load("html/navbar.html ");
+    $("#navbar").load("html/navbar.html ");
     createTable();
 });
-
-    
-
 </script>
 
 </html>

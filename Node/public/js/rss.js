@@ -63,6 +63,14 @@ function rssDataLoaded() {
 	createTable();
 }
 
+function delayedReload() {
+	showAlert("Daten werden aktualisiert...", Level.Info, 20000);
+	setTimeout(function() {
+		showAlert("Daten erfolgreich aktualisiert.", Level.Success, 1000);
+		localData.reloadRSS(createTable);
+	}, 20000);
+}
+
 /**
  * Deletes the specified rss url from the Database
  * @param rssUrl - the rss url to be deleted

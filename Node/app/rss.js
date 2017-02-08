@@ -34,6 +34,48 @@ function getLinks(callback) {
 	});
 }
 
+function addLink(link, producer, callback) {
+	mongodb.connect(connections.mongodb.config, function(err, db) {
+		if (err) {
+			callback({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: err
+				}
+			});
+		}
+		//Open collection
+		var collection = db.collection('rsslinks', function(err, collection) {});
+
+		// checks if doc already exists
+		collection.findOne({
+			link: link,
+		}, function(err, document) {
+			if (document !== null) {
+				callback({
+					err: {
+						de: 'RSS Feed ist bereits vorhanden',
+						en: 'RSS feed already exists',
+						err: null
+					}
+				});
+			}
+			collection.insert({
+				link: link,
+			}, function(err, records) {});
+			var msg = [{
+				topic: 'reload',
+				messages: 'rss url added',
+				partition: 0
+			}];
+			producer.send(msg, function(err, data) {});
+
+			callback();
+		});
+	});
+}
+
 module.exports = function(app, producer) {
 	console.log('rss routes loading');
 	/**
@@ -52,46 +94,47 @@ module.exports = function(app, producer) {
 					err: null
 				}
 			});
-		}
-		mongodb.connect(connections.mongodb.config, function(err, db) {
-			if (err) {
-				return res.status(500).send({
-					err: {
-						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-						en: 'MongoDB connection could not be established',
-						err: null
-					}
-				});
-			}
-			//Open collection
-			var collection = db.collection('rsslinks', function(err, collection) {});
-
-			// checks if doc already exists
-			collection.findOne({
-				link: req.body.link,
-			}, function(err, document) {
-				if (document !== null) {
-					return res.status(400).send({
-						err: {
-							de: 'RSS Feed ist bereits vorhanden',
-							en: 'RSS feed already exists',
-							err: null
-						}
-					});
+			addLink(req.body.link, producer, function(err) {
+				if (err) {
+					return res.status(400).send(err);
 				}
-				collection.insert({
-					link: req.body.link,
-				}, function(err, records) {});
-				var msg = [{
-					topic: 'reload',
-					messages: 'rss url added',
-					partition: 0
-				}];
-				producer.send(msg, function(err, data) {
-					console.log(data);
-				});
+			});
+		}
 
-				return res.status(204).send();
+	});
+
+	app.post('/api/uploadRSSFeeds', function(req, res) {
+		req.pipe(req.busboy);
+		req.busboy.on('file', function(fieldname, file, filename) {
+			file.on('data', function(data) {
+				var inhalt = "" + data;
+
+				var lines = inhalt.split(/\n/);
+
+				var readFeed = function(array) {
+					var link = array.pop().trim();
+
+					if (link === '') {
+						if (array.length > 0) {
+							readFeed(array);
+						} else {
+							return res.status(204).send();
+						}
+					} else {
+						addLink(link, producer, function(err) {
+							if (err && err.err && err.err.err) {
+								return res.status(500).send(err);
+							} else {
+								if (array.length > 0) {
+									readFeed(array);
+								} else {
+									return res.status(204).send();
+								}
+							}
+						});
+					}
+				};
+				readFeed(lines);
 			});
 		});
 	});

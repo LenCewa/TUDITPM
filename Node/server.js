@@ -195,25 +195,6 @@ var fs = require('fs-extra');       //File System - for file manipulation
 app.use(busboy());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.route('/api/uploadCompany')
-    .post(function (req, res, next) {
-    
-        req.pipe(req.busboy);
-        req.busboy.on('file', function (fieldname, file, filename) {
-            
-              file.on('data', function(data) {
-                console.log('File [' + fieldname + '] got ' + data);
-                company.uploadCompanies(data);
-              });
-              file.on('end', function() {
-                console.log('File [' + fieldname + '] Finished');
-              });
-        });
-    });
-
-
-
-
 // API routing
 company.init(app, producer);
 require('./app/rss')(app, producer);

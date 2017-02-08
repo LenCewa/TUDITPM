@@ -14,12 +14,12 @@ var connected = true;
 socket.on('redis', function(msg){
 	if (msg === 'Redis unavailable'){
 		if (connected){
-			showAlert(msg, Level.Danger);
+			showAlert('Datenbank nicht verfügbar, bitte informieren Sie einen Administrator.', Level.Danger);
 		}
 		connected = false;
 	} else {
 		if (!connected){
-			showAlert('Redis reconnected', Level.Success, 2000);
+			showAlert('Datenbank wieder verfügbar!', Level.Success, 2000);
 		}
 		connected = true;
 	}

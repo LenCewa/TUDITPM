@@ -98,46 +98,57 @@ module.exports = function(app, client) {
 						}
 					});
 				}
+				var newsToDelete;
 				for (var i = 0; i < news.length; i++) {
 					if (news[i]._id.equals(req.params.id)) {
-						var newsToDelete = news[i];
+						newsToDelete = news[i];
 						news.splice(i, 1);
-						collection.remove(newsToDelete, function(err) {
-							if (err) {
-								return res.status(500).send({
-									err: {
-										de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
-										en: 'Accessing the news failed. Please contact an adminstrator.',
-										err: err
-									}
-								});
-							}
-							client.send_command('ltrim', [req.params.company, 1, 0], function(err) {
-								if (err) {
-									console.log(err);
-								}
-								if (news.length > 0) {
-									var pushNews = function(array) {
-										var singleNews = JSON.stringify(array.pop());
-										console.log(singleNews);
-										client.send_command('lpush', [req.params.company, singleNews], function(err) {
-											if (err) {
-												console.log(err);
-											}
-											if (array.length > 0) {
-												pushNews(array);
-											} else {
-												return res.status(204).send();
-											}
-										});
-									}
-									pushNews(news);
-								} else {
-									return res.status(204).send();
+						break;
+					}
+				}
+				if (newsToDelete) {
+					collection.remove(newsToDelete, function(err) {
+						if (err) {
+							return res.status(500).send({
+								err: {
+									de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
+									en: 'Accessing the news failed. Please contact an adminstrator.',
+									err: err
 								}
 							});
+						}
+						client.send_command('ltrim', [req.params.company, 1, 0], function(err) {
+							if (err) {
+								console.log(err);
+							}
+							if (news.length > 0) {
+								var pushNews = function(array) {
+									var singleNews = JSON.stringify(array.pop());
+									console.log(singleNews);
+									client.send_command('lpush', [req.params.company, singleNews], function(err) {
+										if (err) {
+											console.log(err);
+										}
+										if (array.length > 0) {
+											pushNews(array);
+										} else {
+											return res.status(204).send();
+										}
+									});
+								};
+								pushNews(news);
+							} else {
+								return res.status(204).send();
+							}
 						});
-					}
+					});
+				} else {
+					return res.status(400).send({
+						err: {
+							de: 'Die Meldung konnte nicht gelöscht werden, da sie nicht vorhanden ist.',
+							en: 'Can not delete the news cause it does not exist.'
+						}
+					});
 				}
 			});
 		});

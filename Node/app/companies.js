@@ -59,7 +59,7 @@ exports.emptyCheckedData = function(callback) {
  * Helper function to empty the checkeddata DB
  * @param callback callback function, gets an error as first element and data as second
  */
-var saveCompany = function(name, zipCode, searchTerms, callback) {
+var saveCompany = function(producer, name, zipCode, searchTerms, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
 			callback({
@@ -108,7 +108,7 @@ var saveCompany = function(name, zipCode, searchTerms, callback) {
 	});
 };
 
-exports.init = function(app, producer) {
+exports.init = function(app, producer, io) {
 	console.log('company routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
@@ -137,7 +137,7 @@ exports.init = function(app, producer) {
 			} else {
 				return res.status(204).send();
 			}
-		})
+		});
 	});
 
 	/**
@@ -223,62 +223,71 @@ exports.init = function(app, producer) {
 		});
 
 	});
-};
 
-exports.uploadCompanies = function (data) {
-    var inhalt = "" + data;
+	app.post('/api/uploadCompany', function(req, res) {
+		req.pipe(req.busboy);
+		req.busboy.on('file', function(fieldname, file, filename) {
+			file.on('data', function(data) {
+				var inhalt = "" + data;
 
-    var lines = inhalt.split(/\n/);
-    
-    var titel = lines[0].split(';');
-    var namekey, plzkey;
-    if(titel[0].toLowerCase().includes("unternehmen")){
-        namekey = 0; plzkey = 1;
-    } else {
-        namekey = 1; plzkey = 0;
-    }
-    
-    
-    for (var i = 1; i < lines.length; i++) {
+				var lines = inhalt.split(/\n/);
 
-        var fields = lines[i].split(';');
-        
-        var name;
-        if (fields[namekey] === undefined) {
-            name = "";
-        } else{
-            name = fields[namekey].trim();
-        }
-        
-        var plz;
-        if (fields[plzkey] === undefined) {
-            plz = "";
-        } else {
-            plz = fields[plzkey].trim();
-        }
-            
-        var unternehmen = {
-            'name': name,
-            'plz' : plz
-        };
-        
-        console.log(unternehmen.name);
-        console.log(unternehmen.plz);
+				var titel = lines[0].split(';');
+				var namekey = 0;
+				if (titel[1].toLowerCase().includes("unternehmen")) {
+					namekey = 1;
+				}
 
-        if (unternehmen.name === '') {
-            console.log('Keine leeren Unternehmensnamen erlaubt.');
-        } else if (unternehmen.plz === '' || unternehmen.plz.length !== 5) {
-            console.log('Keine valide Postleitzahl eingegeben.');
-        } else {
-            var searchTerms = [];
-            saveCompany(unternehmen.name, unternehmen.plz, searchTerms, function(err) {
-                if (err) {
-                    return res.status(500).send(err);
-                } else {
-                    return res.status(204).send();
-                }
-            });
-            console.log("Hinzugefügt - Name: " + unternehmen.name + ", PLZ: " + unternehmen.plz);
-		}
-    }
+				var readCompany = function(array) {
+					var fields = array.pop().split(';');
+
+					var name = '';
+					if (fields[namekey] !== undefined) {
+						name = fields[namekey].trim();
+					}
+
+					var plz = '';
+					if (fields[1 - namekey] !== undefined) {
+						plz = fields[1 - namekey].trim();
+					}
+
+					if (name === '') {
+						console.log('Keine leeren Unternehmensnamen erlaubt.');
+						if (array.length > 0) {
+							readCompany(array);
+						} else {
+							console.log('Emit');
+							io.emit('companies uploaded');
+							return res.status(204).send();
+						}
+					} else if (plz === '' || plz.length !== 5) {
+						console.log('Keine valide Postleitzahl eingegeben.');
+						if (array.length > 0) {
+							readCompany(array);
+						} else {
+							console.log('Emit');
+							io.emit('companies uploaded');
+							return res.status(204).send();
+						}
+					} else {
+						var searchTerms = [];
+						saveCompany(producer, name, plz, searchTerms, function(err) {
+							if (err) {
+								return res.status(500).send(err);
+							} else {
+								if (array.length > 0) {
+									readCompany(array);
+								} else {
+									console.log('Emit');
+									io.emit('companies uploaded');
+									return res.status(204).send();
+								}
+							}
+						});
+					}
+				};
+				readCompany(lines);
+			});
+		});
+	});
 };
