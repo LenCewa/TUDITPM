@@ -77,7 +77,7 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 		try {
 			tweet = msgQueue.take().trim();
 			JSONObject json = new JSONObject(tweet);
-			String text = json.getString("text");
+			String text = json.getString("text").replaceAll("RT @.*?\\s+", "");
 			checkForCompany(Topic.twitter, "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"), "");
 		} catch (InterruptedException e) {
 			e.printStackTrace();

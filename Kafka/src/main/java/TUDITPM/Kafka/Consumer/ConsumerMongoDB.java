@@ -1,8 +1,12 @@
 package TUDITPM.Kafka.Consumer;
 
+import java.util.HashMap;
+
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.mongodb.BasicDBObject;
 
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 
@@ -46,8 +50,12 @@ public class ConsumerMongoDB extends AbstractConsumer {
 			// title field is optional and not saved if not
 			// available
 		}
+		HashMap<String, String> query = new HashMap<>();
+		query.put("company", json.getString("companyKey"));
+		query.put("link", json.getString("link"));
+		
 		// Write to DB
-		if(!mongo.find(json.getString("companyKey"), json.getString("companyKey"), json.getString("link")))
+		if(!mongo.find(json.getString("companyKey"), query))
 			mongo.writeToDb(mongoDBdoc, json.getString("source"));
 	}
 }

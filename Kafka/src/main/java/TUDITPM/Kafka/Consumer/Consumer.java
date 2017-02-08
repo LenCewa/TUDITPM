@@ -2,9 +2,12 @@ package TUDITPM.Kafka.Consumer;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Locale;
 
 import org.bson.Document;
 import org.json.JSONArray;
@@ -103,15 +106,20 @@ public class Consumer extends AbstractConsumer {
 						break;
 					}
 				}
-				if (found && !mongo.find(json.getString("company"), json.getString("company"), json.getString("link"),
-						category.name, keyword)) {
+				HashMap<String, String> query = new HashMap<>();
+				query.put("company", json.getString("companyKey"));
+				query.put("link", json.getString("link"));
+				query.put("category", category.name);
+				query.put("keyword", keyword);
+
+				if (found && !mongo.find(json.getString("company"), query)) {
 					// remove the id before writing to redis
 					json.remove("id");
 					json.append("category", category.name);
 					json.append("keyword", keyword);
 
 					// Create Date Object from String
-					DateFormat df = DateFormat.getDateInstance();
+					SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 					Date date = new Date();
 					try {
 						date = df.parse(json.getString("date"));
