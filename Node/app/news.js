@@ -71,7 +71,7 @@ module.exports = function(app, client) {
 		});
 	});
 	/**
-	 *  Returns all the news
+	 *  Deletes single news from the enhanced database
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
