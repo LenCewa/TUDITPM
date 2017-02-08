@@ -60,7 +60,7 @@ public class MongoDBConnector {
 		query.put("category", obj.getString("category"));
 		query.put("keyword", obj.getString("keyword"));
 		for(Document doc : table.find(query)){
-			return doc.getString("_id");
+			return doc.get("_id").toString();
 		}
 		return null;
 	}
