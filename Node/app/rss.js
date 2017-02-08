@@ -83,7 +83,65 @@ module.exports = function(app, producer, mongodb) {
 				}, function(err, records) {});
 				var msg = [{
 					topic: 'reload',
-					messages: 'rss feed added',
+					messages: 'rss url added',
+					partition: 0
+				}];
+				producer.send(msg, function(err, data) {
+					console.log(data);
+				});
+
+				return res.status(204).send();
+			});
+		});
+	});
+
+	/**
+	 *  Takes a rss link and deletes it.
+	 *  Expects the request to contain a json with a rss link.
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
+	app.post('/api/rss/delete', function(req, res) {
+		// Check if the request is correctly formed
+		if (req.body.link === undefined || req.body.link === null || req.body.link === '') {
+			return res.status(400).send({
+				err: {
+					de: 'Der Rss Link wurde nicht angegeben.',
+					en: 'The Link cannot be empty.',
+					err: null
+				}
+			});
+		}
+		console.log(req.body.link);
+		mongodb.connect(connections.mongodb.config, function(err, db) {
+			if (err) {
+				return res.status(500).send({
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: err
+					}
+				});
+			}
+			//Open collection
+			var collection = db.collection('rsslinks', function(err, collection) {});
+
+			// checks if doc already exists
+			collection.remove({
+				link: req.body.link,
+			}, function(err, document) {
+				if (err) {
+					return res.status(500).send({
+						err: {
+							de: 'Fehler in der MongoDB Verbindung',
+							en: 'Error in MongoDB connection',
+							err: err
+						}
+					});
+				}
+				var msg = [{
+					topic: 'reload',
+					messages: 'rss url removed',
 					partition: 0
 				}];
 				producer.send(msg, function(err, data) {

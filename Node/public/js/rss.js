@@ -20,7 +20,7 @@ function createTable() {
 		if ((localData.rss[i].link && localData.rss[i].link.toUpperCase().indexOf(filter) > -1) ||
 			(filter && filter === '')) {
 			data.push(localData.rss[i]);
-			data[data.length - 1].button = '<button class="btn btn-danger pull-right" onClick="deleteRss(\'' + localData.rss[i] + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
+			data[data.length - 1].button = '<button class="btn btn-danger pull-right" onClick="deleteRss(\'' + localData.rss[i].link + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
 		}
 	}
 
@@ -58,6 +58,29 @@ function createTable() {
 
 function rssDataLoaded() {
 	createTable();
+}
+
+/**
+ * Sends the rss given in the input field "rssName" to the server.
+ */
+function deleteRss(rssUrl) {
+	if (confirm('Möchten Sie den Feed "' + rssUrl + '" wirklich löschen. Das System wird dann nicht mehr in dieser Quelle suchen. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
+		$.ajax({
+			type: 'POST',
+			url: '/api/rss/delete',
+			data: '{"link":"' + rssUrl + '"}',
+			statusCode: {
+				400: function(error) {
+					showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+				},
+				204: localData.reloadRSS(function() {
+					createTable();
+					showAlert(rssUrl + ' gelöscht!', Level.Success, 2000);
+				}),
+			},
+			contentType: 'application/json'
+		});
+	}
 }
 
 /**

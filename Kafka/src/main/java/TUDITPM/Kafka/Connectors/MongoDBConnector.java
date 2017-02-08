@@ -50,9 +50,19 @@ public class MongoDBConnector {
 	 * @param collection
 	 *            - collection in which the data will be stored
 	 */
-	public void writeToDb(Document obj, String collection) {
+	public String writeToDb(Document obj, String collection) {
 		MongoCollection<Document> table = database.getCollection(collection);
 		table.insertOne(obj);
+		
+		BasicDBObject query = new BasicDBObject();
+		query.put("link", obj.getString("link"));
+		query.put("company", obj.getString("company"));
+		query.put("category", obj.getString("category"));
+		query.put("keyword", obj.getString("keyword"));
+		for(Document doc : table.find(query)){
+			return doc.getString("_id");
+		}
+		return null;
 	}
 
 	/**

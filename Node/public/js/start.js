@@ -16,16 +16,21 @@ if (!selectedCompanies) {
 }
 
 var showAllCompanies = false;
-var news, key;
+var news, tableData, key;
 var firstDataLoad = true;
 
 function createTable() {
-	var data = [];
+	tableData = [];
 
 	// Declare variables
 	var filter, i, j, show;
 	// Split search entry to search for each word alone
 	filter = $('#newsSearch').val().toUpperCase().trim().split(' ');
+
+	// Loop through all data and add the button to remove a news
+	for (i = 0; i < news.length; i++) {
+		news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
+	}
 
 	if (filter && (filter.length > 1 || filter[0] !== '')) {
 		// Loop through all data and remove those who don't match the search query
@@ -44,14 +49,14 @@ function createTable() {
 				}
 			}
 			if (show) {
-				data.push(news[i]);
+				tableData.push(news[i]);
 			}
 		}
 	} else {
-		data = news;
+		tableData = news;
 	}
 
-	$('#table').bootstrapTable('load', data);
+	$('#table').bootstrapTable('load', tableData);
 }
 
 function reloadCompanyList() {
@@ -203,6 +208,26 @@ function searchCompany() {
 	}
 }
 
+function deleteNews(id) {
+	for (var i = 0; i < tableData.length; i++) {
+		if (tableData[i]._id === id) {
+			if (confirm('Möchten Sie die Meldung zu ' + tableData[i].company + ' vom ' + tableData[i].date + ' als unwichtig markieren')) {
+				$.ajax({
+					url: '/api/news/' + localData.getCompanyObject(tableData[i].company).key + '/' + id,
+					type: 'DELETE',
+					success: function(data) { // jshint ignore:line
+						console.log('successful');
+						localData.reloadCompanies(function() {
+							reloadData();
+						});
+					}
+				});
+			}
+			break;
+		}
+	}
+}
+
 function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
 	//If JSONData is not an object then JSON.parse will parse the JSON string in an Object
 	var arrData = typeof JSONData !== 'object' ? JSON.parse(JSONData) : JSONData;
@@ -279,5 +304,5 @@ function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
 
 function exportCSV() {
 	var utc = new Date().toJSON().slice(0, 10).replace(/-/g, '/');
-	JSONToCSVConvertor(news, utc, true);
+	JSONToCSVConvertor(tableData, utc, true);
 }
