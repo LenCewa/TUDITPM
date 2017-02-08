@@ -1,6 +1,7 @@
 package TUDITPM.Kafka.Connectors;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.bson.Document;
 import org.json.JSONObject;
@@ -66,38 +67,15 @@ public class MongoDBConnector {
 	}
 	
 	/**
-	 * Checks if unique company and link pair is in the specified collection
+	 * Executes a query to find specific data
 	 * @param collection - the collection to be searched
-	 * @param company - the company to search for
-	 * @param link - the link to search for
-	 * @return true if contained, else false
+	 * @param hm - A HashMap which contains all values to be searched for
+	 * @return true if found else false
 	 */
-	public boolean find(String collection, String company, String link){
+	public boolean find(String collection, HashMap<String, String> hm){
 		BasicDBObject query = new BasicDBObject();
-		query.put("link", link);
-		query.put("company", company);
-
-		for(Document doc : getCollection(collection).find(query))
-			return true;
+		query.putAll(hm);
 		
-		return false;
-	}
-	
-	/**
-	 * Checks if unique company, link and keyword pair is in the specified collection
-	 * @param collection - the collection to be searched
-	 * @param company - the company to search for
-	 * @param link - the link to search for
-	 * @param keyword - keyword to search for
-	 * @return true if contained, else false
-	 */
-	public boolean find(String collection, String company, String link, String category, String keyword){
-		BasicDBObject query = new BasicDBObject();
-		query.put("link", link);
-		query.put("company", company);
-		query.put("category", category);
-		query.put("keyword", keyword);
-
 		for(Document doc : getCollection(collection).find(query))
 			return true;
 		
