@@ -5,13 +5,14 @@
  * Contains all functions to manipulate the list of keywords
  * 
  * @author       Arne Schmidt
- * @version      1.0
+ * @author       Tobias Mahncke
+ * @version      6.0
  *
- * @requires fs-extra
+ * @requires mongodb
  */
 
 // Dependencies
-var fs = require('fs-extra');
+var mongodb = require('mongodb');
 
 // load configuration
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
@@ -20,7 +21,7 @@ var connections = require('../config/connections.conf.json')[process.env.NODE_EN
  * Helper function to read the url list
  * @param callback callback function, gets an error as first element and data as second
  */
-function readKeywords(mongodb, callback) {
+function readKeywords(callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
 			return callback(err, null);
@@ -36,7 +37,7 @@ function readKeywords(mongodb, callback) {
 	});
 }
 
-module.exports = function(app, producer, mongodb) {
+module.exports = function(app, producer) {
 	console.log('keywords routes loading');
 	/**
 	 *  Takes a keyword and appends it to the kafka list of keywords.
@@ -142,7 +143,7 @@ module.exports = function(app, producer, mongodb) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/keywords', function(req, res) {
-		readKeywords(mongodb, function(err, data) {
+		readKeywords(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
@@ -252,6 +253,5 @@ module.exports = function(app, producer, mongodb) {
 				}
 			});
 		});
-
 	});
 };

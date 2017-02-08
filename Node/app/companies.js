@@ -10,6 +10,7 @@
 
 // load configuration
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
+var mongodb = require('mongodb');
 
 var fs = require('fs-extra');
 
@@ -17,7 +18,7 @@ var fs = require('fs-extra');
  * Helper function to read the company list
  * @param callback callback function, gets an error as first element and data as second
  */
-exports.getCompanies = function(mongodb, callback) {
+exports.getCompanies = function(callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
 			callback(err);
@@ -38,7 +39,7 @@ exports.getCompanies = function(mongodb, callback) {
  * Helper function to empty the checkeddata DB
  * @param callback callback function, gets an error as first element and data as second
  */
-exports.emptyCheckedData = function(mongodb, callback) {
+exports.emptyCheckedData = function(callback) {
 	mongodb.connect(connections.mongodb.checkeddata, function(err, db) {
 		if (err) {
 			callback(err);
@@ -54,7 +55,60 @@ exports.emptyCheckedData = function(mongodb, callback) {
 	});
 };
 
-exports.init = function(app, producer, mongodb) {
+/**
+ * Helper function to empty the checkeddata DB
+ * @param callback callback function, gets an error as first element and data as second
+ */
+var saveCompany = function(name, zipCode, searchTerms, callback) {
+	mongodb.connect(connections.mongodb.config, function(err, db) {
+		if (err) {
+			callback({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: null
+				}
+			});
+		}
+		//Open collection
+		var collection = db.collection('companies', function(err, collcetion) {});
+
+		var forms = require('../config/legalForms.json');
+		var searchName = name;
+		for (var j = 0; j < forms.length; j++) {
+			searchName = searchName.replace(forms[j], '').trim();
+		}
+		var key = searchName.replace(/\./g).trim();
+
+		//Store collection in array
+		var doc = {
+			name: name,
+			searchName: searchName,
+			key: key,
+			zipCode: zipCode,
+			searchTerms: searchTerms
+		};
+
+		// checks if doc already exists
+		collection.remove({
+			name: name,
+			zipCode: zipCode
+		}, function(err, document) {
+			collection.insert(doc, function(err, records) {});
+			var msg = [{
+				topic: 'reload',
+				messages: 'company added',
+				partition: 0
+			}, ];
+			producer.send(msg, function(err, data) {
+				console.log(data);
+			});
+			callback(null);
+		});
+	});
+};
+
+exports.init = function(app, producer) {
 	console.log('company routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
@@ -73,58 +127,17 @@ exports.init = function(app, producer, mongodb) {
 				}
 			});
 		}
-		mongodb.connect(connections.mongodb.config, function(err, db) {
+		var searchTerms = [];
+		if (req.body.searchTerms) {
+			searchTerms = req.body.searchTerms;
+		}
+		saveCompany(req.body.name, req.body.zipCode, searchTerms, function(err) {
 			if (err) {
-				return res.status(500).send({
-					err: {
-						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
-						en: 'MongoDB connection could not be established',
-						err: null
-					}
-				});
-			}
-			//Open collection
-			var collection = db.collection('companies', function(err, collcetion) {});
-
-			var forms = require('../config/legalForms.json');
-			var searchName = req.body.name;
-			for (var j = 0; j < forms.length; j++) {
-				searchName = searchName.replace(forms[j], '').trim();
-			}
-			var key = searchName.replace(/\./g).trim();
-
-			var searchTerms = [];
-			if (req.body.searchTerms) {
-				searchTerms = req.body.searchTerms;
-			}
-
-			//Store collection in array
-			var doc = {
-				name: req.body.name,
-				searchName: searchName,
-				key: key,
-				zipCode: req.body.zipCode,
-				searchTerms: searchTerms
-			};
-
-			// checks if doc already exists
-			collection.remove({
-				name: req.body.name,
-				zipCode: req.body.zipCode
-			}, function(err, document) {
-				collection.insert(doc, function(err, records) {});
-				var msg = [{
-					topic: 'reload',
-					messages: 'company added',
-					partition: 0
-				}, ];
-				producer.send(msg, function(err, data) {
-					console.log(data);
-				});
-
+				return res.status(500).send(err);
+			} else {
 				return res.status(204).send();
-			});
-		});
+			}
+		})
 	});
 
 	/**
@@ -133,21 +146,21 @@ exports.init = function(app, producer, mongodb) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/company', function(req, res) {
-		exports.getCompanies(mongodb, function(err, data) {
+		exports.getCompanies(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
 			return res.json(data);
 		});
 	});
-	
+
 	/**
 	 *  Emptys the checkeddata DB vie HTTP delete.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
 	app.delete('/api/emptyCheckedData', function(req, res) {
-		exports.emptyCheckedData(mongodb, function(err, data) {
+		exports.emptyCheckedData(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}

@@ -38,9 +38,6 @@ var connections = require('./config/connections.conf.json')[process.env.NODE_ENV
 // Create a redis client
 var client = redis.createClient(connections.redis.port, connections.redis.address);
 
-//Create a mongoDB client
-var mongoClient = mongodb.MongoClient;
-
 // Dependencies
 var company = require('./app/companies');
 
@@ -64,14 +61,14 @@ producer.on('error', function() {
 // Connect to mongoDB
 mongodb.connect(connections.mongodb.news, function(err, db) {
 	if (err) {
-		return console.dir(err);
+		return console.log(err);
 	}
 
 	client.flushall(function(err) {
 		if (err) {
 			console.log(err);
 		}
-		company.getCompanies(mongodb, function(err, companies) {
+		company.getCompanies(function(err, companies) {
 			var readCollection = function(collections) {
 				var company = collections.pop();
 				if (company) {
@@ -224,9 +221,9 @@ app.get('/upload', function routeIndex(req, res) {
 
 
 // API routing
-company.init(app, producer, mongodb);
-require('./app/rss')(app, producer, mongodb);
-require('./app/keywords')(app, producer, mongodb);
+company.init(app, producer);
+require('./app/rss')(app, producer);
+require('./app/keywords')(app, producer);
 require('./app/news')(app, client);
 require('./app/map')(app, client);
 

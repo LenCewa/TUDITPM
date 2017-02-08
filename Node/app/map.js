@@ -22,6 +22,7 @@ module.exports = function(app, client) {
 	app.get('/api/map/:data', function(req, res) {
 		var selected = req.params.data.split(',');
 		var inputFiles = [];
+
 		var combineJSON = function() {
 			var comand = '-i config/data/germany.json ';
 			for (var i = 0; i < inputFiles.length; i++) {
@@ -54,9 +55,30 @@ module.exports = function(app, client) {
 						}
 					});
 				}
+				var found = false;
 				try {
 					var data = require('../config/data/' + zip + '.json');
-
+					found = true;
+				} catch (err) {}
+				if (!found) {
+					for (var i = 0; i < 10; i++) {
+						try {
+							var data = require('../config/data/' + zip.substring(0, 4) + i + '.json');
+							found = true;
+							break;
+						} catch (err) {}
+					}
+				}
+				if (!found) {
+					for (var i = 0; i < 100; i++) {
+						try {
+							var data = require('../config/data/' + zip.substring(0, 3) + i + '.json');
+							found = true;
+							break;
+						} catch (err) {}
+					}
+				}
+				if (found) {
 					var tmpFilename = new Date().getTime();
 					if (read < length) {
 						data.features[0].properties.style = 'new';
@@ -75,11 +97,11 @@ module.exports = function(app, client) {
 							getKey(array);
 						}
 					});
-				} catch (err) {
+				} else {
 					return res.status(500).send({
 						err: {
-							de: 'Fehler beim Zugriff auf die Meldungen. Bitte informieren Sie einen Administrator.',
-							en: 'Accessing the news failed. Please contact an adminstrator.',
+							de: 'Die PLZ ' + zip + ' könnte keinem Gebiet zugeordnet werden. Bitte informieren Sie einen Administrator.',
+							en: 'The zip ' + zip + ' could not be assigned to an area. Please contact an adminstrator.',
 							err: err
 						}
 					});

@@ -11,8 +11,9 @@
  */
 var server = require('../server');
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
+var mongodb = require('mongodb');
 
-module.exports = function(app, mongodb, client) {
+module.exports = function(app, client) {
 	console.log('news routes loading');
 	/**
 	 *  Returns all the news

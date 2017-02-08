@@ -11,12 +11,13 @@
 
 // load configuration
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
+var mongodb = require('mongodb');
 
 /**
  * Helper function to read the url list
  * @param callback callback function, gets an error as first element and data as second
  */
-function getLinks(mongodb, callback) {
+function getLinks(callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
 			callback(err);
@@ -33,7 +34,7 @@ function getLinks(mongodb, callback) {
 	});
 }
 
-module.exports = function(app, producer, mongodb) {
+module.exports = function(app, producer) {
 	console.log('rss routes loading');
 	/**
 	 *  Takes a rss link and appends it to the kafka list of rss feeds.
@@ -159,7 +160,7 @@ module.exports = function(app, producer, mongodb) {
 	 *  @param res The HTTP response object
 	 */
 	app.get('/api/rss', function(req, res) {
-		getLinks(mongodb, function(err, data) {
+		getLinks(function(err, data) {
 			if (err) {
 				return res.status(500).send(err);
 			}
