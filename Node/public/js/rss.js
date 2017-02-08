@@ -8,6 +8,9 @@
  * @version      6.0
  */
 
+/**
+ * Creates a html table to show the data
+ */
 function createTable() {
 	var data = [];
 
@@ -61,7 +64,8 @@ function rssDataLoaded() {
 }
 
 /**
- * Sends the rss given in the input field "rssName" to the server.
+ * Deletes the specified rss url from the Database
+ * @param rssUrl - the rss url to be deleted
  */
 function deleteRss(rssUrl) {
 	if (confirm('Möchten Sie den Feed "' + rssUrl + '" wirklich löschen. Das System wird dann nicht mehr in dieser Quelle suchen. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
@@ -84,7 +88,7 @@ function deleteRss(rssUrl) {
 }
 
 /**
- * Sends the rss given in the input field "rssName" to the server.
+ * Adds the rss from the input field to the database
  */
 function postUrls() {
 	var rssName = $('#rssName').val().trim();

@@ -8,6 +8,9 @@
  * @version      5.0
  */
 
+/**
+ * Creates a html table to show the data
+ */
 function reloadKeywords() {
 	$('#keywordTableHead').empty();
 	$('#keywordTableBody').empty();
@@ -65,7 +68,8 @@ function keywordsDataLoaded() {
 }
 
 /**
- * Sends the keyword given in the input field "keywordName" to the server.
+ * Adds the keyword from the input field to the specified category in the database
+ * @param category - the category which contains this keyword
  */
 function postKeyword(category) {
 	if ($("[id='" + category + "']").val().trim() === '') {
@@ -95,7 +99,7 @@ function postKeyword(category) {
 
 
 /**
- * Sends the keyword given in the input field "keywordName" to the server.
+ * Adds the category given in the input field to the table
  */
 function addCategory() {
 	if ($('#newCategory').val().trim() === '') {
@@ -110,6 +114,11 @@ function addCategory() {
 	}
 }
 
+/**
+ * Deletes the keyword from the specified category
+ * @param category - the category of the keyword
+ * @param keyword - the keyword to be deleted
+ */
 function keywordToDelete(category, keyword) {
 	if (confirm('Möchten Sie das Schlagwort "' + keyword + '" aus der Kategorie "' + category + '" wirklich löschen. Das System wird dann nicht mehr nach diesem Schlagwort. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
 		$.ajax({
@@ -130,6 +139,10 @@ function keywordToDelete(category, keyword) {
 	}
 }
 
+/**
+ * Deletes the specified category and all keywords contained
+ * @param category - the category to be deleted
+ */
 function categoryToDelete(category) {
 	if (confirm('Möchten Sie die Kategorie "' + category + '" wirklich löschen. Das System wird dann nicht mehr nach Schlagwörtern aus dieser Kategorie suchen. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
 		$.ajax({

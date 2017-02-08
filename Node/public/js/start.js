@@ -19,6 +19,9 @@ var showAllCompanies = false;
 var news, tableData, key;
 var firstDataLoad = true;
 
+/**
+ * Creates a html table to show the data
+ */
 function createTable() {
 	tableData = [];
 
@@ -60,6 +63,9 @@ function createTable() {
 	$('#table').bootstrapTable('load', tableData);
 }
 
+/**
+ * Reloads the list to add new data to the table
+ */
 function reloadCompanyList() {
 	$('#companyStartTableBody').empty();
 	// Fills the table row by row
@@ -91,6 +97,9 @@ function reloadCompanyList() {
 	}
 }
 
+/**
+ * Gets all the news from redis and shows them in the table
+ */
 function reloadData() {
 	var queries = [];
 	var completeData = [];
@@ -144,6 +153,10 @@ function companyDataLoaded() {
 	reloadCompanyList();
 }
 
+/**
+ * Highlights the selected company and saves it to a cookie
+ * @param name - the name of the company to be selected
+ */
 function selectCompany(name) {
 	$('[id="' + name + '-btn"]').toggleClass('btn-default');
 	$('[id="' + name + '-btn"]').toggleClass('btn-success');
@@ -162,6 +175,9 @@ function selectCompany(name) {
 	reloadData();
 }
 
+/**
+ * Selects all companies from the list
+ */
 function showAll() {
 	showAllCompanies = !showAllCompanies;
 	$('#showAllBtn').toggleClass('btn-default');
@@ -169,6 +185,9 @@ function showAll() {
 	reloadCompanyList();
 }
 
+/**
+ * 
+ */
 function markRead(name) {
 	if (name) {
 		if (selectedCompanies[name].selected) {
@@ -209,6 +228,10 @@ function searchCompany() {
 	}
 }
 
+/**
+ * Deletes single news and reloads the table
+ * @param id - the id of the news to be deleted
+ */
 function deleteNews(id) {
 	for (var i = 0; i < tableData.length; i++) {
 		if (tableData[i]._id === id) {
@@ -229,6 +252,9 @@ function deleteNews(id) {
 	}
 }
 
+/**
+ * 
+ */
 function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
 	//If JSONData is not an object then JSON.parse will parse the JSON string in an Object
 	var arrData = typeof JSONData !== 'object' ? JSON.parse(JSONData) : JSONData;
