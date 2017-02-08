@@ -1,11 +1,13 @@
 package TUDITPM.Kafka.Producer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
+import org.apache.solr.common.util.Hash;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +22,7 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
 
 import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Topic;
+import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -35,6 +38,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
 public class ProducerTwitterStreamingAPI extends AbstractProducer {
 	private BlockingQueue<String> msgQueue;
 	private Authentication auth;
+	private MongoDBConnector mongo;
 	
 	public ProducerTwitterStreamingAPI(String env) {
 		super(env);
@@ -43,6 +47,7 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKEN"),
 				PropertyLoader.getPropertyValue(PropertyFile.credentials, "OAUTHACCESSTOKENSECRET"));
 		msgQueue = new LinkedBlockingQueue<String>(100000);
+		mongo = new MongoDBConnector("enhanceddata_" + env);
 	}
 
 
@@ -78,6 +83,17 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 			tweet = msgQueue.take().trim();
 			JSONObject json = new JSONObject(tweet);
 			String text = json.getString("text").replaceAll("RT @.*?\\s+", "");
+			
+			// Check if tweet is a retweet and original tweet is already in DB
+			for (Document company : companies) {
+				String searchName = company.getString("searchName");
+				
+				HashMap<String, String> query = new HashMap<>();
+				query.put("text", text);
+				if(mongo.find(searchName, query))
+					return;
+			}
+			
 			checkForCompany(Topic.twitter, "https://twitter.com/statuses/" + json.getString("id_str"), text, json.getString("created_at"), "");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
