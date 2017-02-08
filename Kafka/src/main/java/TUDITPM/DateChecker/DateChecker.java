@@ -17,14 +17,15 @@ import TUDITPM.Kafka.Connectors.RedisConnector;
 public class DateChecker extends TimerTask {
 
 	RedisConnector redis;
-	MongoDBConnector mongo;
+	MongoDBConnector enhanced;
+	MongoDBConnector checked;
 	MongoDBConnector config;
 
 	public DateChecker(String env) {
 		redis = new RedisConnector();
-		mongo = new MongoDBConnector("enhanceddata_" + env);
+		enhanced = new MongoDBConnector("enhanceddata_" + env);
+		checked = new MongoDBConnector("checkeddata_"+ env);
 		config = new MongoDBConnector("config_" + env);
-		loadLast30Days();
 	}
 
 	public static boolean isLastMonth(Date date) {
@@ -39,6 +40,7 @@ public class DateChecker extends TimerTask {
 	public void run() {
 
 		loadLast30Days();
+		checked.dropDatabase();
 	}
 	
 	private void loadLast30Days() {
@@ -53,7 +55,7 @@ public class DateChecker extends TimerTask {
 			BasicDBObject query = new BasicDBObject();
 			query.put("date", BasicDBObjectBuilder.start("$gte", start).add("$lte", end).get());
 	
-			for (Document doc2 : mongo.getCollection(doc.getString("searchName")).find(query).sort(new BasicDBObject("dateAdded", -1))){ 
+			for (Document doc2 : enhanced.getCollection(doc.getString("searchName")).find(query).sort(new BasicDBObject("dateAdded", -1))){ 
 				count++;
 				redis.appendJSONToList("monthList", new JSONObject(doc2.toJson()));
 			}
