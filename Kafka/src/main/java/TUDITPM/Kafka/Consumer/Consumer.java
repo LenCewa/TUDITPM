@@ -132,7 +132,8 @@ public class Consumer extends AbstractConsumer {
 					}
 
 					// Write to database and redis
-					mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
+					String dbID = mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
+					json.append("_id", dbID);
 					redis.appendJSONToList(json.getString("companyKey"), json);
 
 					if (DateChecker.isLastMonth(date)) {

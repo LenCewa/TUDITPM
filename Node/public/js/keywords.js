@@ -111,37 +111,41 @@ function addCategory() {
 }
 
 function keywordToDelete(category, keyword) {
-	$.ajax({
-		type: 'DELETE',
-		url: '/api/deleteKeyword',
-		data: '{"keyword":"' + keyword + '", "category":"' + category + '"}',
-		statusCode: {
-			204: function() {
-				$.get("/api/keywords", function(data) {
-					localData.keywords = data;
-					reloadKeywords();
-					showAlert(keyword + " gelöscht!", Level.Success, 1000);
-				});
+	if (confirm('Möchten Sie das Schlagwort "' + keyword + '" aus der Kategorie "' + category + '" wirklich löschen. Das System wird dann nicht mehr nach diesem Schlagwort. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
+		$.ajax({
+			type: 'DELETE',
+			url: '/api/deleteKeyword',
+			data: '{"keyword":"' + keyword + '", "category":"' + category + '"}',
+			statusCode: {
+				204: function() {
+					$.get("/api/keywords", function(data) {
+						localData.keywords = data;
+						reloadKeywords();
+						showAlert(keyword + " gelöscht!", Level.Success, 1000);
+					});
+				},
 			},
-		},
-		contentType: 'application/json'
-	});
+			contentType: 'application/json'
+		});
+	}
 }
 
 function categoryToDelete(category) {
-	$.ajax({
-		type: 'DELETE',
-		url: '/api/deleteCategory',
-		data: '{"category":"' + category + '"}',
-		statusCode: {
-			204: function() {
-				$.get("/api/keywords", function(data) {
-					localData.keywords = data;
-					reloadKeywords();
-					showAlert("Kategorie " + category + " gelöscht!", Level.Success, 1000);
-				});
+	if (confirm('Möchten Sie die Kategorie "' + category + '" wirklich löschen. Das System wird dann nicht mehr nach Schlagwörtern aus dieser Kategorie suchen. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
+		$.ajax({
+			type: 'DELETE',
+			url: '/api/deleteCategory',
+			data: '{"category":"' + category + '"}',
+			statusCode: {
+				204: function() {
+					$.get("/api/keywords", function(data) {
+						localData.keywords = data;
+						reloadKeywords();
+						showAlert("Kategorie " + category + " gelöscht!", Level.Success, 1000);
+					});
+				},
 			},
-		},
-		contentType: 'application/json'
-	});
+			contentType: 'application/json'
+		});
+	}
 }

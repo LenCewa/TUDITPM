@@ -103,23 +103,29 @@ function selectTerm(term, key) {
 }
 
 function removeTerm(key) {
-	console.log(key);
 	var company = localData.getCompanyObjectByKey(key);
+	var confirmDelete = false;
 	if (company.searchTerms) {
 		console.log(selectedTerms[key]);
 		if (!selectedTerms[key]) {
-			company.searchTerms.splice(0, 1);
-			console.log(company.searchTerms);
+			if (confirm('Möchten Sie den Suchbegriff "' + company.searchTerms[0] + '" wirklich löschen. Dieser Begriff wird dann vom System nicht mehr für die Suche nach dem Unternehmen genutzt.')) {
+				company.searchTerms.splice(0, 1);
+				confirmDelete = true;
+			}
 		} else {
 			for (i = 0; i < company.searchTerms.length; i++) {
 				if (selectedTerms[key] === company.searchTerms[i]) {
-					company.searchTerms.splice(i, 1);
+					if (confirm('Möchten Sie den Suchbegriff ' + company.searchTerms[i] + ' wirklich löschen. Dieser Begriff wird dann vom System nicht mehr für die Suche nach dem Unternehmen genutzt.')) {
+						company.searchTerms.splice(i, 1);
+						confirmDelete = true;
+					}
 				}
 			}
 		}
 	}
-	console.log(company);
-	postCompany(company);
+	if (confirmDelete) {
+		postCompany(company);
+	}
 }
 
 function addTerm(key) {
@@ -147,16 +153,18 @@ function addTerm(key) {
 }
 
 function deleteCompany(company, zipCode) {
-	$.ajax({
-		type: 'DELETE',
-		url: '/api/company',
-		data: '{"name":"' + company + '", "zipCode":"' + zipCode + '"}',
-		success: localData.reloadCompanies(function() {
-			createTable();
-			showAlert(company + " gelöscht!", Level.Success, 2000);
-		}),
-		contentType: 'application/json'
-	});
+	if (confirm('Möchten Sie das Unternehmen "' + company + '" wirklich löschen. Das System wird dann nicht mehr nach Daten zu diesem Unternehmen suchen. Die Daten bleiben in der Datenbank erhalten und können im Notfall von eine Administrator wiederhergestellt werden.')) {
+		$.ajax({
+			type: 'DELETE',
+			url: '/api/company',
+			data: '{"name":"' + company + '", "zipCode":"' + zipCode + '"}',
+			success: localData.reloadCompanies(function() {
+				createTable();
+				showAlert(company + " gelöscht!", Level.Success, 2000);
+			}),
+			contentType: 'application/json'
+		});
+	}
 }
 
 function emptyCheckeddata() {
@@ -164,8 +172,7 @@ function emptyCheckeddata() {
 		type: 'DELETE',
 		url: '/api/emptyCheckedData',
 		success: localData.reloadCompanies(function() {
-			createTable();
-			showAlert(company + " gelöscht!", Level.Success, 2000);
+			showAlert(" gelöscht!", Level.Success, 2000);
 		}),
 		contentType: 'application/json'
 	});
