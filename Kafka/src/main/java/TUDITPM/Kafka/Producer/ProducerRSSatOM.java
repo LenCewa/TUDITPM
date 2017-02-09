@@ -88,9 +88,11 @@ public class ProducerRSSatOM extends AbstractProducer {
 			} catch (IllegalArgumentException e) {
 				LoggingWrapper.log(getName(), Level.WARNING,
 						"Ivalid feed type for URL: " + allFeeds.get(i).toExternalForm() + ", continuing with next url");
+				continue;
 			} catch (FeedException e) {
 				LoggingWrapper.log(getName(), Level.WARNING, "Couldn't get the feed for URL: "
 						+ allFeeds.get(i).toExternalForm() + ", continuing with next url");
+				continue;
 			}
 
 			// Counter for the found and skipped entries
