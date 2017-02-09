@@ -13,6 +13,7 @@
 
 // Dependencies
 var mongodb = require('mongodb');
+var companies = require('./companies');
 
 // load configuration
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
@@ -38,7 +39,7 @@ function readKeywords(callback) {
 }
 
 module.exports = function(app, producer) {
-	console.log('keywords routes loading');
+	console.log('Keywords routes loading');
 	/**
 	 *  Takes a keyword and appends it to the kafka list of keywords.
 	 *  Expects the request to contain a json with a company name.
@@ -63,7 +64,7 @@ module.exports = function(app, producer) {
 					err: {
 						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 						en: 'MongoDB connection could not be established',
-						err: null
+						err: err
 					}
 				});
 			}
@@ -87,18 +88,18 @@ module.exports = function(app, producer) {
 				collection.findOne({
 					category: req.body.category
 				}, function(err, category) {
-					if (err ) {
+					if (err) {
 						return res.status(500).send({
 							err: {
 								de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 								en: 'MongoDB connection could not be established',
-								err: null
+								err: err
 							}
 						});
 					}
 					var sortedArray = [req.body.keyword];
- 
-					if (category !== null){
+
+					if (category !== null) {
 						var array = category.keywords;
 						array.push(req.body.keyword);
 						sortedArray = array.sort(function(a, b) {
@@ -118,7 +119,7 @@ module.exports = function(app, producer) {
 								err: {
 									de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 									en: 'MongoDB connection could not be established',
-									err: null
+									err: err
 								}
 							});
 						}
@@ -126,15 +127,22 @@ module.exports = function(app, producer) {
 							topic: 'reload',
 							messages: 'keyword added',
 							partition: 0
-						}, ];
+						}];
 						producer.send(msg, function(err, data) {});
-
-						return res.status(204).send();
+						if (req.body.clear) {
+							companies.emptyCheckedData(function(err) {
+								if (err) {
+									return res.status(500).send(err);
+								}
+								return res.status(204).send();
+							});
+						} else {
+							return res.status(204).send();
+						}
 					});
 				});
 			});
 		});
-
 	});
 
 	/**
@@ -221,14 +229,13 @@ module.exports = function(app, producer) {
 				}
 			});
 		}
-
 		mongodb.connect(connections.mongodb.config, function(err, db) {
 			if (err) {
 				return res.status(500).send({
 					err: {
 						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 						en: 'MongoDB connection could not be established',
-						err: null
+						err: err
 					}
 				});
 			}

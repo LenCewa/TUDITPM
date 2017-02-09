@@ -15,7 +15,6 @@
  * @param isFirst - should be true if data is for companies, else false
  */
 function drawDiagram(data, isFirst) {
-
 	var svg = d3.select("svg"),
 		margin = {
 			top: 50,

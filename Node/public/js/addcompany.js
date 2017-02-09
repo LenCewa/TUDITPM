@@ -11,6 +11,9 @@
 var selectedTerms = {};
 var i;
 
+/**
+ * Gets the currently selected search term for a company idetified by the key.
+ */
 function getSelectedTerm(key) {
 	if (selectedTerms[key]) {
 		return selectedTerms[key];
@@ -19,6 +22,9 @@ function getSelectedTerm(key) {
 	}
 }
 
+/** 
+ * Creates the bootstrap table of companies
+ */
 function createTable() {
 	var data = [];
 
@@ -26,13 +32,13 @@ function createTable() {
 	var filter, show;
 	filter = $('#search').val().toUpperCase().trim();
 
-
 	// Loop through all table rows, and hide those who don't match the search query
 	for (i = 0; i < localData.companies.length; i++) {
 		if ((localData.companies[i].zipCode && localData.companies[i].zipCode.toUpperCase().indexOf(filter) > -1) ||
 			(localData.companies[i].name && localData.companies[i].name.toUpperCase().indexOf(filter) > -1) ||
 			(filter && filter === '')) {
 			data.push(localData.companies[i]);
+			// Create the Button and Dropdown elements with the corresponding functions
 			data[data.length - 1].appendTerm = '';
 			if (localData.companies[i].searchTerms && localData.companies[i].searchTerms.length > 0) {
 				data[data.length - 1].appendTerm += '<div class="btn-group" style="width:100%"><button type="button" style="border-top-right-radius: 0;border-bottom-right-radius: 0;width:80%" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
@@ -47,14 +53,19 @@ function createTable() {
 			data[data.length - 1].button = '<button class="btn btn-danger pull-right" onClick="deleteCompany(\'' + localData.companies[i].name + '\',\'' + localData.companies[i].zipCode + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
 		}
 	}
-
 	$('#table').bootstrapTable('load', data);
 }
 
+/** 
+ * Gets called by localData and creates the initial table
+ */
 function companyDataLoaded() {
 	createTable();
 }
 
+/** 
+ * Reloads the data after the upload finished. As the upload uses the standard HTML5 upload we cannot access the request so we delay by 10s and reload afterwards.
+ */
 function delayedReload() {
 	showAlert("Daten werden aktualisiert...", Level.Info, 10000);
 	setTimeout(function() {
@@ -64,9 +75,10 @@ function delayedReload() {
 }
 
 /**
- * Sends the company name and zip-code given in the input fields to the server.
+ * Sends the company object to the server.
  */
 function postCompany(company) {
+	company.clear = ($('#clear').val() === 'on');
 	$.ajax({
 		type: 'POST',
 		url: '/api/company',
@@ -88,6 +100,9 @@ function postCompany(company) {
 	});
 }
 
+/**
+ * Checks the company name and zip-code given in the input fields and sends them to the server.
+ */
 function createCompany() {
 	var companyName = $('#companyName').val().trim();
 	var zipCode = $('#zipCode').val().trim();
@@ -105,16 +120,21 @@ function createCompany() {
 	}
 }
 
+/**
+ * Selects the given term for the given key from the dropdown element.
+ */
 function selectTerm(term, key) {
 	selectedTerms[key] = term;
 	createTable();
 }
 
+/**
+ * Removes the currently selected term for the given company.
+ */
 function removeTerm(key) {
 	var company = localData.getCompanyObjectByKey(key);
 	var confirmDelete = false;
 	if (company.searchTerms) {
-		console.log(selectedTerms[key]);
 		if (!selectedTerms[key]) {
 			if (confirm('Möchten Sie den Suchbegriff "' + company.searchTerms[0] + '" wirklich löschen. Dieser Begriff wird dann vom System nicht mehr für die Suche nach dem Unternehmen genutzt.')) {
 				company.searchTerms.splice(0, 1);
@@ -136,6 +156,9 @@ function removeTerm(key) {
 	}
 }
 
+/**
+ * Appends the term from the input element of the given company to the search terms.
+ */
 function addTerm(key) {
 	var term = $("[id='term" + key + "']").val().trim();
 	if (term === '') {
@@ -160,6 +183,9 @@ function addTerm(key) {
 	}
 }
 
+/**
+ * Deletes the company given by name and zip code.
+ */
 function deleteCompany(company, zipCode) {
 	if (confirm('Möchten Sie das Unternehmen "' + company + '" wirklich löschen. Das System wird dann nicht mehr nach Daten zu diesem Unternehmen suchen. Die Daten bleiben in der Datenbank erhalten und können im Notfall von eine Administrator wiederhergestellt werden.')) {
 		$.ajax({
@@ -173,15 +199,4 @@ function deleteCompany(company, zipCode) {
 			contentType: 'application/json'
 		});
 	}
-}
-
-function emptyCheckeddata() {
-	$.ajax({
-		type: 'DELETE',
-		url: '/api/emptyCheckedData',
-		success: localData.reloadCompanies(function() {
-			showAlert("checkeddata geleert!", Level.Success, 2000);
-		}),
-		contentType: 'application/json'
-	});
 }

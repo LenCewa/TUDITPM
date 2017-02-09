@@ -7,12 +7,15 @@
  * 
  * @version      6.0
  */
+
+// Wrapper for all data
 var localData = {
 	companies: null,
 	keywords: null,
 	rss: null
 };
 
+// Load data on page loading
 $.get("/api/company", function(data) {
 	localData.companies = data;
 	// Call the data loaded function. Implement this function in another js file to react to the finished data load.
@@ -37,6 +40,9 @@ $.get("/api/keywords", function(data) {
 	}
 });
 
+/**
+ * Reloads the companies and executes the callback.
+ */
 localData.reloadCompanies = function(callback) {
 	$.get("/api/company", function(data) {
 		localData.companies = data;
@@ -44,6 +50,9 @@ localData.reloadCompanies = function(callback) {
 	});
 };
 
+/**
+ * Reloads the rss feed and executes the callback.
+ */
 localData.reloadRSS = function(callback) {
 	$.get("/api/rss", function(data) {
 		localData.rss = data;
@@ -51,6 +60,9 @@ localData.reloadRSS = function(callback) {
 	});
 };
 
+/**
+ * Reloads the keywords and executes the callback.
+ */
 localData.reloadKeywords = function(callback) {
 	$.get("/api/keywords", function(data) {
 		localData.keywords = data;
@@ -59,6 +71,9 @@ localData.reloadKeywords = function(callback) {
 };
 
 
+/**
+ * Returns the company object to the given company name.
+ */
 localData.getCompanyObject = function(name) {
 	if (localData.companies) {
 		for (var i = 0; i < localData.companies.length; i++) {
@@ -69,6 +84,9 @@ localData.getCompanyObject = function(name) {
 	}
 };
 
+/**
+ * Returns the company object to the given company key.
+ */
 localData.getCompanyObjectByKey = function(key) {
 	if (localData.companies) {
 		for (var i = 0; i < localData.companies.length; i++) {

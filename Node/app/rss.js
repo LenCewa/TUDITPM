@@ -1,5 +1,6 @@
 'use strict';
 // app/rss.js
+
 /**
  * Contains all functions to manipulate the list of rss feeds
  * 
@@ -7,11 +8,15 @@
  * @author       Tobias Mahncke
  * 
  * @version      6.0
+ * 
+ * @requires mongodb
  */
+
+// Dependencies
+var mongodb = require('mongodb');
 
 // load configuration
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
-var mongodb = require('mongodb');
 
 /**
  * Helper function to read the url list
@@ -20,8 +25,13 @@ var mongodb = require('mongodb');
 function getLinks(callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			callback(err);
-			return console.log(err);
+			return callback({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: err
+				}
+			});
 		}
 		//Open collection
 		var collection = db.collection('rsslinks', function(err, collection) {});
@@ -34,10 +44,16 @@ function getLinks(callback) {
 	});
 }
 
+/**
+ * Helper function to save a rss feed
+ * @param link link of the rss feed
+ * @param producer kafka producer to reload the kafka services
+ * @param callback callback function, gets an error as first element if existing
+ */
 function addLink(link, producer, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			callback({
+			return callback({
 				err: {
 					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 					en: 'MongoDB connection could not be established',
@@ -48,12 +64,12 @@ function addLink(link, producer, callback) {
 		//Open collection
 		var collection = db.collection('rsslinks', function(err, collection) {});
 
-		// checks if doc already exists
+		// checks if link already exists
 		collection.findOne({
 			link: link,
 		}, function(err, document) {
 			if (document !== null) {
-				callback({
+				return callback({
 					err: {
 						de: 'RSS Feed ist bereits vorhanden',
 						en: 'RSS feed already exists',
@@ -70,16 +86,15 @@ function addLink(link, producer, callback) {
 				partition: 0
 			}];
 			producer.send(msg, function(err, data) {});
-
 			callback();
 		});
 	});
 }
 
-module.exports = function(app, producer) {
-	console.log('rss routes loading');
+exports.init = function(app, producer) {
+	console.log('RSS routes loading');
 	/**
-	 *  Takes a rss link and appends it to the kafka list of rss feeds.
+	 *  Takes a rss link and appends it to the list of rss feeds.
 	 *  Expects the request to contain a json with a rss link.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
@@ -94,22 +109,25 @@ module.exports = function(app, producer) {
 					err: null
 				}
 			});
-			addLink(req.body.link, producer, function(err) {
-				if (err) {
-					return res.status(400).send(err);
-				}
-			});
 		}
-
+		addLink(req.body.link, producer, function(err) {
+			if (err) {
+				return res.status(400).send(err);
+			}
+		});
 	});
 
+	/**
+	 *  Takes a file of line seperated feed URLs that is uploaded and transforms it into multiple rss feed entries
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
 	app.post('/api/uploadRSSFeeds', function(req, res) {
 		req.pipe(req.busboy);
 		req.busboy.on('file', function(fieldname, file, filename) {
 			file.on('data', function(data) {
-				var inhalt = "" + data;
-
-				var lines = inhalt.split(/\n/);
+				data = "" + data;
+				var lines = data.split(/\n/);
 
 				var readFeed = function(array) {
 					var link = array.pop().trim();
@@ -145,7 +163,7 @@ module.exports = function(app, producer) {
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.post('/api/rss/delete', function(req, res) {
+	app.delete('/api/rss', function(req, res) {
 		// Check if the request is correctly formed
 		if (req.body.link === undefined || req.body.link === null || req.body.link === '') {
 			return res.status(400).send({
@@ -156,7 +174,6 @@ module.exports = function(app, producer) {
 				}
 			});
 		}
-		console.log(req.body.link);
 		mongodb.connect(connections.mongodb.config, function(err, db) {
 			if (err) {
 				return res.status(500).send({
@@ -189,7 +206,9 @@ module.exports = function(app, producer) {
 					partition: 0
 				}];
 				producer.send(msg, function(err, data) {
-					console.log(data);
+					if (err) {
+						console.log(err);
+					}
 				});
 
 				return res.status(204).send();

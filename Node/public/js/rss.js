@@ -1,5 +1,6 @@
 'use strict';
-// public/js/addcompany.js
+// public/js/rss.js
+
 /**
  * Javascript file for all the funtions used in the keyword configruation page.
  * 
@@ -9,7 +10,7 @@
  */
 
 /**
- * Creates a html table to show the data
+ * Creates a bootstrap table to show the data
  */
 function createTable() {
 	var data = [];
@@ -27,6 +28,7 @@ function createTable() {
 		}
 	}
 
+	// Split the data into four columns to use the space more effectively
 	var tableData = [];
 	for (i = 0; i < data.length; i += 4) {
 		tableData[i / 4] = {
@@ -59,10 +61,16 @@ function createTable() {
 	$('#table').bootstrapTable('load', tableData);
 }
 
+/** 
+ * Gets called by localData and creates the initial table
+ */
 function rssDataLoaded() {
 	createTable();
 }
 
+/** 
+ * Reloads the data after the upload finished. As the upload uses the standard HTML5 upload we cannot access the request so we delay by 20s and reload afterwards.
+ */
 function delayedReload() {
 	showAlert("Daten werden aktualisiert...", Level.Info, 20000);
 	setTimeout(function() {
@@ -78,8 +86,8 @@ function delayedReload() {
 function deleteRss(rssUrl) {
 	if (confirm('Möchten Sie den Feed "' + rssUrl + '" wirklich löschen. Das System wird dann nicht mehr in dieser Quelle suchen. Die bisherigen Daten bleiben in der Datenbank erhalten und können weiterhin eingesehen werden.')) {
 		$.ajax({
-			type: 'POST',
-			url: '/api/rss/delete',
+			type: 'DELETE',
+			url: '/api/rss',
 			data: '{"link":"' + rssUrl + '"}',
 			statusCode: {
 				400: function(error) {

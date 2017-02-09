@@ -197,7 +197,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // API routing
 company.init(app, producer);
-require('./app/rss')(app, producer);
+require('./app/rss').init(app, producer);
 require('./app/keywords')(app, producer);
 require('./app/news')(app, client);
 require('./app/map')(app, client);

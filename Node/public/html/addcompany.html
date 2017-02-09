@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 public/html/addcompany.html
-Version 5.0
+Version 6.0
 Author Tobias Mahncke
 Author Yannick Pferr
 Author Arne Schmidt
@@ -17,6 +17,8 @@ Author Arne Schmidt
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
     <link type="text/css" rel="stylesheet" href="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.css" />
     <script type="text/javascript" src="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.js"></script>
+    
+    <!-- Custom JS and CSS -->
     <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/alerts.js"></script>
     <script type="text/javascript" src="js/sockets.js"></script>
@@ -33,7 +35,7 @@ Author Arne Schmidt
             <div class="form-group col-md-2">
                 <input class="form-control" ID="search" type="text" onkeyup="createTable()" placeholder="Suche">
             </div>
-            <div class="form-group col-md-3">
+            <div class="form-group col-md-2">
                 <input class="form-control" ID="companyName" type="text" placeholder="Unternehmensname">
             </div>
             <div class="form-group col-md-1">
@@ -49,6 +51,11 @@ Author Arne Schmidt
             </form>
             <div class="col-md-2">
                 <input style="width:100%" class="btn btn-primary" type="button" value="Unternehmen hinzufügen" onClick='createCompany()'></input>
+            </div>
+            <!-- Flag to drop the checkeddata -->
+            <div class="col-md-1" style="line-height: 34px">
+                Neu prüfen
+                <input ID="clear" type="checkbox">
             </div>
         </div>
         <table id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" class="table table-hover">

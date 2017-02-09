@@ -6,8 +6,10 @@
  * @author       Yannick Pferr
  * @author       Tobias Mahncke
  * 
- * @version      5.0
+ * @version      6.0
  */
+
+// Read cookies on page load
 var selectedCompanies = Cookies.get('selectedCompanies');
 if (!selectedCompanies) {
 	selectedCompanies = {};
@@ -20,7 +22,7 @@ var news, tableData, key;
 var firstDataLoad = true;
 
 /**
- * Creates a html table to show the data
+ * Creates a bootstrap table to show the data
  */
 function createTable() {
 	tableData = [];
@@ -149,6 +151,9 @@ function reloadData() {
 	}
 }
 
+/** 
+ * Gets called by localData and creates the initial table
+ */
 function companyDataLoaded() {
 	reloadCompanyList();
 }
@@ -186,7 +191,7 @@ function showAll() {
 }
 
 /**
- * 
+ * Marks a single company as read. If no name is given all entries are marked as read.
  */
 function markRead(name) {
 	if (name) {
@@ -253,7 +258,7 @@ function deleteNews(id) {
 }
 
 /**
- * 
+ * Converts the JSON data to a CSV file and creates a download link.
  */
 function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
 	//If JSONData is not an object then JSON.parse will parse the JSON string in an Object
@@ -329,6 +334,9 @@ function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
 	document.body.removeChild(link);
 }
 
+/** 
+ * Exports the current table data to a CSV file with the current date.
+ */
 function exportCSV() {
 	var utc = new Date().toJSON().slice(0, 10).replace(/-/g, '/');
 	JSONToCSVConvertor(tableData, utc, true);

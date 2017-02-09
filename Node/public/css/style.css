@@ -12,7 +12,6 @@ input[type=file] {
     border-radius: 5px;
 }
 
-
 .label {
 	font-size: 16px;
 }
@@ -30,4 +29,27 @@ input[type=file] {
 .old {
 	fill: #337ab7;
 	stroke: #000;
+}
+
+.bar {
+  fill: #337ab7;
+}
+
+.bar:hover {
+  fill: #777;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-radius: 5px;
+    background: #F7F7F7
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+#card { 
+    margin-top: 50px; 
 }

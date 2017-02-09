@@ -1,15 +1,15 @@
 'use strict';
-// public/js/addcompany.js
+// public/js/keywords.js
 /**
  * Javascript file for all the funtions used in the keyword configruation page.
  * 
  * @author       Tobias Mahncke
  * 
- * @version      5.0
+ * @version      6.0
  */
 
 /**
- * Creates a html table to show the data
+ * Creates a custom html matrix to show the data
  */
 function reloadKeywords() {
 	$('#keywordTableHead').empty();
@@ -63,6 +63,9 @@ function reloadKeywords() {
 	}
 }
 
+/** 
+ * Gets called by localData and creates the initial table
+ */
 function keywordsDataLoaded() {
 	reloadKeywords();
 }
@@ -78,7 +81,7 @@ function postKeyword(category) {
 		$.ajax({
 			type: 'POST',
 			url: '/api/keywords',
-			data: '{"keyword":"' + $("[id='" + category + "']").val().trim() + '", "category":"' + category + '"}',
+			data: '{"keyword":"' + $("[id='" + category + "']").val().trim() + '", "category":"' + category + '", "clear":' + ($('#clear').val() === 'on') + '}',
 			success: function(data) {
 				$.get("/api/keywords", function(data) {
 					showAlert($("[id='" + category + "']").val() + " hinzugefügt!", Level.Success, 2000);

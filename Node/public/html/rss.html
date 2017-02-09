@@ -9,7 +9,7 @@ Author Arne Schmidt
 <html>
 
 <head>
-    <Title> RSS / Atom </Title>
+    <Title> RSS Feeds </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
     <script src="/libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
     <script src="/libs/socket.io/socket.io.min.js"></script>
@@ -17,6 +17,8 @@ Author Arne Schmidt
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
     <link type="text/css" rel="stylesheet" href="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.css" />
     <script type="text/javascript" src="/libs/bootstrap-table-1.11.0/dist/bootstrap-table.min.js"></script>
+    
+    <!-- Custom JS and CSS -->
     <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/alerts.js"></script>
     <script type="text/javascript" src="js/sockets.js"></script>
@@ -66,12 +68,10 @@ Author Arne Schmidt
     </div>
 </body>
 <script type="text/javascript">
-
 $(function() {
     $("#navbar").load("html/navbar.html");
     localData.reloadRSS(createTable);
 });
-
 </script>
 
 </html>

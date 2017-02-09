@@ -6,17 +6,24 @@
  * 
  * @author       Yannick Pferr <yannick.pferr@stud.tu-darmstadt.de>
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
+ * 
  * @version      6.0
  *
+ * @requires mongodb
  */
-var server = require('../server');
-var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
+
+// Dependencies
 var mongodb = require('mongodb');
+var server = require('../server');
+
+// load configuration
+var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
+
 
 module.exports = function(app, client) {
-	console.log('news routes loading');
+	console.log('News routes loading');
 	/**
-	 *  Returns all the news
+	 *  Returns all the news for a single company designated by the key
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
@@ -32,7 +39,7 @@ module.exports = function(app, client) {
 					}
 				});
 			}
-			// Gets a key from redis, returns null if key is not found
+			// Gets the list of news from redis, returns null if key is not found
 			client.lrange([req.params.key, 0, length], function(err, reply) {
 				if (err) {
 					return res.status(500).send({
@@ -70,8 +77,9 @@ module.exports = function(app, client) {
 			});
 		});
 	});
+
 	/**
-	 *  Deletes single news from the enhanced database
+	 *  Deletes single news from the news database
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
@@ -124,7 +132,6 @@ module.exports = function(app, client) {
 							if (news.length > 0) {
 								var pushNews = function(array) {
 									var singleNews = JSON.stringify(array.pop());
-									console.log(singleNews);
 									client.send_command('lpush', [req.params.company, singleNews], function(err) {
 										if (err) {
 											console.log(err);

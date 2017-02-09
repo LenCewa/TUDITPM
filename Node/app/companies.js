@@ -5,14 +5,16 @@
  * Contains all functions to manipulate the list of companies
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
- * @version      5.0
+ * @version      6.0
+ * 
+ * @requires mongodb
  */
+
+// Dependencies
+var mongodb = require('mongodb');
 
 // load configuration
 var connections = require('../config/connections.conf.json')[process.env.NODE_ENV];
-var mongodb = require('mongodb');
-
-var fs = require('fs-extra');
 
 /**
  * Helper function to read the company list
@@ -21,8 +23,13 @@ var fs = require('fs-extra');
 exports.getCompanies = function(callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			callback(err);
-			return console.log(err);
+			return callback({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: err
+				}
+			});
 		}
 		//Open collection
 		var collection = db.collection('companies', function(err, collection) {});
@@ -36,33 +43,47 @@ exports.getCompanies = function(callback) {
 };
 
 /**
- * Helper function to empty the checkeddata DB
- * @param callback callback function, gets an error as first element and data as second
+ * Helper function to clear the checked data DB
+ * @param callback callback function, gets an error as first element if existing
  */
 exports.emptyCheckedData = function(callback) {
 	mongodb.connect(connections.mongodb.checkeddata, function(err, db) {
 		if (err) {
-			callback(err);
-			return console.log(err);
+			return callback({
+				err: {
+					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+					en: 'MongoDB connection could not be established',
+					err: err
+				}
+			});
 		}
 		db.dropDatabase(function(err, result) {
 			if (err) {
-				callback(err);
-				return console.log(err);
+				return callback({
+					err: {
+						de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
+						en: 'MongoDB connection could not be established',
+						err: err
+					}
+				});
 			}
-			callback(null);
+			callback();
 		});
 	});
 };
 
 /**
- * Helper function to empty the checkeddata DB
- * @param callback callback function, gets an error as first element and data as second
+ * Helper function to save a company
+ * @param producer kafka producer to reload the kafka services
+ * @param name name of the company
+ * @param zipCode zip code of the company
+ * @param searchTerms addtional search terms for the company
+ * @param callback callback function, gets an error as first element if existing
  */
 var saveCompany = function(producer, name, zipCode, searchTerms, callback) {
 	mongodb.connect(connections.mongodb.config, function(err, db) {
 		if (err) {
-			callback({
+			return callback({
 				err: {
 					de: 'MongoDB Verbindung konnte nicht aufgebaut werden',
 					en: 'MongoDB connection could not be established',
@@ -101,15 +122,17 @@ var saveCompany = function(producer, name, zipCode, searchTerms, callback) {
 				partition: 0
 			}, ];
 			producer.send(msg, function(err, data) {
-				console.log(data);
+				if (err) {
+					console.log(err);
+				}
 			});
-			callback(null);
+			callback();
 		});
 	});
 };
 
-exports.init = function(app, producer, io) {
-	console.log('company routes loading');
+exports.init = function(app, producer) {
+	console.log('Company routes loading');
 	/**
 	 *  Takes a company name and appends it to the kafka list of companies.
 	 *  Expects the request to contain a json with a company name.
@@ -117,8 +140,9 @@ exports.init = function(app, producer, io) {
 	 *  @param res The HTTP response object
 	 */
 	app.post('/api/company', function(req, res) {
+		console.log(req.body);
 		// Check if the request is correctly formed
-		if (req.body.name === undefined || req.body.name === null || req.body.name === '' || req.body.zipCode === undefined || req.body.zipCode === null || req.body.zipCode === '') {
+		if (req.body.name === undefined || req.body.name === null || req.body.name.trim() === '' || req.body.zipCode === undefined || req.body.zipCode === null || req.body.zipCode.trim() === '') {
 			return res.status(400).send({
 				err: {
 					de: 'Der Firmenname und/oder Postleitzahl wurde nicht angegeben.',
@@ -131,17 +155,32 @@ exports.init = function(app, producer, io) {
 		if (req.body.searchTerms) {
 			searchTerms = req.body.searchTerms;
 		}
-		saveCompany(req.body.name, req.body.zipCode, searchTerms, function(err) {
-			if (err) {
-				return res.status(500).send(err);
-			} else {
-				return res.status(204).send();
-			}
-		});
+		if (req.body.clear) {
+			exports.emptyCheckedData(function(err) {
+				if (err) {
+					return res.status(500).send(err);
+				}
+				saveCompany(producer, req.body.name, req.body.zipCode, searchTerms, function(err) {
+					if (err) {
+						return res.status(500).send(err);
+					} else {
+						return res.status(204).send();
+					}
+				});
+			});
+		} else {
+			saveCompany(producer, req.body.name, req.body.zipCode, searchTerms, function(err) {
+				if (err) {
+					return res.status(500).send(err);
+				} else {
+					return res.status(204).send();
+				}
+			});
+		}
 	});
 
 	/**
-	 *  Returns all the listed companies vie HTTP get.
+	 *  Returns all the listed companies via HTTP get.
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
@@ -151,20 +190,6 @@ exports.init = function(app, producer, io) {
 				return res.status(500).send(err);
 			}
 			return res.json(data);
-		});
-	});
-
-	/**
-	 *  Emptys the checkeddata DB vie HTTP delete.
-	 *  @param req The HTTP request object
-	 *  @param res The HTTP response object
-	 */
-	app.delete('/api/emptyCheckedData', function(req, res) {
-		exports.emptyCheckedData(function(err, data) {
-			if (err) {
-				return res.status(500).send(err);
-			}
-			return res.status(204).send();
 		});
 	});
 
@@ -183,7 +208,6 @@ exports.init = function(app, producer, io) {
 				}
 			});
 		}
-
 		mongodb.connect(connections.mongodb.config, function(err, db) {
 			if (err) {
 				return res.status(500).send({
@@ -216,7 +240,9 @@ exports.init = function(app, producer, io) {
 				partition: 0
 			}, ];
 			producer.send(msg, function(err, data) {
-				console.log(data);
+				if (err) {
+					console.log(err);
+				}
 			});
 
 			return res.status(204).send();
@@ -224,62 +250,55 @@ exports.init = function(app, producer, io) {
 
 	});
 
+	/**
+	 *  Takes a csv file that is uploaded and transforms it into multiple company entries
+	 *  @param req The HTTP request object
+	 *  @param res The HTTP response object
+	 */
 	app.post('/api/uploadCompany', function(req, res) {
 		req.pipe(req.busboy);
 		req.busboy.on('file', function(fieldname, file, filename) {
 			file.on('data', function(data) {
-				var inhalt = "" + data;
+				data = "" + data;
+				var lines = data.split(/\n/);
 
-				var lines = inhalt.split(/\n/);
-
-				var titel = lines[0].split(';');
+				// Check which colum contains which entry
+				var title = lines[0].split(';');
 				var namekey = 0;
-				if (titel[1].toLowerCase().includes("unternehmen")) {
+				if (title[1].toLowerCase().includes("unternehmen")) {
 					namekey = 1;
 				}
 
 				var readCompany = function(array) {
 					var fields = array.pop().split(';');
 
+					// Extract name and zip code
 					var name = '';
 					if (fields[namekey] !== undefined) {
 						name = fields[namekey].trim();
 					}
 
-					var plz = '';
+					var zip = '';
 					if (fields[1 - namekey] !== undefined) {
-						plz = fields[1 - namekey].trim();
+						zip = fields[1 - namekey].trim();
 					}
 
-					if (name === '') {
-						console.log('Keine leeren Unternehmensnamen erlaubt.');
+					// Skip invalid lines
+					if (name === '' || zip === '' || zip.length !== 5) {
 						if (array.length > 0) {
 							readCompany(array);
 						} else {
-							console.log('Emit');
-							io.emit('companies uploaded');
-							return res.status(204).send();
-						}
-					} else if (plz === '' || plz.length !== 5) {
-						console.log('Keine valide Postleitzahl eingegeben.');
-						if (array.length > 0) {
-							readCompany(array);
-						} else {
-							console.log('Emit');
-							io.emit('companies uploaded');
 							return res.status(204).send();
 						}
 					} else {
 						var searchTerms = [];
-						saveCompany(producer, name, plz, searchTerms, function(err) {
+						saveCompany(producer, name, zip, searchTerms, function(err) {
 							if (err) {
 								return res.status(500).send(err);
 							} else {
 								if (array.length > 0) {
 									readCompany(array);
 								} else {
-									console.log('Emit');
-									io.emit('companies uploaded');
 									return res.status(204).send();
 								}
 							}

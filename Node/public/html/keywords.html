@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 public/html/keywords.html
-Version 5.0
+Version 6.0
 Author Tobias Mahncke
 Author Yannick Pferr
 Author Arne Schmidt
@@ -15,7 +15,9 @@ Author Arne Schmidt
     <script src="/libs/socket.io/socket.io.min.js"></script>
     <script src="/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/libs/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
-	<script type="text/javascript" src="js/data.js"></script>
+    
+    <!-- Custom JS and CSS -->
+    <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/alerts.js"></script>
     <script type="text/javascript" src="js/sockets.js"></script>
     <script type="text/javascript" src="js/keywords.js"></script>
@@ -27,6 +29,12 @@ Author Arne Schmidt
 <body>
     <div ID="navbar"></div>
     <div ID="middle">
+        <div class="row">
+            <div class="col-md-offset-11 col-md-1" style="line-height: 34px">
+                Neu prüfen
+                <input ID="clear" type="checkbox">
+            </div>
+        </div>
         <table class="table table-hover" ID="keywordTable">
             <thead ID="keywordTableHead"></thead>
             <tbody ID="keywordTableBody"></tbody>
@@ -39,7 +47,6 @@ Author Arne Schmidt
 $(function() {
     $("#navbar").load("html/navbar.html");
 });
-
 </script>
 
 </html>

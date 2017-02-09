@@ -6,7 +6,7 @@
  * 
  * @author       Tobias Mahncke <tobias.mahncke@stud.tu-darmstadt.de>
  * @author       Yannick Pferr <yannick.pferr@stud.tu-darmstadt.de>
- * @version      3.1
+ * @version      6.0
  */
 module.exports = function(grunt) {
 	grunt.initConfig({
@@ -97,17 +97,6 @@ module.exports = function(grunt) {
 				logConcurrentOutput: true
 			},
 			tasks: ['nodemon', 'watch']
-		},
-
-		// TEST TASKS ==============================================================
-		// run Mocha Tests
-		mochaTest: {
-			backend: {
-				src: ['test/**/*.js', '!test/BackTestHelper.js'],
-			},
-			options: {
-				run: true
-			}
 		}
 	});
 
@@ -118,11 +107,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-concurrent');
 	grunt.loadNpmTasks('grunt-nodemon');
-	grunt.loadNpmTasks('grunt-mocha-test');
 	grunt.loadNpmTasks('grunt-env');
 
 	// Task to run the server
 	grunt.registerTask('default', ['env:dev', 'jshint', 'jscs', 'cssmin', 'concurrent']);
-	// Test task
-	grunt.registerTask('test', ['jshint', 'jscs', 'mochaTest']);
 };
