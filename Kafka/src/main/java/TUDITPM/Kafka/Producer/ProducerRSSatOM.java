@@ -62,8 +62,8 @@ public class ProducerRSSatOM extends AbstractProducer {
 			try {
 				allFeeds.add(new URL(doc.getString("link")));
 			} catch (MalformedURLException e) {
-				// TODO Error Handling
-				e.printStackTrace();
+				LoggingWrapper.log(getName(), Level.WARNING,
+						"RSS URL " + doc.getString("link") + " is not a valid URL, consider removing it");
 			}
 		}
 	}
@@ -75,25 +75,22 @@ public class ProducerRSSatOM extends AbstractProducer {
 	@Override
 	public void runRoutine() {
 		for (int i = 0; i < allFeeds.size(); i++) {
-			LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-					"Reading RSS: " + allFeeds.get(i));
+			LoggingWrapper.log(this.getClass().getName(), Level.INFO, "Reading RSS: " + allFeeds.get(i));
 			SyndFeedInput input = new SyndFeedInput();
 			SyndFeed feed = null;
 			// Get the feed
 			try {
 				feed = input.build(new XmlReader(allFeeds.get(i)));
 			} catch (IOException e) {
-				LoggingWrapper.log(getName(), Level.WARNING,
-						"Server returned HTTP response code: 403 for URL: "
-								+ allFeeds.get(i).toExternalForm()
-								+ ", continuing with next url");
+				LoggingWrapper.log(getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: "
+						+ allFeeds.get(i).toExternalForm() + ", continuing with next url");
 				continue;
 			} catch (IllegalArgumentException e) {
-				// TODO Error Handling
-				e.printStackTrace();
+				LoggingWrapper.log(getName(), Level.WARNING,
+						"Ivalid feed type for URL: " + allFeeds.get(i).toExternalForm() + ", continuing with next url");
 			} catch (FeedException e) {
-				// TODO Error Handling
-				e.printStackTrace();
+				LoggingWrapper.log(getName(), Level.WARNING, "Couldn't get the feed for URL: "
+						+ allFeeds.get(i).toExternalForm() + ", continuing with next url");
 			}
 
 			// Counter for the found and skipped entries
@@ -109,11 +106,9 @@ public class ProducerRSSatOM extends AbstractProducer {
 					String title = entry.getTitle();
 
 					if (entry.getPublishedDate() != null) {
-						checkForCompany(Topic.rss, link, text, entry
-								.getPublishedDate().toString(), title);
+						checkForCompany(Topic.rss, link, text, entry.getPublishedDate().toString(), title);
 					} else {
-						checkForCompany(Topic.rss, link, text,
-								(new Date()).toString(), title);
+						checkForCompany(Topic.rss, link, text, (new Date()).toString(), title);
 					}
 
 					visited.add(link);
@@ -124,8 +119,7 @@ public class ProducerRSSatOM extends AbstractProducer {
 				}
 			}
 			LoggingWrapper.log(this.getClass().getName(), Level.INFO,
-					"Scanned " + found + " entries, skipped " + skipped
-							+ " entries");
+					"Scanned " + found + " entries, skipped " + skipped + " entries");
 		}
 	}
 }
