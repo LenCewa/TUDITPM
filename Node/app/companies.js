@@ -256,11 +256,14 @@ exports.init = function(app, producer) {
 	 *  @param res The HTTP response object
 	 */
 	app.post('/api/uploadCompany', function(req, res) {
+		var completeData = '';
 		req.pipe(req.busboy);
 		req.busboy.on('file', function(fieldname, file, filename) {
 			file.on('data', function(data) {
-				data = "" + data;
-				var lines = data.split(/\n/);
+				completeData += data;
+			});
+			file.on('end', function() {
+				var lines = completeData.split(/\n/);
 
 				// Check which colum contains which entry
 				var title = lines[0].split(';');

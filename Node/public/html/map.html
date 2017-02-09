@@ -19,7 +19,6 @@ Author Tobias Mahncke
     <script type="text/javascript" src="/libs/d3/d3.min.js"></script>
     <script type="text/javascript" src="/libs/d3/d3-geo.v1.min.js"></script>
     <script type="text/javascript" src="/libs/topojson/topojson.min.js"></script>
-   
     <!-- Custom JS and CSS -->
     <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/start.js"></script>
@@ -39,19 +38,20 @@ Author Tobias Mahncke
     </div>
 </body>
 <script type="text/javascript">
+// Contains the JS directly to avoid bugs
+var companies = '';
+var width = 1800,
+    height = 2400;
+var svg;
 $(function() {
-    // Contains the JS directly to avoid bugs
-    
     // Create the canvas
-    var width = 1800,
-        height = 2400;
-
-    var svg = d3.select('body').append('svg')
+    svg = d3.select('body').append('svg')
         .attr('width', width)
         .attr('height', height);
+});
 
+var companyDataLoaded = function() {
     // Create the list of companies
-    var companies = '';
     for (var key in selectedCompanies) {
         if (selectedCompanies[key].selected) {
             if (companies.length > 0) {
@@ -115,7 +115,7 @@ $(function() {
                 }
             });
     });
-});
+}
 </script>
 
 </html>

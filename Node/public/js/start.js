@@ -36,6 +36,7 @@ function createTable() {
 	for (i = 0; i < news.length; i++) {
 		news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
 		news[i].date = $.format.date(news[i].date, 'dd.MM.yyyy');
+		news[i].link = '<a target="_blank" href=' + news[i].link + '>' + news[i].link + '</a>';
 	}
 
 	if (filter && (filter.length > 1 || filter[0] !== '')) {

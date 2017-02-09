@@ -123,11 +123,14 @@ exports.init = function(app, producer) {
 	 *  @param res The HTTP response object
 	 */
 	app.post('/api/uploadRSSFeeds', function(req, res) {
+		var completeData = '';
 		req.pipe(req.busboy);
 		req.busboy.on('file', function(fieldname, file, filename) {
 			file.on('data', function(data) {
-				data = "" + data;
-				var lines = data.split(/\n/);
+				completeData += data;
+			});
+			file.on('end', function() {
+				var lines = completeData.split(/\n/);
 
 				var readFeed = function(array) {
 					var link = array.pop().trim();
