@@ -37,6 +37,11 @@ public class ConsumerMongoDB extends AbstractConsumer {
 	@Override
 	void initializeNeededData() {}
 
+	/**
+	 * Consumes a single news object. The solr document is searched for the
+	 * keywords and then written to the mongoDB and redis.
+	 * @param json - the json object which contains the data 
+	 */
 	@Override
 	void consumeObject(JSONObject json) {
 		// decode JSON String

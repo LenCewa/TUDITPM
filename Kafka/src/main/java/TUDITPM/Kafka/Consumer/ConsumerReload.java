@@ -88,8 +88,8 @@ public class ConsumerReload extends Thread {
 					try {
 						new PropertyLoader();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						LoggingWrapper.log(getName(), Level.WARNING, "Property files couldn't be reloaded, exiting...");
+						System.exit(1);
 					}
 
 					producerTwitter.reload();

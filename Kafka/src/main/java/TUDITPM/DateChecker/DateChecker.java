@@ -14,6 +14,12 @@ import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.RedisConnector;
 
+/**
+ * TimerTask which performs different actions on a specific schedule
+ * 
+ * @author Yannick
+ * @version 6.0
+ */
 public class DateChecker extends TimerTask {
 
 	RedisConnector redis;
@@ -21,6 +27,10 @@ public class DateChecker extends TimerTask {
 	MongoDBConnector checked;
 	MongoDBConnector config;
 
+	/**
+	 * Establish connections with Redis and all needed Mongo databases
+	 * @param env - the name of the environment to use for the databases
+	 */
 	public DateChecker(String env) {
 		redis = new RedisConnector();
 		enhanced = new MongoDBConnector("enhanceddata_" + env);
@@ -28,6 +38,11 @@ public class DateChecker extends TimerTask {
 		config = new MongoDBConnector("config_" + env);
 	}
 
+	/**
+	 * Checks if date is not older than 30 days
+	 * @param date - the date to be checked
+	 * @return - true if date is not older than 30 days, else false
+	 */
 	public static boolean isLastMonth(Date date) {
 
 		Date currentDate = new Date();
@@ -43,6 +58,9 @@ public class DateChecker extends TimerTask {
 		checked.dropDatabase();
 	}
 	
+	/**
+	 * Loads all entries from enhanceddata database, which are not older than 30 days, into Redis key "monthList"
+	 */
 	private void loadLast30Days() {
 		LoggingWrapper.log(getClass().getName(), Level.INFO, "Refreshing Redis key monthList...");
 		redis.deleteKey("monthList");

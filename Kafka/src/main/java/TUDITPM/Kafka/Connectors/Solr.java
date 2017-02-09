@@ -2,6 +2,7 @@ package TUDITPM.Kafka.Connectors;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -11,6 +12,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
+import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
 
@@ -37,7 +39,8 @@ public class Solr {
 	/**
 	 * Searches the solr documents for specified keyword
 	 * 
-	 * @param keyword
+	 * @param queryText - the text to be searched for
+	 * @param id - the id of the doc to be searched
 	 * @return true if doc contains keyword else false
 	 */
 	public boolean search(String queryText, String id) {
@@ -48,11 +51,11 @@ public class Solr {
 		try {
 			response = solr.query(query);
 		} catch (SolrServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Solr server error, it might not be running or solr url: " + urlString + " is incorrect. Exiting...");
+			System.exit(1);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Communication error with Solr server: " + urlString + ". Exiting...");
+			System.exit(1);
 		}
 		SolrDocumentList results = response.getResults();
 		if (!results.isEmpty()) {
@@ -64,7 +67,7 @@ public class Solr {
 
 	/**
 	 * Adds a text to solr documents and returns the id
-	 * 
+	 * @param text - text to be added to solr
 	 * @return - returns the id if successful null false
 	 */
 	public String add(String text) {
@@ -78,28 +81,29 @@ public class Solr {
 			solr.commit();
 			return id;
 		} catch (SolrServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Solr server error, it might not be running or solr url: " + urlString + " is incorrect. Exiting...");
+			System.exit(1);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Communication error with Solr server: " + urlString + ". Exiting...");
+			System.exit(1);
 		}
 		return null;
 	}
 
 	/**
-	 * Deletes the created document
+	 * Deletes the created document by id
+	 *  @param id - the id of the doc to be deleted
 	 */
 	public void delete(String id) {
 		try {
 			solr.deleteById(id);
 			solr.commit();
 		} catch (SolrServerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Solr server error, it might not be running or solr url: " + urlString + " is incorrect. Exiting...");
+			System.exit(1);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Communication error with Solr server: " + urlString + ". Exiting...");
+			System.exit(1);
 		}
 	}
 
@@ -110,8 +114,8 @@ public class Solr {
 		try {
 			solr.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LoggingWrapper.log(getClass().getName(), Level.WARNING, "Communication error with Solr server: " + urlString + ". Exiting...");
+			System.exit(1);
 		}
 	}
 }
