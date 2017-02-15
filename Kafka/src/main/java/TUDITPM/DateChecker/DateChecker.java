@@ -46,8 +46,8 @@ public class DateChecker extends TimerTask {
 	public static boolean isLastMonth(Date date) {
 
 		Date currentDate = new Date();
-		long day30 = 2l * 24 * 60 * 60 * 1000;
-		boolean olderThan30 = currentDate.before(new Date((date.getTime() + day30)));
+		long day30 = 30l * 24 * 60 * 60 * 1000;
+		boolean olderThan30 = date.after(new Date((currentDate.getTime() - day30)));
 
 		return olderThan30;
 	}
