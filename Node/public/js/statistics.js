@@ -19,7 +19,7 @@ function drawDiagram(data, isFirst) {
 		margin = {
 			top: 50,
 			right: 40,
-			bottom: 50,
+			bottom: 100,
 			left: 80,
 			label: 30,
 		},
@@ -57,7 +57,14 @@ function drawDiagram(data, isFirst) {
 	g.append("g")
 		.attr("class", "axis axis--x")
 		.attr("transform", "translate(0," + height + ")")
-		.call(d3.axisBottom(x));
+		.call(d3.axisBottom(x))
+		.selectAll("text")	
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "rotate(-65)"; 
+                });
 
 	g.append("g")
 		.attr("class", "axis axis--y")
@@ -104,6 +111,8 @@ function loadMonthList() {
 				keyCompany = news.news[i].company;
 				keyKeyword = news.news[i].keyword;
 
+				console.log(keyCompany);
+				
 				if (keyCompany in mapCompany) {
 					mapCompany[keyCompany] += 1;
 				} else {
