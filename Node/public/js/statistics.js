@@ -59,12 +59,10 @@ function drawDiagram(data, isFirst) {
 		.attr("transform", "translate(0," + height + ")")
 		.call(d3.axisBottom(x))
 		.selectAll("text")	
-            .style("text-anchor", "end")
-            .attr("dx", "-.8em")
-            .attr("dy", ".15em")
-            .attr("transform", function(d) {
-                return "rotate(-65)"; 
-                });
+			.style("text-anchor", "end")
+			.attr("dx", "-.8em")
+			.attr("dy", ".15em")
+			.attr("transform", function(d) { return "rotate(-65)"; });
 
 	g.append("g")
 		.attr("class", "axis axis--y")
