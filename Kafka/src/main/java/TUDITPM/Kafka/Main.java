@@ -10,6 +10,8 @@ import TUDITPM.Kafka.Consumer.ConsumerMongoDB;
 import TUDITPM.Kafka.Consumer.ConsumerReload;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
+import TUDITPM.Kafka.Producer.ProducerRSSatOM;
+import TUDITPM.Kafka.Producer.ProducerTwitterStreamingAPI;
 
 /**
  * Main class to start all necessary consumers and producers. Each consumer and
@@ -92,7 +94,15 @@ public class Main {
 		} else {
 			LoggingWrapper.log(Main.class.getName(), Level.INFO, "Logging rawdata disabled.");
 		}
+		ConsumerReload consumerReload = new ConsumerReload(env);
+		
+		// Add all producers whose data sources are selected
+		if(Boolean.parseBoolean(PropertyLoader.getPropertyValue(PropertyFile.dataSources, "twitter")))
+			consumerReload.addProducer(new ProducerTwitterStreamingAPI(env));
+		if(Boolean.parseBoolean(PropertyLoader.getPropertyValue(PropertyFile.dataSources, "rss")))
+			consumerReload.addProducer(new ProducerRSSatOM(env));
+		
 		// Start the service
-		new ConsumerReload(env).start();
+		consumerReload.start();
 	}
 }

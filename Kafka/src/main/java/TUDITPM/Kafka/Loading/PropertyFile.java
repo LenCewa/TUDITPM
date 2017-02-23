@@ -7,7 +7,7 @@ package TUDITPM.Kafka.Loading;
  * @version 5.0
  */
 public enum PropertyFile {
-	credentials, database, kafka, solr;
+	credentials, database, kafka, solr, dataSources;
 
 	/**
 	 * Gets the corresponding filename including the path for the property.

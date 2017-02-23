@@ -27,7 +27,7 @@ import TUDITPM.Kafka.Loading.PropertyLoader;
  * @author Tobias Mahncke
  * @version 6.1
  */
-abstract class AbstractProducer extends Thread {
+public abstract class AbstractProducer extends Thread {
 	/** The kafka producer. */
 	private Producer<String, String> producer;
 	/** The solr connector instance */

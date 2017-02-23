@@ -1,8 +1,8 @@
 package TUDITPM.Kafka.Consumer;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -15,35 +15,32 @@ import org.apache.kafka.common.TopicPartition;
 import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
+import TUDITPM.Kafka.Producer.AbstractProducer;
 import TUDITPM.Kafka.Producer.ProducerRSSatOM;
-import TUDITPM.Kafka.Producer.ProducerTwitterStreamingAPI;
 
 /**
- * Listening to the twitter Stream and converting the given data to stream it to
- * spark. Extends Thread so that it can run asynchronously.
+ * Listens to the reload topic and reloads producer and consumer respectively.
+ * Extends Thread so that it can run asynchronously.
  * 
  * @author Yannick Pferr
  * @author Tobias Mahncke
  * 
- * @version 5.0
+ * @version 8.0
  */
 public class ConsumerReload extends Thread {
 
 	Consumer consumer;
-	ProducerTwitterStreamingAPI producerTwitter;
-	ProducerRSSatOM producerRss;
+	LinkedList<AbstractProducer> producer = new LinkedList<>();
 
 	public ConsumerReload(String env) {
 		consumer = new Consumer(env);
 		consumer.start();
-
-		producerTwitter = new ProducerTwitterStreamingAPI(env);
-		producerTwitter.start();
-
-		producerRss = new ProducerRSSatOM(env);
-		producerRss.start();
 	}
-
+	
+	public void addProducer(AbstractProducer prod){
+		producer.add(prod);
+	}
+	
 	/**
 	 * Gets called on start of the Thread
 	 */
@@ -76,6 +73,9 @@ public class ConsumerReload extends Thread {
 				kafkaConsumer.seekToEnd(arg0);
 			}
 		});
+		
+		for(AbstractProducer prod : producer)
+			prod.start();
 
 		while (true) {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
@@ -84,22 +84,15 @@ public class ConsumerReload extends Thread {
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO, record.value() + ", reloading!");
 
 				if (record.value().equals("company added") || record.value().equals("company removed")) {
-
-					try {
-						new PropertyLoader();
-					} catch (IOException e) {
-						LoggingWrapper.log(getName(), Level.WARNING, "Property files couldn't be reloaded, exiting...");
-						System.exit(1);
-					}
-
-					producerTwitter.reload();
-					producerRss.reload();
+					for(AbstractProducer prod : producer)
+						prod.reload();
 				} else if (record.value().equals("keyword added") || record.value().equals("keyword removed")
 						|| record.value().equals("category removed")) {
-					
 					consumer.reload();
 				} else if (record.value().equals("rss url added") || record.value().equals("rss url removed")) {
-					producerRss.reload();
+					for(AbstractProducer prod : producer)
+						if(prod instanceof ProducerRSSatOM)
+							prod.reload();
 				}
 			}
 		}
