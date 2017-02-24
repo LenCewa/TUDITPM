@@ -82,15 +82,15 @@ public class ProducerRSSatOM extends AbstractProducer {
 			try {
 				feed = input.build(new XmlReader(allFeeds.get(i)));
 			} catch (IOException e) {
-				LoggingWrapper.log(getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: "
+				LoggingWrapper.log(this.getClass().getName(), Level.WARNING, "Server returned HTTP response code: 403 for URL: "
 						+ allFeeds.get(i).toExternalForm() + ", continuing with next url");
 				continue;
 			} catch (IllegalArgumentException e) {
-				LoggingWrapper.log(getName(), Level.WARNING,
+				LoggingWrapper.log(this.getClass().getName(), Level.WARNING,
 						"Ivalid feed type for URL: " + allFeeds.get(i).toExternalForm() + ", continuing with next url");
 				continue;
 			} catch (FeedException e) {
-				LoggingWrapper.log(getName(), Level.WARNING, "Couldn't get the feed for URL: "
+				LoggingWrapper.log(this.getClass().getName(), Level.WARNING, "Couldn't get the feed for URL: "
 						+ allFeeds.get(i).toExternalForm() + ", continuing with next url");
 				continue;
 			}
