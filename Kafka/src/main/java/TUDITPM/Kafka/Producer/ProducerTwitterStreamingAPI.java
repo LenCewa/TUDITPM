@@ -90,7 +90,7 @@ public class ProducerTwitterStreamingAPI extends AbstractProducer {
 				
 				HashMap<String, String> query = new HashMap<>();
 				query.put("text", text);
-				if(mongo.find(searchName, query))
+				if(mongo.contains(searchName, query))
 					return;
 			}
 			

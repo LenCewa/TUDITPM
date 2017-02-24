@@ -113,7 +113,7 @@ public class Consumer extends AbstractConsumer {
 				query.put("category", category.name);
 				query.put("keyword", keyword);
 
-				if (found && !mongo.find(json.getString("companyKey"), query)) {
+				if (found && !mongo.contains(json.getString("companyKey"), query)) {
 					// remove the id before writing to redis
 					json.remove("id");
 					json.append("category", category.name);

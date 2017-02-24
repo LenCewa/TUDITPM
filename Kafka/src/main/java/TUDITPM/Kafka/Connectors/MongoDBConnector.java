@@ -2,6 +2,7 @@ package TUDITPM.Kafka.Connectors;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import org.bson.Document;
 import org.json.JSONObject;
@@ -11,6 +12,7 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 
 import TUDITPM.Kafka.Loading.PropertyFile;
 import TUDITPM.Kafka.Loading.PropertyLoader;
@@ -64,6 +66,14 @@ public class MongoDBConnector {
 		}
 		return null;
 	}
+	
+	/**
+	 * Gets every collection name contained in the database
+	 * @return - names of every collection in the database
+	 */
+	public MongoIterable<String> getAllCollectionNames(){
+		return database.listCollectionNames();
+	}
 
 	/**
 	 * Gets the collection for the given name.
@@ -82,7 +92,7 @@ public class MongoDBConnector {
 	 * @param hm - A HashMap which contains all values to be searched for
 	 * @return true if found else false
 	 */
-	public boolean find(String collection, HashMap<String, String> hm){
+	public boolean contains(String collection, HashMap<String, String> hm){
 		BasicDBObject query = new BasicDBObject();
 		query.putAll(hm);
 		
@@ -93,9 +103,47 @@ public class MongoDBConnector {
 	}
 	
 	/**
+	 * Executes a query to find specific data
+	 * @param collection - the collection to be searched
+	 * @return - LinkedList with all found documents
+	 */
+	public LinkedList<Document> find(String collection){
+		
+		LinkedList<Document> data = new LinkedList<>();
+		for(Document doc : getCollection(collection).find())
+			data.add(doc);
+		
+		return data;
+	}
+	
+	/**
+	 * Executes a query to find specific data
+	 * @param collection - the collection to be searched
+	 * @param hm - A HashMap which contains all values to be searched for
+	 * @return - LinkedList with all found documents
+	 */
+	public LinkedList<Document> find(String collection, HashMap<String, String> hm){
+		BasicDBObject query = new BasicDBObject();
+		query.putAll(hm);
+		
+		LinkedList<Document> data = new LinkedList<>();
+		for(Document doc : getCollection(collection).find(query))
+			data.add(doc);
+		
+		return data;
+	}
+	
+	/**
 	 * Drops the connected database.
 	 */
 	public void dropDatabase() {
 		mongo.dropDatabase(dbname);
+	}
+	
+	/**
+	 * Closes the database connection
+	 */
+	public void close(){
+		mongo.close();
 	}
 }
