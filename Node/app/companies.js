@@ -97,8 +97,9 @@ var saveCompany = function(producer, name, zipCode, searchTerms, callback) {
 		var forms = require('../config/legalForms.json');
 		var searchName = name;
 		for (var j = 0; j < forms.length; j++) {
-			searchName = searchName.replace(forms[j], '').trim();
+			searchName = searchName.replace(" " + forms[j], '').trim();
 		}
+		
 		var key = searchName.replace(/\./g).trim();
 
 		//Store collection in array
