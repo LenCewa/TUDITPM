@@ -110,6 +110,7 @@ public class Consumer extends AbstractConsumer {
 				HashMap<String, String> query = new HashMap<>();
 				query.put("company", json.getString("companyKey"));
 				query.put("link", json.getString("link"));
+				query.put("text", json.getString("text"));
 				query.put("category", category.name);
 				query.put("keyword", keyword);
 
