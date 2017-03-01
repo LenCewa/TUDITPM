@@ -105,8 +105,9 @@ public class ConsumerReload extends Thread {
 						|| record.value().equals("category removed")) {
 					consumer.reload();
 					//TODO: Keyword und Kategorie müssen von Node mitgesendet werden
-					if(record.value().equals("keyword added"))
-						checkRawDBForKeyword("", "");
+					if(record.value().equals("keyword added")){
+						//checkRawDBForKeyword("", "");
+					}
 				} else if (record.value().equals("rss url added") || record.value().equals("rss url removed")) {
 					for(AbstractProducer prod : producer)
 						if(prod instanceof ProducerRSSatOM)
@@ -129,14 +130,8 @@ public class ConsumerReload extends Thread {
 				String text = entry.getString("text");
 				String id = solr.add(text);
 				
-				HashMap<String, String> query = new HashMap<>();
-				query.put("company", entry.getString("company"));
-				query.put("link", entry.getString("link"));
-				query.put("category", category);
-				query.put("keyword", keyword);
-				
 				//TODO: Problem da 'company' nicht der collection Name ist, also zb.'Volkswagen AG' statt 'Volkswagen'
-				if(solr.search("\"" + entry.getString("company") + " " + keyword + "\"" + "~" + PROXIMITY, id) && !mongoRaw.contains(entry.getString("company"), query)){
+				if(solr.search("\"" + entry.getString("company") + " " + keyword + "\"" + "~" + PROXIMITY, id)){
 					
 					// Create Date Object from String
 					SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
