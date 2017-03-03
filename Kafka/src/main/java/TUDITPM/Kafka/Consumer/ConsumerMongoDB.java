@@ -6,8 +6,6 @@ import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
-
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 
 /**

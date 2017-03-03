@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
@@ -17,9 +16,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.bson.Document;
-import org.json.JSONException;
+import org.json.JSONObject;
 
-import TUDITPM.DateChecker.DateChecker;
 import TUDITPM.Kafka.LoggingWrapper;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.Solr;
@@ -96,19 +94,21 @@ public class ConsumerReload extends Thread {
 			ConsumerRecords<String, String> records = kafkaConsumer.poll(10);
 			for (ConsumerRecord<String, String> record : records) {
 
-				LoggingWrapper.log(this.getClass().getName(), Level.INFO, record.value() + ", reloading!");
-
-				if (record.value().equals("company added") || record.value().equals("company removed")) {
+				JSONObject json = new JSONObject(record.value());
+				String msg = json.getString("msg");
+				
+				LoggingWrapper.log(this.getClass().getName(), Level.INFO, msg + ", reloading!");
+				
+				if (msg.equals("company added") || msg.equals("company removed")) {
 					for(AbstractProducer prod : producer)
 						prod.reload();
-				} else if (record.value().equals("keyword added") || record.value().equals("keyword removed")
-						|| record.value().equals("category removed")) {
+				} else if (msg.equals("keyword added") || msg.equals("keyword removed")
+						|| msg.equals("category removed")) {
 					consumer.reload();
-					//TODO: Keyword und Kategorie müssen von Node mitgesendet werden
-					if(record.value().equals("keyword added")){
-						//checkRawDBForKeyword("", "");
-					}
-				} else if (record.value().equals("rss url added") || record.value().equals("rss url removed")) {
+					
+					if(msg.equals("keyword added"))
+						checkRawDBForKeyword(json.getString("category"), json.getString("keyword"));
+				} else if (msg.equals("rss url added") || msg.equals("rss url removed")) {
 					for(AbstractProducer prod : producer)
 						if(prod instanceof ProducerRSSatOM)
 							prod.reload();
@@ -118,6 +118,8 @@ public class ConsumerReload extends Thread {
 	}
 	
 	private void checkRawDBForKeyword(String category, String keyword){
+		
+		LoggingWrapper.log(this.getClass().getName(), Level.INFO, "checking rawdata for keyword: " + keyword + " in category: " + category);
 		MongoDBConnector mongoRaw = new MongoDBConnector("rawdata_" + env);
 		MongoDBConnector mongoEnhanced = new MongoDBConnector("enhanceddata_" + env);
 		Solr solr = new Solr();
@@ -129,9 +131,10 @@ public class ConsumerReload extends Thread {
 			for(Document entry : data){
 				String text = entry.getString("text");
 				String id = solr.add(text);
+				String company = entry.getString("company");
 				
 				//TODO: Problem da 'company' nicht der collection Name ist, also zb.'Volkswagen AG' statt 'Volkswagen'
-				if(solr.search("\"" + entry.getString("company") + " " + keyword + "\"" + "~" + PROXIMITY, id)){
+				if(solr.search("\"" + company + " " + keyword + "\"" + "~" + PROXIMITY, id)){
 					
 					// Create Date Object from String
 					SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
@@ -144,10 +147,12 @@ public class ConsumerReload extends Thread {
 					// Create mongoDB document to store in mongoDB
 					Document mongoDBdoc = new Document("text", text)
 							.append("link", entry.getString("link")).append("date", date)
-							.append("company", entry.getString("company")).append("category", category)
+							.append("company", company).append("category", category)
 							.append("keyword", keyword);
 
 
+					LoggingWrapper.log(this.getClass().getName(), Level.INFO, "found keyword " + keyword + 
+							"from category " + category + " in rawdata entry for company " + company + ", adding entry to enhanceddata");
 					// Write to database
 					String dbID = mongoEnhanced.writeToDb(mongoDBdoc, entry.getString("company"));
 				}

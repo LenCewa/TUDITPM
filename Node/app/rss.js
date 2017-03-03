@@ -82,7 +82,7 @@ function addLink(link, producer, callback) {
 			}, function(err, records) {});
 			var msg = [{
 				topic: 'reload',
-				messages: 'rss url added',
+				messages: '{ "msg": "rss url added", "rss":"' + link + '"}',
 				partition: 0
 			}];
 			producer.send(msg, function(err, data) {});
@@ -205,7 +205,7 @@ exports.init = function(app, producer) {
 				}
 				var msg = [{
 					topic: 'reload',
-					messages: 'rss url removed',
+					messages: '{ "msg": "rss url removed", "rss":"' + req.body.link + '"}',
 					partition: 0
 				}];
 				producer.send(msg, function(err, data) {

@@ -119,7 +119,7 @@ var saveCompany = function(producer, name, zipCode, searchTerms, callback) {
 			collection.insert(doc, function(err, records) {});
 			var msg = [{
 				topic: 'reload',
-				messages: 'company added',
+				messages: '{ "msg": "company added", "company":"' + name + '"}',
 				partition: 0
 			}, ];
 			producer.send(msg, function(err, data) {
@@ -237,7 +237,7 @@ exports.init = function(app, producer) {
 			});
 			var msg = [{
 				topic: 'reload',
-				messages: 'company removed',
+				messages: '{ "msg": "company removed", "company":"' + req.body.name + '"}',
 				partition: 0
 			}, ];
 			producer.send(msg, function(err, data) {

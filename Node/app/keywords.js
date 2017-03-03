@@ -125,7 +125,7 @@ module.exports = function(app, producer) {
 						}
 						var msg = [{
 							topic: 'reload',
-							messages: 'keyword added',
+							messages: '{ "msg": "keyword added", "category":"' + req.body.category + '", "keyword":"' + req.body.keyword + '"}',
 							partition: 0
 						}];
 						producer.send(msg, function(err, data) {});
@@ -200,7 +200,7 @@ module.exports = function(app, producer) {
 				if (records.result.nModified > 0) {
 					var msg = [{
 						topic: 'reload',
-						messages: 'keyword removed',
+						messages: '{ "msg": "keyword removed", "category":"' + req.body.category + '", "keyword":"' + req.body.keyword + '"}',
 						partition: 0
 					}];
 					producer.send(msg, function(err, data) {
@@ -249,7 +249,7 @@ module.exports = function(app, producer) {
 				if (result.result.n > 0) {
 					var msg = [{
 						topic: 'reload',
-						messages: 'category removed',
+						messages: '{ "msg": "category removed", "category":"' + req.body.category + '"}',
 						partition: 0
 					}];
 					producer.send(msg, function(err, data) {

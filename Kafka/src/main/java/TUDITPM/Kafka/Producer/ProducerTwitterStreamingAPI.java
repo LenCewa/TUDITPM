@@ -7,7 +7,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-import org.apache.solr.common.util.Hash;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;

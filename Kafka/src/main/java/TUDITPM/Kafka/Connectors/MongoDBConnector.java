@@ -1,14 +1,11 @@
 package TUDITPM.Kafka.Connectors;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.bson.Document;
-import org.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
