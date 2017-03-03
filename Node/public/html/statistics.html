@@ -6,7 +6,6 @@ Author Yannick Pferr
 Author Tobias Mahncke
 -->
 <html>
-
 <head>
     <Title> Statistiken </Title>
     <!-- Libraries - have to be directly included as the server should be able to run behind a firewall -->
@@ -21,14 +20,31 @@ Author Tobias Mahncke
     <link type="text/css" rel="stylesheet" href="/dist/css/style.min.css" />
 	<!-- set charset to utf-8 -->
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
+	
+	<style>
+	.card-diagram {
+
+		width: 100%;
+		max-width: 1250px;
+		margin-top: 50px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	</style>
 </head>
 
 <body>
     <div ID="navbar"></div>
-	<h1 align="center"> Diagramme zu Verteilung von Schlagwörtern und Unternehmen </h1>
-	<div ID="card" align="center">
-		<svg class="card" width="1250" height="600"></svg>
+	<h1 align="center"> Diagramme zu Verteilung von Unternehmen und Schlagwörtern</h1>
+	<div class="card-diagram" align="center" >
+		<div class="card" align="center">
+			<h4 class="card-header">Häufigkeit in den letzten 30 Tagen von Unternehmen (links) und Schlagwörtern (rechts)</h4>
+			<div class="card-block">
+				<svg width="1250" height="600"></svg>
+			</div>
+		</div>
 	</div>
+	
 </body>
 <script type="text/javascript">
 $(function() {

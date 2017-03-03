@@ -125,7 +125,7 @@ module.exports = function(app, producer) {
 						}
 						var msg = [{
 							topic: 'reload',
-							messages: '{ "msg": "keyword added", "category":"' + req.body.category + '", "keyword":"' + req.body.keyword + '"}',
+							messages: '{ "msg": "keyword added", "searchRaw": "' + req.body.searchRaw + '", "category":"' + req.body.category + '", "keyword":"' + req.body.keyword + '"}',
 							partition: 0
 						}];
 						producer.send(msg, function(err, data) {});

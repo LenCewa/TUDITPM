@@ -62,7 +62,7 @@ public class ProducerRSSatOM extends AbstractProducer {
 			try {
 				allFeeds.add(new URL(doc.getString("link")));
 			} catch (MalformedURLException e) {
-				LoggingWrapper.log(getName(), Level.WARNING,
+				LoggingWrapper.log(this.getClass().getName(), Level.WARNING,
 						"RSS URL " + doc.getString("link") + " is not a valid URL, consider removing it");
 			}
 		}

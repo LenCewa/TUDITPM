@@ -1,11 +1,14 @@
 package TUDITPM.Kafka.Consumer;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 
 /**
@@ -29,6 +32,12 @@ public class ConsumerMongoDB extends AbstractConsumer {
 	 */
 	public ConsumerMongoDB(String env) {
 		super(groupId);
+		
+		//Subscribe to every topic except for rawdata
+		Collection<String> topics = Topic.toList(); 
+		topics.remove(Topic.rawdata.name());
+		subscribeToList(topics);
+		
 		mongo = new MongoDBConnector("rawdata_" + env);
 	}
 

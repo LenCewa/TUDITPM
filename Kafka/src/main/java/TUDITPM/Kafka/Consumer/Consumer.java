@@ -8,12 +8,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import TUDITPM.DateChecker.DateChecker;
+import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.RedisConnector;
 import TUDITPM.Kafka.Connectors.Solr;
@@ -60,6 +62,10 @@ public class Consumer extends AbstractConsumer {
 	 */
 	public Consumer(String env) {
 		super(groupId);
+		
+		//subscribe to every topic
+		subscribeToList(Topic.toList());
+		
 		this.env = env;
 		mongo = new MongoDBConnector("enhanceddata_" + env);
 		redis = new RedisConnector();
@@ -79,6 +85,72 @@ public class Consumer extends AbstractConsumer {
 			categories.add(new KeywordCategory(doc.getString("category"), (ArrayList<String>) doc.get("keywords")));
 		}
 	}
+	
+	/**
+	 * The solr document is searched for the
+	 * keywords and then written to the mongoDB and redis.
+	 * @param json - the json object which contains the data
+	 * @param category - the category of the keyword
+	 * @param keyword - the keyword to be searched for
+	 * @param id - the id of the solr doc 
+	 */
+	public void searchForKeyword(JSONObject json, String category, String keyword, String id){
+
+		boolean found = false;
+		if (solr.search("\"" + json.getString("searchName") + " " + keyword + "\"" + "~" + PROXIMITY, id)) {
+			found = true;
+		}
+		JSONArray searchTerms = json.getJSONArray("searchTerms");
+		for (Object term : searchTerms.toList()) {
+			if (solr.search("\"" + term + " " + keyword + "\"" + "~" + PROXIMITY, id)) {
+				found = true;
+				break;
+			}
+		}
+		HashMap<String, String> query = new HashMap<>();
+		query.put("company", json.getString("companyKey"));
+		query.put("link", json.getString("link"));
+		query.put("category", category);
+		query.put("keyword", keyword);
+
+		if (found && !mongo.contains(json.getString("companyKey"), query)) {
+			// remove the id before writing to redis
+			json.remove("id");
+			json.append("category", category);
+			json.append("keyword", keyword);
+
+			// Create Date Object from String
+			SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+			Date date = new Date();
+			try {
+				date = df.parse(json.getString("date"));
+			} catch (ParseException e) {
+				// If date is not correctly formatted, current time is used
+			}
+			// Create mongoDB document to store in mongoDB
+			Document mongoDBdoc = new Document("text", json.getString("text"))
+					.append("link", json.getString("link")).append("date", date)
+					.append("company", json.getString("company")).append("category", category)
+					.append("keyword", keyword);
+			try {
+				String title = json.getString("title");
+				mongoDBdoc.append("title", title);
+			} catch (JSONException e) {
+				// title field is optional and not saved if not
+				// available
+			}
+
+			// Write to database and redis
+			String dbID = mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
+			json.append("_id", dbID);
+			redis.appendJSONToList(json.getString("companyKey"), json);
+
+			if (DateChecker.isLastMonth(date)) {
+				redis.appendJSONToList("monthList", json);
+			}
+		}
+	
+	}
 
 	/**
 	 * Consumes a single news object. The solr document is searched for the
@@ -93,59 +165,7 @@ public class Consumer extends AbstractConsumer {
 		// contained
 		for (KeywordCategory category : categories) {
 			for (String keyword : category.keywords) {
-				boolean found = false;
-				if (solr.search("\"" + json.getString("searchName") + " " + keyword + "\"" + "~" + PROXIMITY, id)) {
-					found = true;
-				}
-				JSONArray searchTerms = json.getJSONArray("searchTerms");
-				for (Object term : searchTerms.toList()) {
-					if (solr.search("\"" + term + " " + keyword + "\"" + "~" + PROXIMITY, id)) {
-						found = true;
-						break;
-					}
-				}
-				HashMap<String, String> query = new HashMap<>();
-				query.put("company", json.getString("companyKey"));
-				query.put("link", json.getString("link"));
-				query.put("category", category.name);
-				query.put("keyword", keyword);
-
-				if (found && !mongo.contains(json.getString("companyKey"), query)) {
-					// remove the id before writing to redis
-					json.remove("id");
-					json.append("category", category.name);
-					json.append("keyword", keyword);
-
-					// Create Date Object from String
-					SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-					Date date = new Date();
-					try {
-						date = df.parse(json.getString("date"));
-					} catch (ParseException e) {
-						// If date is not correctly formatted, current time is used
-					}
-					// Create mongoDB document to store in mongoDB
-					Document mongoDBdoc = new Document("text", json.getString("text"))
-							.append("link", json.getString("link")).append("date", date)
-							.append("company", json.getString("company")).append("category", category.name)
-							.append("keyword", keyword);
-					try {
-						String title = json.getString("title");
-						mongoDBdoc.append("title", title);
-					} catch (JSONException e) {
-						// title field is optional and not saved if not
-						// available
-					}
-
-					// Write to database and redis
-					String dbID = mongo.writeToDb(mongoDBdoc, json.getString("companyKey"));
-					json.append("_id", dbID);
-					redis.appendJSONToList(json.getString("companyKey"), json);
-
-					if (DateChecker.isLastMonth(date)) {
-						redis.appendJSONToList("monthList", json);
-					}
-				}
+				searchForKeyword(json, category.name, keyword, id);
 			}
 		}
 		// Remove the solr document to keep the solr instance clean

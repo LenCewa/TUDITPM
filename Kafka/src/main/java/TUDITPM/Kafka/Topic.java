@@ -11,7 +11,7 @@ import java.util.Collection;
  * @version 6.0
  */
 public enum Topic {
-	twitter, rss;
+	twitter, rss, rawdata;
 	
 	/**
 	 * Converts the enum in a list of strings.

@@ -64,7 +64,7 @@ public class DateChecker extends TimerTask {
 	private void loadLast30Days() {
 		LoggingWrapper.log(getClass().getName(), Level.INFO, "Refreshing Redis key monthList...");
 		redis.deleteKey("monthList");
-		int count = 0;
+		long count = 0;
 		for (Document doc : config.getCollection("companies").find()) {
 			Date end = new Date();
 			long day30 = 30l * 24 * 60 * 60 * 1000;

@@ -115,8 +115,8 @@ public abstract class AbstractProducer extends Thread {
 	 * 
 	 * This method MUST be used in the {@link runRoutine} for every entry.
 	 * 
-	 * @param source
-	 *            The source, e.g. "rss"
+	 * @param topic
+	 *            The topic to receive the message
 	 * @param link
 	 *            The link of the article.
 	 * @param text
@@ -126,7 +126,7 @@ public abstract class AbstractProducer extends Thread {
 	 * @param title
 	 *            The title
 	 */
-	void checkForCompany(Topic topic, String link, String text, String date,
+	public void checkForCompany(Topic topic, String link, String text, String date,
 			String title) {
 		String id;
 		// Check for empty title and text. If the title is set but no text, the

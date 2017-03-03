@@ -1,5 +1,7 @@
 package TUDITPM.Kafka.Consumer;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -53,9 +55,8 @@ public abstract class AbstractConsumer extends Thread {
 
 		// Initialize the consumer
 		consumer = new KafkaConsumer<String, String>(props);
-		consumer.subscribe(Topic.toList());
 	}
-
+	
 	/**
 	 * Here you should setup everything that only needs to be initialized after
 	 * startup or on reload e.g loading the keyword list.
@@ -68,6 +69,14 @@ public abstract class AbstractConsumer extends Thread {
 	 */
 	abstract void consumeObject(JSONObject json);
 
+	/**
+	 * Method to subscribe to some topics
+	 * @param topics - the topics to subscribe to
+	 */
+	public void subscribeToList(Collection<String> topics){
+		consumer.subscribe(topics);
+	}
+	
 	/**
 	 * Sets the reload flag.
 	 */

@@ -24,7 +24,7 @@ function drawDiagram(data, isFirst) {
 			label: 30,
 		},
 		width = +svg.attr("width") / 2 - 2 * margin.left,
-		height = +svg.attr("height") - margin.bottom - margin.top;
+		height = +svg.attr("height") - margin.bottom - margin.top - margin.label;
 
 	var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
 		y = d3.scaleLinear().rangeRound([height, 0]);
@@ -33,18 +33,8 @@ function drawDiagram(data, isFirst) {
 
 	if (isFirst) {
 		g.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-		g.append("text")
-			.attr("x", margin.left)
-			.attr("y", height + margin.label)
-			.style("text-anchor", "m")
-			.text("Unternehmen");
 	} else {
 		g.attr("transform", "translate(" + (svg.attr("width") / 2 + margin.left) + "," + margin.top + ")");
-		g.append("text")
-			.attr("x", margin.left)
-			.attr("y", height + margin.label)
-			.style("text-anchor", "m")
-			.text("Schlagwörter");
 	}
 
 	x.domain(data.map(function(d) {
@@ -82,13 +72,6 @@ function drawDiagram(data, isFirst) {
 		.attr("height", function(d) {
 			return height - y(d.frequency);
 		});
-
-	g.append("text")
-		.attr("x", 0)
-		.attr("y", -margin.label)
-		.attr("transform", "rotate(-90)")
-		.style("text-anchor", "end")
-		.text("Vorkommen in den letzten 30 Tagen");
 }
 
 /**

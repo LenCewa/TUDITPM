@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Properties;
@@ -19,6 +20,7 @@ import org.bson.Document;
 import org.json.JSONObject;
 
 import TUDITPM.Kafka.LoggingWrapper;
+import TUDITPM.Kafka.Topic;
 import TUDITPM.Kafka.Connectors.MongoDBConnector;
 import TUDITPM.Kafka.Connectors.Solr;
 import TUDITPM.Kafka.Loading.PropertyFile;
@@ -43,17 +45,17 @@ public class ConsumerReload extends Thread {
 	private LinkedList<AbstractProducer> producer = new LinkedList<>();
 
 	public ConsumerReload(String env) {
-		
+
 		this.env = env;
 		PROXIMITY = Integer.parseInt(PropertyLoader.getPropertyValue(PropertyFile.solr, "proximity"));
 		consumer = new Consumer(env);
 		consumer.start();
 	}
-	
-	public void addProducer(AbstractProducer prod){
+
+	public void addProducer(AbstractProducer prod) {
 		producer.add(prod);
 	}
-	
+
 	/**
 	 * Gets called on start of the Thread
 	 */
@@ -86,8 +88,8 @@ public class ConsumerReload extends Thread {
 				kafkaConsumer.seekToEnd(arg0);
 			}
 		});
-		
-		for(AbstractProducer prod : producer)
+
+		for (AbstractProducer prod : producer)
 			prod.start();
 
 		while (true) {
@@ -96,72 +98,46 @@ public class ConsumerReload extends Thread {
 
 				JSONObject json = new JSONObject(record.value());
 				String msg = json.getString("msg");
-				
+
 				LoggingWrapper.log(this.getClass().getName(), Level.INFO, msg + ", reloading!");
-				
+
 				if (msg.equals("company added") || msg.equals("company removed")) {
-					for(AbstractProducer prod : producer)
+					for (AbstractProducer prod : producer)
 						prod.reload();
 				} else if (msg.equals("keyword added") || msg.equals("keyword removed")
 						|| msg.equals("category removed")) {
 					consumer.reload();
-					
-					if(msg.equals("keyword added"))
-						checkRawDBForKeyword(json.getString("category"), json.getString("keyword"));
+
+					if (msg.equals("keyword added")){ //&& json.getBoolean("searchRaw")){
+						LoggingWrapper.log(this.getClass().getName(), Level.INFO,
+								"checking rawdata for keyword: " + json.getString("keyword") + " in category: " + json.getString("category"));
+						checkRawDBForKeyword();
+					}
 				} else if (msg.equals("rss url added") || msg.equals("rss url removed")) {
-					for(AbstractProducer prod : producer)
-						if(prod instanceof ProducerRSSatOM)
+					for (AbstractProducer prod : producer)
+						if (prod instanceof ProducerRSSatOM)
 							prod.reload();
 				}
 			}
 		}
 	}
-	
-	private void checkRawDBForKeyword(String category, String keyword){
-		
-		LoggingWrapper.log(this.getClass().getName(), Level.INFO, "checking rawdata for keyword: " + keyword + " in category: " + category);
+
+	private void checkRawDBForKeyword() {
+
 		MongoDBConnector mongoRaw = new MongoDBConnector("rawdata_" + env);
-		MongoDBConnector mongoEnhanced = new MongoDBConnector("enhanceddata_" + env);
-		Solr solr = new Solr();
 		
-		for(String collection : mongoRaw.getAllCollectionNames()){
+		for (String collection : mongoRaw.getAllCollectionNames()) {
 			// Get every entry for the specific collection
 			LinkedList<Document> data = mongoRaw.find(collection);
-			
-			for(Document entry : data){
-				String text = entry.getString("text");
-				String id = solr.add(text);
-				String company = entry.getString("company");
-				
-				//TODO: Problem da 'company' nicht der collection Name ist, also zb.'Volkswagen AG' statt 'Volkswagen'
-				if(solr.search("\"" + company + " " + keyword + "\"" + "~" + PROXIMITY, id)){
-					
-					// Create Date Object from String
-					SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-					Date date = new Date();
-					try {
-						date = df.parse(entry.getString("date"));
-					} catch (ParseException e) {
-						// If date is not correctly formatted, current time is used
-					}
-					// Create mongoDB document to store in mongoDB
-					Document mongoDBdoc = new Document("text", text)
-							.append("link", entry.getString("link")).append("date", date)
-							.append("company", company).append("category", category)
-							.append("keyword", keyword);
 
+			for (Document entry : data) {
+				if (!producer.isEmpty()) {
+					String text = entry.getString("text");
 
-					LoggingWrapper.log(this.getClass().getName(), Level.INFO, "found keyword " + keyword + 
-							"from category " + category + " in rawdata entry for company " + company + ", adding entry to enhanceddata");
-					// Write to database
-					String dbID = mongoEnhanced.writeToDb(mongoDBdoc, entry.getString("company"));
+					producer.getFirst().checkForCompany(Topic.rawdata, entry.getString("link"), text,
+							entry.getString("date"), "");
 				}
-				solr.delete(id);
 			}
 		}
-		
-		mongoRaw.close();
-		mongoEnhanced.close();
-		solr.close();
 	}
 }
