@@ -82,7 +82,8 @@ function postKeyword(category) {
 			type: 'POST',
 			url: '/api/keywords',
 			data: '{"keyword":"' + $("[id='" + category + "']").val().trim() + '", "category":"' + category + '", "clear":' + ($('#clear').val() === 'on') + '}',
-			success: function(data) {
+			contentType: 'application/json'
+		}).then(function() {
 				$.get("/api/keywords", function(data) {
 					showAlert($("[id='" + category + "']").val() + " hinzugefügt!", Level.Success, 2000);
 					$("[id='" + category + "']").val('');
@@ -90,13 +91,9 @@ function postKeyword(category) {
 					reloadKeywords();
 				});
 			},
-			statusCode: {
-				400: function(error) {
-					showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-				}
-			},
-			contentType: 'application/json'
-		});
+			function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+			});
 	}
 }
 
@@ -128,17 +125,17 @@ function keywordToDelete(category, keyword) {
 			type: 'DELETE',
 			url: '/api/deleteKeyword',
 			data: '{"keyword":"' + keyword + '", "category":"' + category + '"}',
-			statusCode: {
-				204: function() {
-					$.get("/api/keywords", function(data) {
-						localData.keywords = data;
-						reloadKeywords();
-						showAlert(keyword + " gelöscht!", Level.Success, 1000);
-					});
-				},
-			},
 			contentType: 'application/json'
-		});
+		}).then(function() {
+				$.get("/api/keywords", function(data) {
+					localData.keywords = data;
+					reloadKeywords();
+					showAlert(keyword + " gelöscht!", Level.Success, 1000);
+				});
+			},
+			function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+			});
 	}
 }
 
@@ -152,16 +149,16 @@ function categoryToDelete(category) {
 			type: 'DELETE',
 			url: '/api/deleteCategory',
 			data: '{"category":"' + category + '"}',
-			statusCode: {
-				204: function() {
-					$.get("/api/keywords", function(data) {
-						localData.keywords = data;
-						reloadKeywords();
-						showAlert("Kategorie " + category + " gelöscht!", Level.Success, 1000);
-					});
-				},
-			},
 			contentType: 'application/json'
-		});
+		}).then(function() {
+				$.get("/api/keywords", function(data) {
+					localData.keywords = data;
+					reloadKeywords();
+					showAlert("Kategorie " + category + " gelöscht!", Level.Success, 1000);
+				});
+			},
+			function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+			});
 	}
 }

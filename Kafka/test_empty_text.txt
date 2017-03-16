@@ -1,3 +1,0 @@
-{"user": {"screen_name": "test123", "location": "New York"},  
- "text": "",
- "created_at": "1970-01-01 00:01"}

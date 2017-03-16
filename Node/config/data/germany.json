@@ -4,8 +4,8 @@
 	"features": [{
 		"type": "Feature",
 		"properties": {
-			"PLZ99": "0",
-			"PLZ99_N": 0,
+			"PLZ99": "",
+			"PLZ99_N": -1,
 			"style": "blank",
 			"news": 0,
 			"PLZORT99": "Deutschland"

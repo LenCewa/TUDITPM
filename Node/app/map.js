@@ -20,9 +20,12 @@ module.exports = function(app, client) {
 	 *  @param req The HTTP request object
 	 *  @param res The HTTP response object
 	 */
-	app.get('/api/map/:data', function(req, res) {
+	app.get('/api/map/:digits/:data', function(req, res) {
 		var selected = req.params.data.split(',');
 		var inputFiles = [];
+		var zipCodes = {};
+		var data = [];
+		var digits = req.params.digits;
 
 		/** 
 		 * Combines a single json
@@ -51,14 +54,44 @@ module.exports = function(app, client) {
 		};
 
 		/**
+		 * Creates the temporary ap files
+		 */
+		var createTmpFiles = function() {
+			var singleData;
+			while (!singleData) {
+				if (data.length === 0) {
+					combineJSON();
+					return;
+				}
+				singleData = data.pop();
+			}
+
+			var tmpFilename = new Date().getTime();
+			// Write the edited file
+			fs.writeFile('./tmp/' + tmpFilename, JSON.stringify(singleData), function(err) {
+				if (err) {
+					return console.log(err);
+				}
+				inputFiles.push(tmpFilename);
+				if (data.length === 0) {
+					combineJSON();
+				} else {
+					createTmpFiles();
+				}
+			});
+		};
+
+		/**
 		 * Loads the zip code files
 		 */
 		var getKey = function(array) {
 			var read = array.pop();
 			var zip = array.pop();
 			var key = array.pop();
+			var i;
 			// Gets the length for a key from redis, returns null if key is not found
 			client.llen(key, function(err, length) {
+				console.log(key);
 				if (err) {
 					return res.status(500).send({
 						err: {
@@ -68,61 +101,33 @@ module.exports = function(app, client) {
 						}
 					});
 				}
-				var found = false;
-				var data, i;
-				// Find the corresponding zip file
-				try {
-					data = require('../config/data/' + zip + '.json');
-					found = true;
-				} catch (err) {}
-				// If the file does not exist take the next available zip code
-				if (!found) {
-					for (i = 0; i < 10; i++) {
-						try {
-							data = require('../config/data/' + zip.substring(0, 4) + i + '.json');
-							found = true;
-							break;
-						} catch (err) {}
-					}
+				if (!zipCodes[zip.substring(0, digits)]) {
+					// Find the corresponding zip file
+					data[zip.substring(0, digits)] = require('../config/data/combined/' + zip.substring(0, digits) + '.json');
 				}
-				if (!found) {
-					for (i = 0; i < 100; i++) {
-						try {
-							data = require('../config/data/' + zip.substring(0, 3) + i + '.json');
-							found = true;
-							break;
-						} catch (err) {}
-					}
+				// Set the style if new entries exists
+				if (!zipCodes[zip.substring(0, digits)]) {
+					zipCodes[zip.substring(0, digits)] = 0;
 				}
-				if (found) {
-					var tmpFilename = new Date().getTime();
-					// Set the style if new entries exists
-					if (read < length) {
-						data.features[0].properties.style = 'new';
-					} else {
-						data.features[0].properties.style = 'old';
+				if (read < length) {
+					zipCodes[zip.substring(0, digits)] += length - read;
+				}
+
+				if (array.length === 0) {
+					for (i = 0; i < data.length; i++) {
+						if (data[i]) {
+							if (zipCodes[i] === 0) {
+								data[i].features[0].properties.style = 'old';
+							} else {
+								data[i].features[0].properties.style = 'new';
+							}
+							data[i].features[0].properties.news = zipCodes[i];
+						}
 					}
-					data.features[0].properties.news = length - read;
-					// Write the edited file
-					fs.writeFile('./tmp/' + tmpFilename, JSON.stringify(data), function(err) {
-						if (err) {
-							return console.log(err);
-						}
-						inputFiles.push(tmpFilename);
-						if (array.length === 0) {
-							combineJSON();
-						} else {
-							getKey(array);
-						}
-					});
+					console.log('Creat tmp files');
+					createTmpFiles();
 				} else {
-					return res.status(500).send({
-						err: {
-							de: 'Die PLZ ' + zip + ' könnte keinem Gebiet zugeordnet werden. Bitte informieren Sie einen Administrator.',
-							en: 'The zip ' + zip + ' could not be assigned to an area. Please contact an adminstrator.',
-							err: err
-						}
-					});
+					getKey(array);
 				}
 			});
 		};

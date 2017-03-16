@@ -20,6 +20,7 @@ if (!selectedCompanies) {
 var showAllCompanies = false;
 var news, tableData, key;
 var firstDataLoad = true;
+var linksCreated = false;
 
 /**
  * Creates a bootstrap table to show the data
@@ -32,11 +33,14 @@ function createTable() {
 	// Split search entry to search for each word alone
 	filter = $('#newsSearch').val().toUpperCase().trim().split(' ');
 
-	// Loop through all data and add the button to remove a news
-	for (i = 0; i < news.length; i++) {
-		news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
-		news[i].date = $.format.date(news[i].date, 'dd.MM.yyyy');
-		news[i].link = '<a target="_blank" href=' + news[i].link + '>' + news[i].link + '</a>';
+	if (!linksCreated) {
+		// Loop through all data and add the button to remove a news
+		for (i = 0; i < news.length; i++) {
+			news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
+			news[i].date = $.format.date(news[i].date, 'dd.MM.yyyy');
+			news[i].link = '<a target="_blank" href=' + news[i].link + '>' + news[i].link + '</a>';
+		}
+		linksCreated = true;
 	}
 
 	if (filter && (filter.length > 1 || filter[0] !== '')) {
@@ -64,6 +68,46 @@ function createTable() {
 	}
 
 	$('#table').bootstrapTable('load', tableData);
+}
+
+
+/**
+ * Turns all the escaped characters back into normal strings.
+ * @param  {string} text The text with excaped characters
+ * @return {string}      The normal text
+ */
+function unEscapeHtml(text) {
+	return text
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, "\"")
+		.replace(/&#039;/g, "'");
+}
+
+/** 
+ * Search function for the company list.
+ */
+function searchCompany() {
+	// Declare variables
+	var filter, table, tr, td, i, company;
+	filter = $('#companyName').val().toUpperCase();
+	table = $('#companyStartTableBody');
+	tr = table.children('tr');
+
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < tr.length; i++) {
+		td = tr[i].children;
+		if (td[0]) {
+			var cleanString = unEscapeHtml(td[0].children[0].innerHTML);
+			company = localData.getCompanyObject(cleanString);
+			if (company.name.toUpperCase().indexOf(filter) > -1 || company.zipCode.toUpperCase().indexOf(filter) > -1) {
+				tr[i].style.display = '';
+			} else {
+				tr[i].style.display = 'none';
+			}
+		}
+	}
 }
 
 /**
@@ -98,6 +142,7 @@ function reloadCompanyList() {
 			}
 		}
 	}
+	searchCompany();
 }
 
 /**
@@ -138,6 +183,7 @@ function reloadData() {
 									}
 								}
 							}
+							linksCreated = false;
 							createTable();
 							reloadCompanyList();
 						}
@@ -147,6 +193,7 @@ function reloadData() {
 		}
 	} else {
 		news = [];
+		linksCreated = false;
 		createTable();
 		reloadCompanyList();
 	}
@@ -208,30 +255,6 @@ function markRead(name) {
 	}
 	Cookies.set('selectedCompanies', selectedCompanies);
 	reloadCompanyList();
-}
-
-/** 
- * Search function for the company list.
- */
-function searchCompany() {
-	// Declare variables
-	var filter, table, tr, td, i, company;
-	filter = $('#companyName').val().toUpperCase();
-	table = $('#companyStartTableBody');
-	tr = table.children('tr');
-
-	// Loop through all table rows, and hide those who don't match the search query
-	for (i = 0; i < tr.length; i++) {
-		td = tr[i].children;
-		if (td[0]) {
-			company = localData.getCompanyObject(td[0].children[0].innerHTML);
-			if (company.name.toUpperCase().indexOf(filter) > -1 || company.zipCode.toUpperCase().indexOf(filter) > -1) {
-				tr[i].style.display = '';
-			} else {
-				tr[i].style.display = 'none';
-			}
-		}
-	}
 }
 
 /**

@@ -28,29 +28,105 @@ Author Tobias Mahncke
 </head>
 
 <body>
-    <div style="margin-top:-80px; position: fixed">
-        <div style="height: 35px;">
-            <span class="label label-primary">Ausgewählte Gebiete ohne neue Nachrichten</span>
+    <div style="margin-top:-80px; margin-left: 650px; position: fixed">
+        <div style="height: 35px; width:370px">
+            <div class="label label-primary">Ausgewählte Gebiete ohne neue Nachrichten</div>
         </div>
-        <div>
-            <span class="label label-success">Ausgewählte Gebiete mit neuen Nachrichten</span>
+        <div style="height: 35px; width:370px">
+            <div class="label label-success">Ausgewählte Gebiete mit neuen Nachrichten</div>
+        </div>
+        <div style="height: 45px; width:370px">
+            <button ID="oneDigit" style="width:100%" class="btn btn-primary" onClick="toggleRegions()">PLZ Gebiete feiner einteilen</button>
+        </div>
+        <div style="height: 400px; width:370px; border-radius: .25em; background-color: #dddddd; padding:5px">
+            <h3 ID="newsHeader">PLZ Gebiet</h3>
+            <div ID="newNews">Anzahl der Nachrichten</div>
+            <div ID="news" style="border-top: solid 1px #000; margin-top: 3px; padding-top:3px">
+            </div>
         </div>
     </div>
 </body>
 <script type="text/javascript">
 // Contains the JS directly to avoid bugs
 var companies = '';
-var width = 1800,
-    height = 2400;
-var svg;
+var width = 625,
+    height = 900;
+var svg, news;
+var oneDigit = true;
+
 $(function() {
     // Create the canvas
     svg = d3.select('body').append('svg')
         .attr('width', width)
-        .attr('height', height);
+        .attr('height', height)
+        .attr('style', 'margin-top: -80px;');
 });
 
-var companyDataLoaded = function() {
+var showRegion = function(region) {
+    // Add mouse listener to show alerts per postal area
+    if (region.PLZ99 !== '') {
+        $('#newsHeader').text(region.PLZORT99);
+        if (!region.news || region.news === 0) {
+            $('#newNews').text('Keine neuen Nachrichten');
+        } else if (region.news === 1) {
+            $('#newNews').text('1 neue Nachricht');
+        } else {
+            $('#newNews').text(region.news + ' neue Nachrichten');
+        }
+        $('#news').empty();
+        var queries = [];
+        var completeData = [];
+        var key;
+        var count = 0;
+        for (key in selectedCompanies) {
+            if (selectedCompanies[key].selected && localData.getCompanyObjectByKey(key).zipCode.indexOf(region.PLZ99) === 0) {
+                count++;
+            }
+        }
+        if (count !== 0) {
+            for (key in selectedCompanies) {
+                if (selectedCompanies[key].selected && localData.getCompanyObjectByKey(key).zipCode.indexOf(region.PLZ99) === 0) {
+                    $.ajax({
+                        url: "/api/news/" + key,
+                        type: 'GET',
+                        success: function(data) { // jshint ignore:line
+                            var onlyNew = data;
+                            if (data.length > 0) {
+                                onlyNew.news.splice(0, selectedCompanies[localData.getCompanyObject(data.news[0].company).key].read);
+                                completeData = completeData.concat(onlyNew);
+                            }
+                            count--;
+                            if (count === 0) {
+                                var zip, companyObj;
+                                news = [];
+                                for (var i = 0; i < completeData.length; i++) {
+                                    if (completeData[i].news.length > 0) {
+                                        companyObj = localData.getCompanyObject(completeData[i].news[0].company);
+                                        companyObj.length = completeData[i].length;
+                                        if (companyObj) {
+                                            zip = companyObj.zipCode;
+                                        }
+                                        for (var j = 0; j < completeData[i].length; j++) {
+                                            completeData[i].news[j].zipCode = zip;
+                                            news.push(completeData[i].news[j]);
+                                        }
+                                    }
+                                }
+                            }
+                            for (var i = 0; i < news.length; i++) {
+                                $('#news').append('<div><b>' + news[i].zipCode + '</b> <b>' + news[i].company + '</b> <i>' + news[i].category + ' | ' + news[i].keyword + ' </i></div>');
+                                $('#news').append('<div>' + news[i].text + '</div>');
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    }
+}
+
+var showMap = function() {
+    var companies = '';
     // Create the list of companies
     for (var key in selectedCompanies) {
         if (selectedCompanies[key].selected) {
@@ -61,8 +137,13 @@ var companyDataLoaded = function() {
         }
     }
 
+    var digits = 2;
+    if(oneDigit){
+        digits = 1;
+    }
+
     // Load the map from the server
-    d3.json('/api/map/' + companies, function(error, de) {
+    d3.json('/api/map/' + digits + '/' + companies, function(error, de) {
         if (error) {
             return console.error(error);
         }
@@ -93,6 +174,8 @@ var companyDataLoaded = function() {
             .scale(scale).translate(offset);
         path = path.projection(projection);
 
+        // Clear the canvas
+        svg.selectAll("*").remove();
         // Load the data into the canvas
         svg.selectAll('.feature')
             .data(de.features)
@@ -102,20 +185,29 @@ var companyDataLoaded = function() {
                 return d.properties.style;
             })
             .attr('d', path)
-            .on('mousedown.log', function(d) {
-                // Add mouse listener to show alerts per postal area
-                if (d.properties.PLZ99_N !== 0) {
-                    if (d.properties.news === 0) {
-                        alert('Keine ungelesenen Nachrichten für ' + d.properties.PLZ99 + ' ' + d.properties.PLZORT99);
-                    } else if (d.properties.news === 1) {
-                        alert(d.properties.news + ' ungelesene Nachricht für ' + d.properties.PLZ99 + ' ' + d.properties.PLZORT99);
-                    } else {
-                        alert(d.properties.news + ' ungelesene Nachrichten für ' + d.properties.PLZ99 + ' ' + d.properties.PLZORT99);
-                    }
-                }
+            .on('mouseenter', function(d) {
+                showRegion(d.properties);
             });
     });
 }
+
+/**
+ * Selects one or two digit zip areas
+ */
+function toggleRegions() {
+    oneDigit = !oneDigit;
+    if (oneDigit) {
+        $('#oneDigit').text('PLZ Gebiete feiner einteilen');
+    } else {
+        $('#oneDigit').text('PLZ Gebiete gröber einteilen');
+    }
+    showMap();
+}
+
+var companyDataLoaded = function(){
+    showMap();
+}
+
 </script>
 
 </html>

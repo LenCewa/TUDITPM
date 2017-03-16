@@ -83,21 +83,20 @@ function postCompany(company) {
 		type: 'POST',
 		url: '/api/company',
 		data: JSON.stringify(company),
-		success: localData.reloadCompanies(function() {
-			createTable();
-			if (company.searchTerms) {
-				showAlert(company.name + " aktualisiert!", Level.Success, 2000);
-			} else {
-				showAlert(company.name + " hinzugefügt!", Level.Success, 2000);
-			}
-		}),
-		statusCode: {
-			400: function(error) {
-				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-			}
-		},
 		contentType: 'application/json'
-	});
+	}).then(function() {
+			localData.reloadCompanies(function() {
+				createTable();
+				if (company.searchTerms) {
+					showAlert(company.name + " aktualisiert!", Level.Success, 2000);
+				} else {
+					showAlert(company.name + " hinzugefügt!", Level.Success, 2000);
+				}
+			});
+		},
+		function(error) {
+			showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+		});
 }
 
 /**
@@ -192,11 +191,15 @@ function deleteCompany(company, zipCode) {
 			type: 'DELETE',
 			url: '/api/company',
 			data: '{"name":"' + company + '", "zipCode":"' + zipCode + '"}',
-			success: localData.reloadCompanies(function() {
-				createTable();
-				showAlert(company + " gelöscht!", Level.Success, 2000);
-			}),
 			contentType: 'application/json'
-		});
+		}).then(function() {
+				localData.reloadCompanies(function() {
+					createTable();
+					showAlert(company + " gelöscht!", Level.Success, 2000);
+				});
+			},
+			function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+			});
 	}
 }

@@ -89,17 +89,16 @@ function deleteRss(rssUrl) {
 			type: 'DELETE',
 			url: '/api/rss',
 			data: '{"link":"' + rssUrl + '"}',
-			statusCode: {
-				400: function(error) {
-					showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-				},
-				204: localData.reloadRSS(function() {
+			contentType: 'application/json'
+		}).then(function() {
+				localData.reloadRSS(function() {
 					createTable();
 					showAlert(rssUrl + ' gelöscht!', Level.Success, 2000);
-				}),
+				});
 			},
-			contentType: 'application/json'
-		});
+			function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+			});
 	}
 }
 
@@ -115,17 +114,16 @@ function postUrls() {
 			type: 'POST',
 			url: '/api/rss',
 			data: '{"link":"' + rssName + '"}',
-			statusCode: {
-				400: function(error) {
-					showAlert(error.responseJSON.err.de, Level.Warning, 4000);
-				},
-				204: localData.reloadRSS(function() {
+			contentType: 'application/json'
+		}).then(function() {
+				localData.reloadRSS(function() {
 					createTable();
 					showAlert($('#rssName').val() + ' hinzugefügt!', Level.Success, 2000);
 					$('#rssName').val('');
-				}),
+				});
 			},
-			contentType: 'application/json'
-		});
+			function(error) {
+				showAlert(error.responseJSON.err.de, Level.Warning, 4000);
+			});
 	}
 }
