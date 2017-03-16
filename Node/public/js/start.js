@@ -37,7 +37,7 @@ function createTable() {
 		// Loop through all data and add the button to remove a news
 		for (i = 0; i < news.length; i++) {
 			news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
-			news[i].date = $.format.date(news[i].date, 'dd.MM.yyyy');
+			news[i].date = $.format.date(news[i].date, 'yyyy-MM-dd');
 			news[i].link = '<a target="_blank" href=' + news[i].link + '>' + news[i].link + '</a>';
 		}
 		linksCreated = true;
