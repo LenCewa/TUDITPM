@@ -53,11 +53,13 @@ Author Tobias Mahncke
             <div class="col-md-2">
                 <a href="/map" target="_blank" style="width:100%" class="btn btn-primary">Karte anzeigen</a>
             </div>
-            <div class="col-md-offset-6 col-md-2">
+            <div ID="DummyData" class="col-md-6">Aktuell werden alle Daten des letzten Monats angezeigt. Wählen Sie Unternehmen aus der Liste um die Anzeige zu personalisieren.</div>
+            <div ID="Filler" style="display:none" class="col-md-6"></div>
+            <div class="col-md-2">
                 <input class="form-control" ID="newsSearch" type="text" onkeyup="createTable()" placeholder="Suche">
             </div>
             <button class="btn btn-primary col-md-2" onClick="exportCSV()">Tabelle Exportieren</button>
-            <table style="margin-top: 17px" id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" data-sort-name="date" data-sort-order="desc" class="table table-hover">
+            <table style="margin-top: 17px; table-layout: fixed;" id="table" data-toggle="table" data-pagination="true" data-classes="table table-hover table-no-bordered" data-sort-name="date" data-sort-order="desc" class="table table-hover">
                 <thead>
                     <tr>
                         <th class="col-md-1" data-field="zipCode" data-sortable="true">PLZ</th>
@@ -70,6 +72,7 @@ Author Tobias Mahncke
                         <th class="col-md-1" data-field="button"></th>
                     </tr>
                 </thead>
+                <tbody class="small-images-only"></tbody>
             </table>
         </div>
     </div>

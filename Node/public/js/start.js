@@ -37,6 +37,9 @@ function createTable() {
 		// Loop through all data and add the button to remove a news
 		for (i = 0; i < news.length; i++) {
 			news[i].button = '<button class="btn btn-danger pull-right" onClick="deleteNews(\'' + news[i]._id + '\')"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>';
+			if (news[i].date.$date) {
+				news[i].date = news[i].date.$date;
+			}
 			news[i].date = $.format.date(news[i].date, 'yyyy-MM-dd');
 			news[i].link = '<a target="_blank" href=' + news[i].link + '>' + news[i].link + '</a>';
 		}
@@ -159,6 +162,8 @@ function reloadData() {
 		}
 	}
 	if (count !== 0) {
+		$('#DummyData').hide();
+		$('#Filler').show();
 		for (name in selectedCompanies) {
 			if (selectedCompanies[name].selected) {
 				$.ajax({
@@ -192,10 +197,18 @@ function reloadData() {
 			}
 		}
 	} else {
-		news = [];
-		linksCreated = false;
-		createTable();
-		reloadCompanyList();
+		$('#DummyData').show();
+		$('#Filler').hide();
+		$.ajax({
+			url: "/api/news/" + "monthList",
+			type: 'GET',
+			success: function(data) { // jshint ignore:line
+				news = data.news;
+				linksCreated = false;
+				createTable();
+				reloadCompanyList();
+			}
+		});
 	}
 }
 
